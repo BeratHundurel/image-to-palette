@@ -192,7 +192,11 @@
 	<div
 		class="relative z-20 flex max-h-[100svh] min-h-[100svh] w-full flex-col items-center justify-center space-y-8 overflow-hidden px-4"
 	>
-		<h1 class="text-center text-4xl font-bold tracking-tight drop-shadow-lg md:text-5xl">
+		<h1
+		    class:absolute={!imageLoaded}
+			class:top-[20%]={!imageLoaded}
+	        class="text-center text-4xl font-bold tracking-tight drop-shadow-lg md:text-5xl"
+		>
 			{imageLoaded ? 'Crop a section of your image' : 'Upload your image to extract palette'}
 		</h1>
 
