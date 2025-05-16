@@ -8,7 +8,9 @@ import (
 	_ "image/png"
 	"net/http"
 	"sort"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/muesli/clusters"
 	"github.com/muesli/kmeans"
@@ -70,7 +72,7 @@ func extractPaletteHandler(c *gin.Context) {
 
 	bounds := img.Bounds()
 	observations := make(clusters.Observations, 0)
-	
+
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
 			r, g, b, _ := img.At(x, y).RGBA()
@@ -79,7 +81,7 @@ func extractPaletteHandler(c *gin.Context) {
 			b8 := float64(b>>8) / 255.0
 			observations = append(observations, colorObservation{r8, g8, b8})
 		}
-}
+	}
 
 	kmean := kmeans.New()
 	clustersResult, err := kmean.Partition(observations, 5)
@@ -111,6 +113,14 @@ func extractPaletteHandler(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
 	router.POST("/extract-palette", extractPaletteHandler)
 	router.Run(":8080")
 }
