@@ -1,16 +1,17 @@
 <script lang="ts">
 	import { type PaletteResponse, type Color } from '$lib/types/palette';
+	import { tick } from 'svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { scale } from 'svelte/transition';
 
-	let palette: Color[] = [];
+	let palette: Color[] = $state([]);
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let image: HTMLImageElement;
 	let fileInput: HTMLInputElement;
 
-	let imageLoaded = false;
-	let isDragging = false;
+	let imageLoaded = $state(false);
+	let isDragging = $state(false);
 	let startX = 0,
 		startY = 0;
 
@@ -174,6 +175,12 @@
 	function handleCopy(hex: string) {
 		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
 	}
+
+	async function returnToUpload() {
+		await tick();
+		imageLoaded = false;
+		palette = [];
+	}
 </script>
 
 <Toaster />
@@ -190,12 +197,11 @@
 
 	<!-- Content -->
 	<div
-		class="relative z-20 flex max-h-[100svh] min-h-[100svh] w-full flex-col items-center justify-center space-y-8 overflow-hidden px-4"
+		class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden px-4"
 	>
 		<h1
-		    class:absolute={!imageLoaded}
-			class:top-[20%]={!imageLoaded}
-	        class="text-center text-4xl font-bold tracking-tight drop-shadow-lg md:text-5xl"
+			class="absolute top-[25%] right-0 left-0 text-center text-3xl font-bold tracking-tight drop-shadow-lg transition-transform duration-500 md:text-4xl"
+			style="transform: translateY({imageLoaded ? '-325%' : '0'})"
 		>
 			{imageLoaded ? 'Crop a section of your image' : 'Upload your image to extract palette'}
 		</h1>
@@ -233,7 +239,7 @@
 					bind:this={fileInput}
 					class="hidden"
 					accept="image/*"
-					onchange={onFileChange}
+					oninput={onFileChange}
 				/>
 			</button>
 		</div>
@@ -244,7 +250,7 @@
 			onmousedown={handleMouseDown}
 			onmousemove={handleMouseMove}
 			onmouseup={handleMouseUp}
-			class="mb-6 h-auto w-full max-w-3xl rounded-xl shadow-lg transition-opacity duration-300"
+			class="mb-6 h-auto max-h-[400px] w-full max-w-3xl rounded-xl shadow-lg transition-opacity duration-300"
 			class:opacity-100={imageLoaded}
 			class:pointer-events-auto={imageLoaded}
 			class:opacity-0={!imageLoaded}
@@ -254,7 +260,7 @@
 		<!-- Palette wrapper with min-height -->
 		<div class="w-full max-w-5xl px-4">
 			<div
-				class="grid min-h-[90px] grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5"
+				class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5"
 			>
 				{#each palette as color, i (color.hex)}
 					<div
@@ -270,6 +276,13 @@
 					</div>
 				{/each}
 			</div>
+			{#if imageLoaded}
+				<div class="mt-4 flex flex-row justify-between">
+					<button class="cursor-pointer text-sm font-bold tracking-tight" onclick={returnToUpload}>
+						Return to upload
+					</button>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>
