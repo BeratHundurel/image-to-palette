@@ -2,24 +2,38 @@
 	import { type PaletteResponse, type Color, type NamedColor } from '$lib/types/palette';
 	import { tick } from 'svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
-	import { fade, fly, scale } from 'svelte/transition';
+	import { fly, scale } from 'svelte/transition';
 
+	// === Selector ===
+	type Selector = {
+		id: string;
+		color: string;
+		selected: boolean;
+		selection?: { x: number; y: number; w: number; h: number };
+	};
+
+	let selectors: Selector[] = $state([
+		{ id: 'green', color: 'oklch(79.2% 0.209 151.711)', selected: true, selection: undefined },
+		{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false, selection: undefined },
+		{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false, selection: undefined }
+	]);
+
+	let activeSelectorId: string | null = $state('green');
+
+	// === State ===
 	let palette: Color[] = $state([]);
 	let selectValue = $state('json');
+	let imageLoaded = $state(false);
+	let isDragging = $state(false);
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let image: HTMLImageElement;
 	let fileInput: HTMLInputElement;
 
-	let imageLoaded = $state(false);
-	let isDragging = $state(false);
 	let startX = 0,
 		startY = 0;
 
-	let selection = { x: 0, y: 0, w: 0, h: 0 };
-
-	// === File Upload ===
-
+	// === File Handling ===
 	async function onFileChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input?.files?.[0];
@@ -28,128 +42,6 @@
 		await drawToCanvas(file);
 		await uploadAndExtractPalette(file);
 	}
-
-	async function uploadAndExtractPalette(file: Blob) {
-		const formData = new FormData();
-		formData.append('file', file);
-
-		try {
-			const res = await fetch('http://localhost:8080/extract-palette', {
-				method: 'POST',
-				body: formData
-			});
-
-			if (!res.ok) throw new Error();
-			const result: PaletteResponse = await res.json();
-			palette = result.palette;
-			toast.success('Palette extracted');
-		} catch {
-			toast.error('Error extracting palette');
-		}
-	}
-
-	// === Drawing & Selection ===
-
-	function getMousePos(e: MouseEvent) {
-		const rect = canvas.getBoundingClientRect();
-		const scaleX = canvas.width / rect.width;
-		const scaleY = canvas.height / rect.height;
-
-		return {
-			x: (e.clientX - rect.left) * scaleX,
-			y: (e.clientY - rect.top) * scaleY
-		};
-	}
-
-	function handleMouseDown(e: MouseEvent) {
-		isDragging = true;
-		const pos = getMousePos(e);
-		startX = pos.x;
-		startY = pos.y;
-	}
-
-	function handleMouseMove(e: MouseEvent) {
-		if (!isDragging) return;
-		const pos = getMousePos(e);
-
-		selection = {
-			x: Math.min(startX, pos.x),
-			y: Math.min(startY, pos.y),
-			w: Math.abs(pos.x - startX),
-			h: Math.abs(pos.y - startY)
-		};
-
-		drawImageAndBox();
-	}
-
-	function handleMouseUp() {
-		isDragging = false;
-		if (selection.w && selection.h) extractPaletteFromSelection();
-	}
-
-	function drawImageAndBox() {
-		if (!ctx || !image) return;
-
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-		if (selection.w && selection.h) {
-			ctx.strokeStyle = 'lime';
-			ctx.lineWidth = 2;
-			ctx.strokeRect(selection.x, selection.y, selection.w, selection.h);
-		}
-	}
-
-	async function drawToCanvas(file: File) {
-		const reader = new FileReader();
-
-		reader.onload = () => {
-			image = new Image();
-			image.onload = () => {
-				ctx = canvas.getContext('2d')!;
-				canvas.width = image.width;
-				canvas.height = image.height;
-				ctx.drawImage(image, 0, 0);
-				imageLoaded = true;
-			};
-			image.src = reader.result as string;
-		};
-
-		reader.readAsDataURL(file);
-	}
-
-	// === Palette from Selection ===
-
-	async function extractPaletteFromSelection() {
-		if (!ctx || !canvas || !image || !selection.w || !selection.h) return;
-
-		const cropCanvas = document.createElement('canvas');
-		cropCanvas.width = selection.w;
-		cropCanvas.height = selection.h;
-
-		const cropCtx = cropCanvas.getContext('2d');
-		if (!cropCtx) return;
-
-		cropCtx.drawImage(
-			image,
-			selection.x,
-			selection.y,
-			selection.w,
-			selection.h,
-			0,
-			0,
-			selection.w,
-			selection.h
-		);
-
-		const blob: Blob = await new Promise((resolve) =>
-			cropCanvas.toBlob((b) => resolve(b!), 'image/png')
-		);
-
-		await uploadAndExtractPalette(blob);
-	}
-
-	// === UX Helpers ===
 
 	function triggerFileSelect() {
 		fileInput?.click();
@@ -173,43 +65,159 @@
 		e.preventDefault();
 	}
 
-	function handleCopy(hex: string) {
-		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
+	// === Canvas Drawing ===
+	async function drawToCanvas(file: File) {
+		const reader = new FileReader();
+
+		reader.onload = () => {
+			image = new Image();
+			image.onload = () => {
+				ctx = canvas.getContext('2d')!;
+				canvas.width = image.width;
+				canvas.height = image.height;
+				ctx.drawImage(image, 0, 0);
+				imageLoaded = true;
+			};
+			image.src = reader.result as string;
+		};
+
+		reader.readAsDataURL(file);
+	}
+
+	function drawImageAndBoxes() {
+		if (!ctx || !image) return;
+
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+		selectors.forEach((selector) => {
+			if (selector.selection) {
+				ctx.strokeStyle = selector.color;
+				ctx.lineWidth = 2;
+				const { x, y, w, h } = selector.selection;
+				ctx.strokeRect(x, y, w, h);
+			}
+		});
+	}
+
+	function getMousePos(e: MouseEvent) {
+		const rect = canvas.getBoundingClientRect();
+		const scaleX = canvas.width / rect.width;
+		const scaleY = canvas.height / rect.height;
+
+		return {
+			x: (e.clientX - rect.left) * scaleX,
+			y: (e.clientY - rect.top) * scaleY
+		};
+	}
+
+	// === Mouse Events for Selection ===
+	function handleMouseDown(e: MouseEvent) {
+		if (!activeSelectorId) return;
+		isDragging = true;
+		const pos = getMousePos(e);
+		startX = pos.x;
+		startY = pos.y;
+	}
+
+	function handleMouseMove(e: MouseEvent) {
+		if (!isDragging || !activeSelectorId) return;
+		const pos = getMousePos(e);
+
+		selectors = selectors.map((s) => {
+			if (s.id === activeSelectorId) {
+				return {
+					...s,
+					selection: {
+						x: Math.min(startX, pos.x),
+						y: Math.min(startY, pos.y),
+						w: Math.abs(pos.x - startX),
+						h: Math.abs(pos.y - startY)
+					}
+				};
+			}
+			return s;
+		});
+
+		drawImageAndBoxes();
+	}
+
+	function handleMouseUp() {
+		isDragging = false;
+		const selector = selectors.find((s) => s.id === activeSelectorId);
+		if (selector?.selection?.w && selector.selection.h) {
+			extractPaletteFromSelection(selector.selection);
+		}
+	}
+
+	// === Palette Extraction ===
+	async function uploadAndExtractPalette(file: Blob) {
+		const formData = new FormData();
+		formData.append('file', file);
+
+		try {
+			const res = await fetch('http://localhost:8080/extract-palette', {
+				method: 'POST',
+				body: formData
+			});
+
+			if (!res.ok) toast.error('Error extracting palette');
+			const result: PaletteResponse = await res.json();
+			palette = result.palette;
+			toast.success('Palette extracted');
+		} catch {
+			toast.error('Error extracting palette');
+		}
+	}
+
+	async function extractPaletteFromSelection(sel: { x: number; y: number; w: number; h: number }) {
+		if (!ctx || !canvas || !image || !sel.w || !sel.h) return;
+
+		const cropCanvas = document.createElement('canvas');
+		cropCanvas.width = sel.w;
+		cropCanvas.height = sel.h;
+
+		const cropCtx = cropCanvas.getContext('2d');
+		if (!cropCtx) return;
+
+		cropCtx.drawImage(image, sel.x, sel.y, sel.w, sel.h, 0, 0, sel.w, sel.h);
+
+		const blob: Blob = await new Promise((resolve) =>
+			cropCanvas.toBlob((b) => resolve(b!), 'image/png')
+		);
+
+		await uploadAndExtractPalette(blob);
 	}
 
 	async function returnToUpload() {
 		await tick();
 		imageLoaded = false;
+		fileInput.value = '';
 		palette = [];
+		
+		activeSelectorId = 'green';
+		selectors.forEach((selector) => {
+			selector.selection = undefined;
+			if (selector.id != 'green') {
+				selector.selected = false;
+			} else {
+				selector.selected = true;
+			}
+		});
 	}
 
-	function generateTailwindThemeBlock(colors: NamedColor[]) {
-		return `@theme {\n${colors.map((c) => `  --color-${c.name}: ${c.hex};`).join('\n')}\n}`;
+	// === Clipboard & Format Utilities ===
+	function handleCopy(hex: string) {
+		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
 	}
 
-	function slugifyName(name: string): string {
-		return name
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-') // spaces and special chars to hyphens
-			.replace(/^-+|-+$/g, ''); // trim hyphens
-	}
-
-	async function getNamedPalette(hexValues: string[]): Promise<NamedColor[]> {
-		const url = `https://api.color.pizza/v1/?values=${hexValues
-			.map((h) => h.replace('#', ''))
-			.join(',')}`;
-
-		const res = await fetch(url);
-		if (!res.ok) {
-			toast.error('Failed to fetch color names');
-			return [];
+	function handleCopyFormatChange(event: Event) {
+		const format = (event.target as HTMLSelectElement).value;
+		if (palette.length > 0) {
+			copyPaletteAs(format, palette);
+		} else {
+			toast.error('No palette to copy');
 		}
-
-		const data = await res.json();
-		return data.colors.map((c: NamedColor) => ({
-			name: slugifyName(c.name),
-			hex: c.hex.toLowerCase()
-		}));
 	}
 
 	async function copyPaletteAs(format: string, palette: Color[]) {
@@ -238,13 +246,33 @@
 		toast.success(`${format.replace('_', ' ').toUpperCase()} copied to clipboard`);
 	}
 
-	function handleCopyFormatChange(event: Event) {
-		const format = (event.target as HTMLSelectElement).value;
-		if (palette.length > 0) {
-			copyPaletteAs(format, palette);
-		} else {
-			toast.error('No palette to copy');
+	async function getNamedPalette(hexValues: string[]): Promise<NamedColor[]> {
+		const url = `https://api.color.pizza/v1/?values=${hexValues
+			.map((h) => h.replace('#', ''))
+			.join(',')}`;
+
+		const res = await fetch(url);
+		if (!res.ok) {
+			toast.error('Failed to fetch color names');
+			return [];
 		}
+
+		const data = await res.json();
+		return data.colors.map((c: NamedColor) => ({
+			name: slugifyName(c.name),
+			hex: c.hex.toLowerCase()
+		}));
+	}
+
+	function generateTailwindThemeBlock(colors: NamedColor[]) {
+		return `@theme {\n${colors.map((c) => `  --color-${c.name}: ${c.hex};`).join('\n')}\n}`;
+	}
+
+	function slugifyName(name: string): string {
+		return name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/^-+|-+$/g, '');
 	}
 </script>
 
@@ -309,20 +337,56 @@
 			</button>
 		</div>
 
-		<!-- Canvas: fade in/out + pointer-events toggle -->
-		<canvas
-			bind:this={canvas}
-			onmousedown={handleMouseDown}
-			onmousemove={handleMouseMove}
-			onmouseup={handleMouseUp}
-			class="mb-6 h-auto max-h-[400px] w-full max-w-3xl rounded-xl shadow-lg transition-opacity duration-300"
-			class:opacity-100={imageLoaded}
-			class:pointer-events-auto={imageLoaded}
-			class:opacity-0={!imageLoaded}
-			class:pointer-events-none={!imageLoaded}
-		></canvas>
+		<div class="flex flex-row items-start justify-center gap-3">
+			<canvas
+				bind:this={canvas}
+				onmousedown={handleMouseDown}
+				onmousemove={handleMouseMove}
+				onmouseup={handleMouseUp}
+				class="mb-6 h-auto max-h-[400px] w-full max-w-3xl rounded-xl shadow-lg transition-opacity duration-300"
+				class:opacity-100={imageLoaded}
+				class:pointer-events-auto={imageLoaded}
+				class:opacity-0={!imageLoaded}
+				class:pointer-events-none={!imageLoaded}
+			></canvas>
+			{#if imageLoaded}
+				<div
+					transition:fly={{ y: -300, duration: 500 }}
+					class="flex flex-col items-center justify-center gap-2"
+				>
+					{#each selectors as selector}
+						<button
+							class="flex cursor-pointer flex-col items-center justify-center"
+							onclick={() => {
+								activeSelectorId = selector.id;
+								selectors = selectors.map((s) =>
+									s.id === selector.id ? { ...s, selected: true } : { ...s, selected: false }
+								);
+							}}
+						>
+							<div
+								class="flex h-8 w-8 items-center justify-center rounded-full shadow-md"
+								style="background-color: {selector.color}"
+							>
+								{#if selector.selected}
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										height="20px"
+										viewBox="0 -960 960 960"
+										width="20px"
+										fill="#000"
+										><path
+											d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+										/></svg
+									>
+								{/if}
+							</div>
+						</button>
+					{/each}
+				</div>
+			{/if}
+		</div>
 
-		<!-- Palette wrapper with min-height -->
 		<div class="w-full max-w-5xl px-4">
 			<div
 				class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5"
@@ -356,7 +420,7 @@
 						</button>
 						<select
 							bind:value={selectValue}
-							class="w-max cursor-pointer rounded-md bg-[#E09B80] p-1 text-white"
+							class="w-max cursor-pointer rounded-md bg-[#706C84] p-1 text-white"
 							onchange={handleCopyFormatChange}
 						>
 							<option selected value="json">JSON</option>
