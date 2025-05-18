@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { type PaletteResponse, type Color } from '$lib/types/palette';
+	import { type PaletteResponse, type Color, type NamedColor } from '$lib/types/palette';
 	import { tick } from 'svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
-	import { scale } from 'svelte/transition';
+	import { fade, fly, scale } from 'svelte/transition';
 
 	let palette: Color[] = $state([]);
+	let selectValue = $state('json');
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let image: HTMLImageElement;
@@ -181,6 +182,70 @@
 		imageLoaded = false;
 		palette = [];
 	}
+
+	function generateTailwindThemeBlock(colors: NamedColor[]) {
+		return `@theme {\n${colors.map((c) => `  --color-${c.name}: ${c.hex};`).join('\n')}\n}`;
+	}
+
+	function slugifyName(name: string): string {
+		return name
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, '-') // spaces and special chars to hyphens
+			.replace(/^-+|-+$/g, ''); // trim hyphens
+	}
+
+	async function getNamedPalette(hexValues: string[]): Promise<NamedColor[]> {
+		const url = `https://api.color.pizza/v1/?values=${hexValues
+			.map((h) => h.replace('#', ''))
+			.join(',')}`;
+
+		const res = await fetch(url);
+		if (!res.ok) {
+			toast.error('Failed to fetch color names');
+			return [];
+		}
+
+		const data = await res.json();
+		return data.colors.map((c: NamedColor) => ({
+			name: slugifyName(c.name),
+			hex: c.hex.toLowerCase()
+		}));
+	}
+
+	async function copyPaletteAs(format: string, palette: Color[]) {
+		let output = '';
+
+		switch (format) {
+			case 'json':
+				output = JSON.stringify(
+					palette.map((c) => c.hex),
+					null,
+					2
+				);
+				break;
+
+			case 'css_variables':
+				output = palette.map((color, i) => `--color-${i + 1}: ${color.hex};`).join('\n');
+				break;
+
+			case 'tailwind_config':
+				const namedPalette = await getNamedPalette(palette.map((c) => c.hex));
+				output = generateTailwindThemeBlock(namedPalette);
+				break;
+		}
+
+		navigator.clipboard.writeText(output);
+		toast.success(`${format.replace('_', ' ').toUpperCase()} copied to clipboard`);
+	}
+
+	function handleCopyFormatChange(event: Event) {
+		const format = (event.target as HTMLSelectElement).value;
+		if (palette.length > 0) {
+			copyPaletteAs(format, palette);
+		} else {
+			toast.error('No palette to copy');
+		}
+	}
 </script>
 
 <Toaster />
@@ -277,10 +342,28 @@
 				{/each}
 			</div>
 			{#if imageLoaded}
-				<div class="mt-4 flex flex-row justify-between">
+				<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
 					<button class="cursor-pointer text-sm font-bold tracking-tight" onclick={returnToUpload}>
 						Return to upload
 					</button>
+
+					<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
+						<button
+							class="bg-mint-500 cursor-pointer"
+							onclick={() => copyPaletteAs(selectValue, palette)}
+						>
+							Copy as
+						</button>
+						<select
+							bind:value={selectValue}
+							class="w-max cursor-pointer rounded-md bg-[#E09B80] p-1 text-white"
+							onchange={handleCopyFormatChange}
+						>
+							<option selected value="json">JSON</option>
+							<option value="css_variables">CSS Variables</option>
+							<option value="tailwind_config">Tailwind Config</option>
+						</select>
+					</div>
 				</div>
 			{/if}
 		</div>

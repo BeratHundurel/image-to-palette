@@ -12,3 +12,8 @@ export type Color = {
 export type PaletteResponse = {
 	palette: Color[];
 };
+
+export type NamedColor = {
+	name: string;
+	hex: string;
+};
