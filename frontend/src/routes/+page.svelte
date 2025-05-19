@@ -194,7 +194,7 @@
 		imageLoaded = false;
 		fileInput.value = '';
 		palette = [];
-		
+
 		activeSelectorId = 'green';
 		selectors.forEach((selector) => {
 			selector.selection = undefined;
@@ -222,22 +222,19 @@
 
 	async function copyPaletteAs(format: string, palette: Color[]) {
 		let output = '';
+		const hexValues = palette.map((c) => c.hex);
+		const namedPalette = await getNamedPalette(hexValues);
 
 		switch (format) {
 			case 'json':
-				output = JSON.stringify(
-					palette.map((c) => c.hex),
-					null,
-					2
-				);
+				output = JSON.stringify(namedPalette, null, 2);
 				break;
 
 			case 'css_variables':
-				output = palette.map((color, i) => `--color-${i + 1}: ${color.hex};`).join('\n');
+				output = namedPalette.map((color) => `--color-${color.name}: ${color.hex};`).join('\n');
 				break;
 
 			case 'tailwind_config':
-				const namedPalette = await getNamedPalette(palette.map((c) => c.hex));
 				output = generateTailwindThemeBlock(namedPalette);
 				break;
 		}
