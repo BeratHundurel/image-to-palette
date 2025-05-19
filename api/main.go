@@ -68,9 +68,9 @@ func extractPaletteHandler(c *gin.Context) {
 	}
 
 	var (
-		results []result
-		mu      sync.Mutex
-		wg      sync.WaitGroup
+		data []result
+		mu   sync.Mutex
+		wg   sync.WaitGroup
 	)
 
 	for _, fileHeader := range files {
@@ -82,7 +82,7 @@ func extractPaletteHandler(c *gin.Context) {
 			file, err := fh.Open()
 			if err != nil {
 				mu.Lock()
-				results = append(results, result{Error: "Failed to open file: " + err.Error()})
+				data = append(data, result{Error: "Failed to open file: " + err.Error()})
 				mu.Unlock()
 				return
 			}
@@ -91,7 +91,7 @@ func extractPaletteHandler(c *gin.Context) {
 			img, _, err := image.Decode(file)
 			if err != nil {
 				mu.Lock()
-				results = append(results, result{Error: "Failed to decode image: " + err.Error()})
+				data = append(data, result{Error: "Failed to decode image: " + err.Error()})
 				mu.Unlock()
 				return
 			}
@@ -114,7 +114,7 @@ func extractPaletteHandler(c *gin.Context) {
 			clustersResult, err := kmean.Partition(observations, 5)
 			if err != nil {
 				mu.Lock()
-				results = append(results, result{Error: "KMeans failed: " + err.Error()})
+				data = append(data, result{Error: "KMeans failed: " + err.Error()})
 				mu.Unlock()
 				return
 			}
@@ -137,14 +137,14 @@ func extractPaletteHandler(c *gin.Context) {
 			}
 
 			mu.Lock()
-			results = append(results, result{Palette: palette})
+			data = append(data, result{Palette: palette})
 			mu.Unlock()
 
 		}(fileHeader)
 	}
 
 	wg.Wait()
-	c.JSON(http.StatusOK, gin.H{"results": results})
+	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
 func main() {

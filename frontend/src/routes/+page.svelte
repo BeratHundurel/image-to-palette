@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type PaletteResponse, type Color, type NamedColor } from '$lib/types/palette';
+	import { type Color, type NamedColor, type PaletteResponse } from '$lib/types/palette';
 	import { tick } from 'svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
@@ -21,7 +21,7 @@
 	let activeSelectorId: string | null = $state('green');
 
 	// === State ===
-	let palette: Color[] = $state([]);
+	let colors: Color[] = $state([]);
 	let selectValue = $state('json');
 	let imageLoaded = $state(false);
 	let isDragging = $state(false);
@@ -153,7 +153,7 @@
 	// === Palette Extraction ===
 	async function uploadAndExtractPalette(file: Blob) {
 		const formData = new FormData();
-		formData.append('file', file);
+		formData.append('files', file);
 
 		try {
 			const res = await fetch('http://localhost:8080/extract-palette', {
@@ -161,9 +161,18 @@
 				body: formData
 			});
 
-			if (!res.ok) toast.error('Error extracting palette');
+			if (!res.ok) {
+				toast.error('Error extracting palette');
+				return;
+			}
+
 			const result: PaletteResponse = await res.json();
-			palette = result.palette;
+
+			if (result.data.length > 0) {
+				colors = result.data.flatMap((p) => p.palette);
+			} else {
+				toast.error('No colors found');
+			}
 			toast.success('Palette extracted');
 		} catch {
 			toast.error('Error extracting palette');
@@ -193,16 +202,12 @@
 		await tick();
 		imageLoaded = false;
 		fileInput.value = '';
-		palette = [];
+		colors = [];
 
 		activeSelectorId = 'green';
 		selectors.forEach((selector) => {
 			selector.selection = undefined;
-			if (selector.id != 'green') {
-				selector.selected = false;
-			} else {
-				selector.selected = true;
-			}
+			selector.selected = selector.id === 'green';
 		});
 	}
 
@@ -213,8 +218,8 @@
 
 	function handleCopyFormatChange(event: Event) {
 		const format = (event.target as HTMLSelectElement).value;
-		if (palette.length > 0) {
-			copyPaletteAs(format, palette);
+		if (colors.length > 0) {
+			copyPaletteAs(format, colors);
 		} else {
 			toast.error('No palette to copy');
 		}
@@ -388,7 +393,7 @@
 			<div
 				class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5"
 			>
-				{#each palette as color, i (color.hex)}
+				{#each colors as color, i (color.hex)}
 					<div
 						role="button"
 						tabindex="0"
@@ -411,7 +416,7 @@
 					<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
 						<button
 							class="bg-mint-500 cursor-pointer"
-							onclick={() => copyPaletteAs(selectValue, palette)}
+							onclick={() => copyPaletteAs(selectValue, colors)}
 						>
 							Copy as
 						</button>
