@@ -21,12 +21,8 @@
 
 <div class="relative w-48">
 	<button
-		on:click={toggleDropdown}
-		class={cn(
-			'flex w-full items-center justify-between rounded border bg-transparent px-2 py-1 text-white focus:ring-1 focus:outline-none',
-			'focus:ring-[#D09E87]',
-			'border-[#D09E87]'
-		)}
+		onclick={toggleDropdown}
+		class="flex w-full items-center justify-between rounded border border-[#D09E87] bg-transparent px-2 py-1 text-white focus:ring-1 focus:ring-[#D09E87] focus:outline-none"
 		aria-haspopup="listbox"
 		aria-expanded={isOpen}
 	>
@@ -47,20 +43,15 @@
 
 	{#if isOpen}
 		<div
-			class={cn(
-				'absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded border bg-transparent shadow-sm focus:outline-none',
-				'border-[#D09E87]'
-			)}
+			class="absolute z-20 mt-1 max-h-48 w-full overflow-auto rounded border border-[#D09E87] bg-transparent shadow-sm focus:outline-none"
 			tabindex="-1"
 			role="listbox"
 			transition:slide={{ duration: 200 }}
 		>
 			{#each options as option}
 				<button
-					on:click={() => selectOption(option.value)}
-					class={cn(
-						'w-full cursor-pointer px-2 py-1 text-sm tracking-tight text-left text-white hover:bg-[#D09E87] focus:bg-[#D09E87]'
-					)}
+					onclick={() => selectOption(option.value)}
+					class="w-full cursor-pointer px-2 py-1 text-left text-sm tracking-tight text-white hover:bg-[#D09E87] focus:bg-[#D09E87]"
 					role="option"
 					aria-selected={option.value === value}
 				>
