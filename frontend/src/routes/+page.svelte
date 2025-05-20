@@ -1,8 +1,15 @@
 <script lang="ts">
+	import Dropdown from '$lib/components/Dropdown.svelte';
 	import { type Color, type NamedColor, type PaletteResponse } from '$lib/types/palette';
 	import { tick } from 'svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
+
+	const options = [
+		{ label: 'JSON', value: 'json' },
+		{ label: 'CSS Variables', value: 'css_variables' },
+		{ label: 'Tailwind Config', value: 'tailwind_config' }
+	];
 
 	// === Selector ===
 	type Selector = {
@@ -216,8 +223,7 @@
 		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
 	}
 
-	function handleCopyFormatChange(event: Event) {
-		const format = (event.target as HTMLSelectElement).value;
+	function handleCopyFormatChange(format: string) {
 		if (colors.length > 0) {
 			copyPaletteAs(format, colors);
 		} else {
@@ -420,15 +426,7 @@
 						>
 							Copy as
 						</button>
-						<select
-							bind:value={selectValue}
-							class="w-max cursor-pointer rounded-md bg-[#706C84] p-1 text-white"
-							onchange={handleCopyFormatChange}
-						>
-							<option selected value="json">JSON</option>
-							<option value="css_variables">CSS Variables</option>
-							<option value="tailwind_config">Tailwind Config</option>
-						</select>
+						<Dropdown {options} value={selectValue} onChange={handleCopyFormatChange} />
 					</div>
 				</div>
 			{/if}
