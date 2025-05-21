@@ -5,18 +5,7 @@
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 
-	const copy_options = [
-		{ label: 'JSON', value: 'json' },
-		{ label: 'CSS Variables', value: 'css_variables' },
-		{ label: 'Tailwind Config', value: 'tailwind_config' }
-	];
-
-	const draw_options = [
-		{ label: 'Get palettes seperate for selections', value: 'seperate' },
-		{ label: 'Merge the selections for unified palette', value: 'merge' }
-	];
-
-	// === Selector ===
+	// === Types ===
 	type Selector = {
 		id: string;
 		color: string;
@@ -24,20 +13,32 @@
 		selection?: { x: number; y: number; w: number; h: number };
 	};
 
+	// === Constants ===
+	const copy_options = [
+		{ label: 'JSON', value: 'json' },
+		{ label: 'CSS Variables', value: 'css_variables' },
+		{ label: 'Tailwind Config', value: 'tailwind_config' }
+	];
+
+	const draw_options = [
+		{ label: 'Get palettes separate for selections', value: 'separate' },
+		{ label: 'Merge the selections for unified palette', value: 'merge' }
+	];
+
+	// === Reactive State ===
 	let selectors: Selector[] = $state([
-		{ id: 'green', color: 'oklch(79.2% 0.209 151.711)', selected: true, selection: undefined },
-		{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false, selection: undefined },
-		{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false, selection: undefined }
+		{ id: 'green', color: 'oklch(79.2% 0.209 151.711)', selected: true },
+		{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false },
+		{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false }
 	]);
 
 	let activeSelectorId: string | null = $state('green');
-
-	// === State ===
 	let colors: Color[] = $state([]);
 	let copyClipboardValue = $state('json');
-	let drawSelectionValue = $state('seperate');
+	let drawSelectionValue = $state('separate');
 	let imageLoaded = $state(false);
 	let isDragging = $state(false);
+
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
 	let image: HTMLImageElement;
@@ -46,7 +47,7 @@
 	let startX = 0,
 		startY = 0;
 
-	// === File Handling ===
+	// === File Upload and Drop Handling ===
 	async function onFileChange(event: Event) {
 		const input = event.target as HTMLInputElement;
 		const file = input?.files?.[0];
@@ -120,7 +121,7 @@
 		};
 	}
 
-	// === Mouse Events for Selection ===
+	// === Canvas Mouse Interaction ===
 	function handleMouseDown(e: MouseEvent) {
 		if (!activeSelectorId) return;
 		isDragging = true;
@@ -184,19 +185,13 @@
 
 			if (result.data.length > 0) {
 				colors = result.data.flatMap((p) => p.palette);
+				toast.success('Palette extracted');
 			} else {
 				toast.error('No colors found');
 			}
-			toast.success('Palette extracted');
 		} catch {
 			toast.error('Error extracting palette');
 		}
-	}
-
-	function createBlobFromCanvas(canvas: HTMLCanvasElement): Promise<Blob> {
-		return new Promise((resolve) => {
-			canvas.toBlob((b) => resolve(b!), 'image/png');
-		});
 	}
 
 	async function extractPaletteFromSelection(selectors: Selector[]) {
@@ -262,6 +257,13 @@
 		}
 	}
 
+	function createBlobFromCanvas(canvas: HTMLCanvasElement): Promise<Blob> {
+		return new Promise((resolve) => {
+			canvas.toBlob((b) => resolve(b!), 'image/png');
+		});
+	}
+
+	// === State Reset ===
 	async function returnToUpload() {
 		await tick();
 		imageLoaded = false;
@@ -275,7 +277,7 @@
 		});
 	}
 
-	// === Clipboard & Format Utilities ===
+	// === Clipboard & Format Handling ===
 	async function handleCopy(hex: string) {
 		await navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
 	}
@@ -297,11 +299,9 @@
 			case 'json':
 				output = JSON.stringify(namedPalette, null, 2);
 				break;
-
 			case 'css_variables':
 				output = namedPalette.map((color) => `--color-${color.name}: ${color.hex};`).join('\n');
 				break;
-
 			case 'tailwind_config':
 				output = generateTailwindThemeBlock(namedPalette);
 				break;
@@ -311,10 +311,9 @@
 		toast.success(`${format.replace('_', ' ').toUpperCase()} copied to clipboard`);
 	}
 
+	// === Helper Functions ===
 	async function getNamedPalette(hexValues: string[]): Promise<NamedColor[]> {
-		const url = `https://api.color.pizza/v1/?values=${hexValues
-			.map((h) => h.replace('#', ''))
-			.join(',')}`;
+		const url = `https://api.color.pizza/v1/?values=${hexValues.map((h) => h.replace('#', '')).join(',')}`;
 
 		const res = await fetch(url);
 		if (!res.ok) {
