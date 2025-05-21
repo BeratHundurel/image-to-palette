@@ -5,10 +5,15 @@
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 
-	const options = [
+	const copy_options = [
 		{ label: 'JSON', value: 'json' },
 		{ label: 'CSS Variables', value: 'css_variables' },
 		{ label: 'Tailwind Config', value: 'tailwind_config' }
+	];
+
+	const draw_options = [
+		{ label: 'Get palettes seperate for selections', value: 'seperate' },
+		{ label: 'Merge the selections for unified palette', value: 'merge' }
 	];
 
 	// === Selector ===
@@ -29,7 +34,8 @@
 
 	// === State ===
 	let colors: Color[] = $state([]);
-	let selectValue = $state('json');
+	let copyClipboardValue = $state('json');
+	let drawSelectionValue = $state('seperate');
 	let imageLoaded = $state(false);
 	let isDragging = $state(false);
 	let canvas: HTMLCanvasElement;
@@ -47,24 +53,20 @@
 		if (!file) return;
 
 		await drawToCanvas(file);
-		await uploadAndExtractPalette(file);
+		await uploadAndExtractPalette([...input.files!]);
 	}
 
 	function triggerFileSelect() {
 		fileInput?.click();
 	}
 
-	function handleDrop(event: DragEvent) {
+	async function handleDrop(event: DragEvent) {
 		event.preventDefault();
 		const files = event.dataTransfer?.files;
 		if (files && files.length > 0) {
 			const file = files[0];
-			const dataTransfer = new DataTransfer();
-			dataTransfer.items.add(file);
-			const input = document.createElement('input');
-			input.type = 'file';
-			input.files = dataTransfer.files;
-			onFileChange({ target: input } as unknown as Event);
+			await drawToCanvas(file);
+			await uploadAndExtractPalette([file]);
 		}
 	}
 
@@ -151,16 +153,21 @@
 
 	function handleMouseUp() {
 		isDragging = false;
-		const selector = selectors.find((s) => s.id === activeSelectorId);
-		if (selector?.selection?.w && selector.selection.h) {
-			extractPaletteFromSelection(selector.selection);
-		}
+		extractPaletteFromSelection(selectors);
 	}
 
 	// === Palette Extraction ===
-	async function uploadAndExtractPalette(file: Blob) {
+	async function uploadAndExtractPalette(files: Blob[]) {
 		const formData = new FormData();
-		formData.append('files', file);
+
+		if (files.length === 0) {
+			toast.error('No files found');
+			return;
+		}
+
+		for (const file of files) {
+			formData.append('files', file);
+		}
 
 		try {
 			const res = await fetch('http://localhost:8080/extract-palette', {
@@ -186,23 +193,73 @@
 		}
 	}
 
-	async function extractPaletteFromSelection(sel: { x: number; y: number; w: number; h: number }) {
-		if (!ctx || !canvas || !image || !sel.w || !sel.h) return;
+	function createBlobFromCanvas(canvas: HTMLCanvasElement): Promise<Blob> {
+		return new Promise((resolve) => {
+			canvas.toBlob((b) => resolve(b!), 'image/png');
+		});
+	}
 
-		const cropCanvas = document.createElement('canvas');
-		cropCanvas.width = sel.w;
-		cropCanvas.height = sel.h;
+	async function extractPaletteFromSelection(selectors: Selector[]) {
+		if (!ctx || !canvas || !image) return;
 
-		const cropCtx = cropCanvas.getContext('2d');
-		if (!cropCtx) return;
+		const files: Blob[] = [];
 
-		cropCtx.drawImage(image, sel.x, sel.y, sel.w, sel.h, 0, 0, sel.w, sel.h);
+		if (drawSelectionValue === 'merge') {
+			const mergedCanvas = document.createElement('canvas');
+			mergedCanvas.width = canvas.width;
+			mergedCanvas.height = canvas.height;
 
-		const blob: Blob = await new Promise((resolve) =>
-			cropCanvas.toBlob((b) => resolve(b!), 'image/png')
-		);
+			const mergedCtx = mergedCanvas.getContext('2d');
+			if (!mergedCtx) return;
 
-		await uploadAndExtractPalette(blob);
+			for (const s of selectors) {
+				if (!s.selection) continue;
+				mergedCtx.drawImage(
+					image,
+					s.selection.x,
+					s.selection.y,
+					s.selection.w,
+					s.selection.h,
+					s.selection.x,
+					s.selection.y,
+					s.selection.w,
+					s.selection.h
+				);
+			}
+
+			const blob = await createBlobFromCanvas(mergedCanvas);
+			files.push(blob);
+		} else {
+			for (const s of selectors) {
+				if (!s.selection) continue;
+
+				const cropCanvas = document.createElement('canvas');
+				cropCanvas.width = s.selection.w;
+				cropCanvas.height = s.selection.h;
+
+				const cropCtx = cropCanvas.getContext('2d');
+				if (!cropCtx) continue;
+
+				cropCtx.drawImage(
+					image,
+					s.selection.x,
+					s.selection.y,
+					s.selection.w,
+					s.selection.h,
+					0,
+					0,
+					s.selection.w,
+					s.selection.h
+				);
+
+				const blob = await createBlobFromCanvas(cropCanvas);
+				files.push(blob);
+			}
+		}
+
+		if (files.length > 0) {
+			await uploadAndExtractPalette(files);
+		}
 	}
 
 	async function returnToUpload() {
@@ -219,8 +276,8 @@
 	}
 
 	// === Clipboard & Format Utilities ===
-	function handleCopy(hex: string) {
-		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
+	async function handleCopy(hex: string) {
+		await navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
 	}
 
 	function handleCopyFormatChange(format: string) {
@@ -281,6 +338,10 @@
 			.toLowerCase()
 			.replace(/[^a-z0-9]+/g, '-')
 			.replace(/^-+|-+$/g, '');
+	}
+
+	function handleDrawSelectionChange(value: string) {
+		drawSelectionValue = value;
 	}
 </script>
 
@@ -358,39 +419,46 @@
 				class:pointer-events-none={!imageLoaded}
 			></canvas>
 			{#if imageLoaded}
-				<div
-					transition:fly={{ y: -300, duration: 500 }}
-					class="flex flex-col items-center justify-center gap-2"
-				>
-					{#each selectors as selector}
-						<button
-							class="flex cursor-pointer flex-col items-center justify-center"
-							onclick={() => {
-								activeSelectorId = selector.id;
-								selectors = selectors.map((s) =>
-									s.id === selector.id ? { ...s, selected: true } : { ...s, selected: false }
-								);
-							}}
-						>
-							<div
-								class="flex h-8 w-8 items-center justify-center rounded-full shadow-md"
-								style="background-color: {selector.color}"
+				<div class="flex flex-row gap-1">
+					<div
+						transition:fly={{ y: -300, duration: 500 }}
+						class="flex flex-col items-start justify-center gap-3"
+					>
+						{#each selectors as selector}
+							<button
+								class="flex cursor-pointer flex-col items-center justify-center"
+								onclick={() => {
+									activeSelectorId = selector.id;
+									selectors = selectors.map((s) =>
+										s.id === selector.id ? { ...s, selected: true } : { ...s, selected: false }
+									);
+								}}
 							>
-								{#if selector.selected}
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										height="20px"
-										viewBox="0 -960 960 960"
-										width="20px"
-										fill="#000"
-										><path
-											d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
-										/></svg
-									>
-								{/if}
-							</div>
-						</button>
-					{/each}
+								<div
+									class="flex h-8 w-8 items-center justify-center rounded-full shadow-md"
+									style="background-color: {selector.color}"
+								>
+									{#if selector.selected}
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											height="20px"
+											viewBox="0 -960 960 960"
+											width="20px"
+											fill="#000"
+											><path
+												d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+											/></svg
+										>
+									{/if}
+								</div>
+							</button>
+						{/each}
+						<Dropdown
+							options={draw_options}
+							value={drawSelectionValue}
+							onChange={handleDrawSelectionChange}
+						/>
+					</div>
 				</div>
 			{/if}
 		</div>
@@ -406,7 +474,7 @@
 						onkeyup={(e) => (e.key === 'Enter' || e.key === ' ') && handleCopy(color.hex)}
 						onclick={() => handleCopy(color.hex)}
 						in:scale={{ delay: i * 80, duration: 300, start: 0.7 }}
-						class="flex h-12 cursor-pointer items-center justify-center rounded-xl p-3 shadow-md"
+						class="flex h-10 cursor-pointer items-center justify-center rounded-xl p-3 shadow-md"
 						style="background-color: {color.hex}"
 					>
 						<span class="rounded bg-black/50 px-2 py-1 font-mono text-xs">{color.hex}</span>
@@ -422,11 +490,15 @@
 					<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
 						<button
 							class="bg-mint-500 cursor-pointer"
-							onclick={() => copyPaletteAs(selectValue, colors)}
+							onclick={() => copyPaletteAs(copyClipboardValue, colors)}
 						>
 							Copy as
 						</button>
-						<Dropdown {options} value={selectValue} onChange={handleCopyFormatChange} />
+						<Dropdown
+							options={copy_options}
+							value={copyClipboardValue}
+							onChange={handleCopyFormatChange}
+						/>
 					</div>
 				</div>
 			{/if}
