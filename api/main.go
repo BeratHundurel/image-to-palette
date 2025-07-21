@@ -3,11 +3,13 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/draw"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"mime/multipart"
 	"net/http"
+	"runtime"
 	"sort"
 	"sync"
 	"time"
@@ -24,16 +26,12 @@ type Color struct {
 	Hex string `json:"hex"`
 }
 
-type RGB struct {
-	R uint32 `json:"r"`
-	G uint32 `json:"g"`
-	B uint32 `json:"b"`
-}
-
 type result struct {
 	Palette []Color `json:"palette,omitempty"`
 	Error   string  `json:"error,omitempty"`
 }
+
+// colorObservation implements the clusters.Observation interface for RGB colors.
 
 type colorObservation []float64
 
@@ -54,6 +52,87 @@ func rgbToHex(r, g, b uint32) string {
 	return fmt.Sprintf("#%02X%02X%02X", r, g, b)
 }
 
+func samplePixels(img image.Image, sampleRate int) clusters.Observations {
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	estimatedSamples := (width * height) / (sampleRate * sampleRate)
+	observations := make(clusters.Observations, 0, estimatedSamples)
+
+	var rgbaImg *image.RGBA
+	if rgba, ok := img.(*image.RGBA); ok {
+		rgbaImg = rgba
+	} else {
+		rgbaImg = image.NewRGBA(bounds)
+		draw.Draw(rgbaImg, bounds, img, bounds.Min, draw.Src)
+	}
+
+	stride := rgbaImg.Stride
+	pix := rgbaImg.Pix
+
+	for y := bounds.Min.Y; y < bounds.Max.Y; y += sampleRate {
+		for x := bounds.Min.X; x < bounds.Max.X; x += sampleRate {
+			pixelOffset := (y-bounds.Min.Y)*stride + (x-bounds.Min.X)*4
+			if pixelOffset+3 < len(pix) {
+				r := float64(pix[pixelOffset]) / 255.0
+				g := float64(pix[pixelOffset+1]) / 255.0
+				b := float64(pix[pixelOffset+2]) / 255.0
+
+				observations = append(observations, colorObservation{r, g, b})
+			}
+		}
+	}
+
+	return observations
+}
+
+func processImageForPalette(file multipart.File, numColors int) ([]Color, error) {
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode image: %w", err)
+	}
+
+	bounds := img.Bounds()
+	pixels := bounds.Dx() * bounds.Dy()
+	sampleRate := 2
+	if pixels > 1000000 {
+		sampleRate = 4
+	} else if pixels > 4000000 {
+		sampleRate = 6
+	}
+
+	observations := samplePixels(img, sampleRate)
+	if len(observations) == 0 {
+		return nil, fmt.Errorf("no valid pixels found")
+	}
+
+	kmean := kmeans.New()
+	clustersResult, err := kmean.Partition(observations, numColors)
+	if err != nil {
+		return nil, fmt.Errorf("kmeans failed: %w", err)
+	}
+
+	sort.Slice(clustersResult, func(i, j int) bool {
+		return len(clustersResult[i].Observations) > len(clustersResult[j].Observations)
+	})
+
+	palette := make([]Color, 0, len(clustersResult))
+	for _, cluster := range clustersResult {
+		coords := cluster.Center.Coordinates()
+		if len(coords) == 3 {
+			r := uint32(coords[0] * 255)
+			g := uint32(coords[1] * 255)
+			b := uint32(coords[2] * 255)
+			palette = append(palette, Color{
+				Hex: rgbToHex(r, g, b),
+			})
+		}
+	}
+
+	return palette, nil
+}
+
 func extractPaletteHandler(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -67,84 +146,43 @@ func extractPaletteHandler(c *gin.Context) {
 		return
 	}
 
-	var (
-		data []result
-		mu   sync.Mutex
-		wg   sync.WaitGroup
-	)
+	maxWorkers := runtime.GOMAXPROCS(0)
+	if maxWorkers > len(files) {
+		maxWorkers = len(files)
+	}
 
-	for _, fileHeader := range files {
+	semaphore := make(chan struct{}, maxWorkers)
+	results := make([]result, len(files))
+	var wg sync.WaitGroup
+
+	for i, fileHeader := range files {
 		wg.Add(1)
 
-		go func(fh *multipart.FileHeader) {
+		go func(index int, fh *multipart.FileHeader) {
 			defer wg.Done()
+
+			semaphore <- struct{}{}
+			defer func() { <-semaphore }()
 
 			file, err := fh.Open()
 			if err != nil {
-				mu.Lock()
-				data = append(data, result{Error: "Failed to open file: " + err.Error()})
-				mu.Unlock()
+				results[index] = result{Error: "Failed to open file: " + err.Error()}
 				return
 			}
 			defer file.Close()
 
-			img, _, err := image.Decode(file)
+			palette, err := processImageForPalette(file, 5)
 			if err != nil {
-				mu.Lock()
-				data = append(data, result{Error: "Failed to decode image: " + err.Error()})
-				mu.Unlock()
+				results[index] = result{Error: err.Error()}
 				return
 			}
 
-			bounds := img.Bounds()
-			observations := make(clusters.Observations, 0, bounds.Dx()*bounds.Dy()/10)
-
-			for y := bounds.Min.Y; y < bounds.Max.Y; y += 2 {
-				for x := bounds.Min.X; x < bounds.Max.X; x += 2 {
-					r, g, b, _ := img.At(x, y).RGBA()
-					observations = append(observations, colorObservation{
-						float64(r>>8) / 255.0,
-						float64(g>>8) / 255.0,
-						float64(b>>8) / 255.0,
-					})
-				}
-			}
-
-			kmean := kmeans.New()
-			clustersResult, err := kmean.Partition(observations, 5)
-			if err != nil {
-				mu.Lock()
-				data = append(data, result{Error: "KMeans failed: " + err.Error()})
-				mu.Unlock()
-				return
-			}
-
-			sort.Slice(clustersResult, func(i, j int) bool {
-				return len(clustersResult[i].Observations) > len(clustersResult[j].Observations)
-			})
-
-			palette := []Color{}
-			for _, cluster := range clustersResult {
-				coords := cluster.Center.Coordinates()
-				if len(coords) == 3 {
-					r := uint32(coords[0] * 255)
-					g := uint32(coords[1] * 255)
-					b := uint32(coords[2] * 255)
-					palette = append(palette, Color{
-						Hex: rgbToHex(r, g, b),
-					})
-				}
-			}
-
-			mu.Lock()
-			data = append(data, result{Palette: palette})
-			mu.Unlock()
-
-		}(fileHeader)
+			results[index] = result{Palette: palette}
+		}(i, fileHeader)
 	}
 
 	wg.Wait()
-	c.JSON(http.StatusOK, gin.H{"data": data})
+	c.JSON(http.StatusOK, gin.H{"data": results})
 }
 
 func main() {
