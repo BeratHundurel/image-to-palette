@@ -394,7 +394,7 @@
 
 		<section class="mb-6 grid grid-cols-4">
 			<div></div>
-			<div class="col-span-2 me-6">
+			<div class="col-span-2">
 				<canvas
 					bind:this={canvas}
 					onmousedown={handleMouseDown}
@@ -558,7 +558,7 @@
 			</section>
 		{/if}
 
-		<section class="w-full max-w-5xl px-4">
+		<section class="w-full max-w-5xl">
 			<div
 				class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5"
 			>
