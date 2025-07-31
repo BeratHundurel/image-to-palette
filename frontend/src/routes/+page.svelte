@@ -40,6 +40,10 @@
 	let drawSelectionValue = $state('separate');
 	let imageLoaded = $state(false);
 	let isDragging = $state(false);
+	let showTooltip = $state(false);
+	let sampleRate = $state(4);
+	let filteredColors: string[] = $state([]);
+	let newFilterColor: string = $state('#fff');
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
@@ -164,7 +168,7 @@
 			const mergedCanvas = document.createElement('canvas');
 			mergedCanvas.width = maxWidth;
 			mergedCanvas.height = totalHeight;
-			
+
 			const mergedCtx = mergedCanvas.getContext('2d');
 			if (!mergedCtx) return;
 			mergedCtx.fillStyle = '#ffffff';
@@ -222,6 +226,8 @@
 		const formData = new FormData();
 		if (files.length === 0) return toast.error('No files found');
 		for (const file of files) formData.append('files', file);
+		formData.append('sampleRate', sampleRate.toString());
+		formData.append('filteredColors', JSON.stringify(filteredColors));
 		try {
 			const res = await fetch('http://localhost:8080/extract-palette', {
 				method: 'POST',
@@ -347,15 +353,8 @@
 	<div
 		class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden"
 	>
-		<h1
-			class="absolute top-[25%] right-0 left-0 text-center text-3xl font-bold tracking-tight drop-shadow-lg transition-transform duration-500 md:text-4xl"
-			style="transform: translateY({imageLoaded ? '-405%' : '0'})"
-		>
-			{imageLoaded ? 'Crop a section of your image' : 'Upload your image to extract palette'}
-		</h1>
-
 		<section
-			class="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-300"
+			class="absolute inset-0 flex flex-col items-center justify-around transition-opacity duration-300"
 			class:opacity-0={imageLoaded}
 			class:pointer-events-none={imageLoaded}
 			class:opacity-100={!imageLoaded}
@@ -502,6 +501,7 @@
 									)}
 									aria-label="select palette option"
 									onclick={(event) => {
+										// Toggle palette options dropdown according to available space
 										const rect = event.currentTarget.getBoundingClientRect();
 										const spaceLeft = rect.left;
 										const spaceRight = window.innerWidth - rect.right;
@@ -530,9 +530,11 @@
 											openDirection === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 										)}
 									>
+										<h3 class="mb-1">Palette Options</h3>
 										{#each draw_options as option, i}
 											<button
 												class="w-full rounded-sm p-2 text-left transition hover:bg-zinc-700/60"
+												class:bg-zinc-800={drawSelectionValue === option.value}
 												onclick={() => {
 													let oldValue = drawSelectionValue;
 													drawSelectionValue = option.value;
@@ -549,6 +551,149 @@
 												<hr class="border-[#EEB38F]/60" />
 											{/if}
 										{/each}
+										<div class="mt-3 flex items-center justify-between">
+											<h3>Sample Options</h3>
+											<span
+												class="relative"
+												onmouseenter={() => (showTooltip = true)}
+												onmouseleave={() => (showTooltip = false)}
+												role="tooltip"
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													height="16px"
+													viewBox="0 -960 960 960"
+													width="16px"
+													fill="#e3e3e3"
+													><path
+														d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+													/></svg
+												>
+												{#if showTooltip}
+													<span
+														class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-white shadow-lg"
+													>
+														If sample size is decreased, colors will be more accurate but the
+														extraction will take longer.
+													</span>
+												{/if}
+											</span>
+										</div>
+										<div class="mt-2 flex items-center justify-between">
+											<button
+												type="button"
+												class="rounded p-2 transition hover:bg-zinc-700/60 focus:outline-none"
+												onclick={() => (sampleRate = Math.max(sampleRate - 1, 1))}
+												aria-label="Decrease sample size"
+												tabindex="0"
+											>
+												<svg
+													class="h-3 w-3 text-white/70"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													viewBox="0 0 16 16"
+												>
+													<line
+														x1="4"
+														y1="8"
+														x2="12"
+														y2="8"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+													/>
+												</svg>
+											</button>
+											<input
+												id="sample-size"
+												type="number"
+												class="w-10 bg-transparent text-center text-xs text-white focus:outline-none"
+												bind:value={sampleRate}
+												min="1"
+												max="10"
+												step="1"
+											/>
+											<button
+												type="button"
+												class="rounded p-2 transition hover:bg-zinc-700/60 focus:outline-none"
+												onclick={() => (sampleRate = Math.min(sampleRate + 1, 100))}
+												aria-label="Increase sample size"
+												tabindex="0"
+											>
+												<svg
+													class="h-3 w-3 text-white/70"
+													fill="none"
+													stroke="currentColor"
+													stroke-width="2"
+													viewBox="0 0 16 16"
+												>
+													<line
+														x1="8"
+														y1="4"
+														x2="8"
+														y2="12"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+													/>
+													<line
+														x1="4"
+														y1="8"
+														x2="12"
+														y2="8"
+														stroke="currentColor"
+														stroke-width="2"
+														stroke-linecap="round"
+													/>
+												</svg>
+											</button>
+										</div>
+										<div class="my-3 flex items-center gap-3">
+											<h3>Color Filters</h3>
+											<input
+												type="text"
+												bind:value={newFilterColor}
+												placeholder="#fff"
+												class="rounded border border-zinc-700/60 bg-black/30 px-2 py-1 text-xs text-white focus:border-[#EEB38F]/60 focus:outline-none"
+												maxlength="7"
+												style="width: 80px;"
+											/>
+											<button
+												class="action-button rounded bg-zinc-300 px-2 py-1 text-xs text-black hover:text-white focus:outline-none"
+												onclick={() => {
+													if (
+														/^#[0-9A-Fa-f]{3,6}$/.test(newFilterColor) &&
+														!filteredColors.includes(newFilterColor)
+													) {
+														filteredColors = [...filteredColors, newFilterColor];
+														newFilterColor = '';
+														let validSelections = selectors.filter((s) => s.selection);
+														if (validSelections.length > 0) {
+															extractPaletteFromSelection(validSelections);
+														} else {
+															const files = Array.from(fileInput.files || []);
+															uploadAndExtractPalette(files);
+														}
+													}
+												}}
+												title="Add filter color">+</button
+											>
+										</div>
+										<ul class="mb-2 flex flex-wrap gap-2">
+											{#each filteredColors as color, i}
+												<li class="flex items-center gap-1 rounded bg-black/40 px-2 py-1 text-xs">
+													<span>{color}</span>
+													<button
+														class="text-red-400 hover:text-red-600"
+														onclick={() => {
+															filteredColors = filteredColors.filter((_, idx) => idx !== i);
+														}}
+														title="Remove">×</button
+													>
+												</li>
+											{/each}
+										</ul>
 									</div>
 								{/if}
 							</li>
@@ -602,6 +747,19 @@
 </div>
 
 <style>
+	/* Chrome, Safari, Edge, Opera */
+	input::-webkit-outer-spin-button,
+	input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+	/* Firefox */
+	input[type='number'] {
+		appearance: textfield;
+		-moz-appearance: textfield;
+	}
+
 	.draggable {
 		user-select: none;
 		position: absolute;
@@ -682,7 +840,6 @@
 		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(238, 179, 143, 0.4));
 	}
 
-	/* Enhanced focus states for accessibility */
 	.action-button:focus-visible {
 		outline: none;
 		box-shadow:

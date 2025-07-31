@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/muesli/kmeans"
 	"image"
 	"image/color"
 	"testing"
+
+	"github.com/muesli/kmeans"
 )
 
 func extractPalette(img image.Image) ([]Color, error) {
-	observations := samplePixels(img, 2)
+	observations := samplePixels(img, 2, nil)
 	if len(observations) == 0 {
 		return nil, nil
 	}
@@ -37,8 +38,8 @@ func extractPalette(img image.Image) ([]Color, error) {
 
 func createTestImage(width, height int) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
+	for y := range height {
+		for x := range width {
 			r := uint8((x * 255) / width)
 			g := uint8((y * 255) / height)
 			b := uint8(((x + y) * 255) / (width + height))
@@ -50,8 +51,8 @@ func createTestImage(width, height int) image.Image {
 
 func BenchmarkLargeImage(b *testing.B) {
 	img := createTestImage(3000, 3000)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+
+	for b.Loop() {
 		_, err := extractPalette(img)
 		if err != nil {
 			b.Fatal(err)
@@ -61,8 +62,8 @@ func BenchmarkLargeImage(b *testing.B) {
 
 func BenchmarkPixelSampling(b *testing.B) {
 	img := createTestImage(2000, 2000)
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		_ = samplePixels(img, 2)
+
+	for b.Loop() {
+		_ = samplePixels(img, 2, nil)
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	"image/draw"
@@ -10,7 +11,9 @@ import (
 	"mime/multipart"
 	"net/http"
 	"runtime"
+	"slices"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 
@@ -31,8 +34,6 @@ type result struct {
 	Error   string  `json:"error,omitempty"`
 }
 
-// colorObservation implements the clusters.Observation interface for RGB colors.
-
 type colorObservation []float64
 
 func (c colorObservation) Coordinates() clusters.Coordinates {
@@ -52,7 +53,7 @@ func rgbToHex(r, g, b uint32) string {
 	return fmt.Sprintf("#%02X%02X%02X", r, g, b)
 }
 
-func samplePixels(img image.Image, sampleRate int) clusters.Observations {
+func samplePixels(img image.Image, sampleRate int, filteredColors []string) clusters.Observations {
 	bounds := img.Bounds()
 	width := bounds.Dx()
 	height := bounds.Dy()
@@ -79,6 +80,12 @@ func samplePixels(img image.Image, sampleRate int) clusters.Observations {
 				g := float64(pix[pixelOffset+1]) / 255.0
 				b := float64(pix[pixelOffset+2]) / 255.0
 
+				hexColor := rgbToHex(uint32(r*255), uint32(g*255), uint32(b*255))
+
+				if len(filteredColors) > 0 && slices.Contains(filteredColors, hexColor) {
+					continue
+				}
+
 				observations = append(observations, colorObservation{r, g, b})
 			}
 		}
@@ -87,7 +94,7 @@ func samplePixels(img image.Image, sampleRate int) clusters.Observations {
 	return observations
 }
 
-func processImageForPalette(file multipart.File, numColors int) ([]Color, error) {
+func processImageForPalette(file multipart.File, numColors int, sampleRate int, filteredColors []string) ([]Color, error) {
 	img, _, err := image.Decode(file)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode image: %w", err)
@@ -95,14 +102,16 @@ func processImageForPalette(file multipart.File, numColors int) ([]Color, error)
 
 	bounds := img.Bounds()
 	pixels := bounds.Dx() * bounds.Dy()
-	sampleRate := 2
-	if pixels > 1000000 {
-		sampleRate = 4
-	} else if pixels > 4000000 {
-		sampleRate = 6
+
+	if sampleRate == 4 {
+		if pixels > 1000000 {
+			sampleRate = 6
+		} else if pixels > 4000000 {
+			sampleRate = 8
+		}
 	}
 
-	observations := samplePixels(img, sampleRate)
+	observations := samplePixels(img, sampleRate, filteredColors)
 	if len(observations) == 0 {
 		return nil, fmt.Errorf("no valid pixels found")
 	}
@@ -146,11 +155,28 @@ func extractPaletteHandler(c *gin.Context) {
 		return
 	}
 
-	maxWorkers := runtime.GOMAXPROCS(0)
-	if maxWorkers > len(files) {
-		maxWorkers = len(files)
+	sampleRateStr := c.PostForm("sampleRate")
+	if sampleRateStr == "" {
+		sampleRateStr = "4"
+	}
+	
+	sampleRate, err := strconv.Atoi(sampleRateStr)
+	if err != nil || sampleRate < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sampleRate parameter"})
+		return
 	}
 
+	var filteredColors []string
+	filteredColorsStr := c.PostForm("filteredColors")
+	if filteredColorsStr != "" {
+		err = json.Unmarshal([]byte(filteredColorsStr), &filteredColors)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filteredColors JSON"})
+			return
+		}
+	}
+
+	maxWorkers := min(runtime.GOMAXPROCS(0), len(files))
 	semaphore := make(chan struct{}, maxWorkers)
 	results := make([]result, len(files))
 	var wg sync.WaitGroup
@@ -171,7 +197,7 @@ func extractPaletteHandler(c *gin.Context) {
 			}
 			defer file.Close()
 
-			palette, err := processImageForPalette(file, 5)
+			palette, err := processImageForPalette(file, 5, sampleRate, filteredColors)
 			if err != nil {
 				results[index] = result{Error: err.Error()}
 				return
