@@ -4,9 +4,16 @@ go 1.24.3
 
 require github.com/gin-gonic/gin v1.10.0
 
-require github.com/muesli/clusters v0.0.0-20180605185049-a07a36e67d36
+require (
+	github.com/muesli/clusters v0.0.0-20180605185049-a07a36e67d36
+	github.com/stretchr/testify v1.10.0
+)
 
-require github.com/kr/text v0.2.0 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.13.2 // indirect

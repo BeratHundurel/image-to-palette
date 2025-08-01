@@ -1,40 +1,98 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"image"
 	"image/color"
+	"image/png"
+	"mime/multipart"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/muesli/kmeans"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 )
 
-func extractPalette(img image.Image) ([]Color, error) {
-	observations := samplePixels(img, 2, nil)
-	if len(observations) == 0 {
-		return nil, nil
-	}
+type testMultipartFile struct {
+	*bytes.Reader
+}
 
-	kmean := kmeans.New()
-	clustersResult, err := kmean.Partition(observations, 5)
-	if err != nil {
-		return nil, err
-	}
+func (f *testMultipartFile) Close() error { return nil }
 
-	palette := make([]Color, 0, len(clustersResult))
-	for _, cluster := range clustersResult {
-		coords := cluster.Center.Coordinates()
-		if len(coords) == 3 {
-			r := uint32(coords[0] * 255)
-			g := uint32(coords[1] * 255)
-			b := uint32(coords[2] * 255)
-			palette = append(palette, Color{
-				Hex: rgbToHex(r, g, b),
-			})
+// --- Unit Tests ---
+
+func TestSamplePixels_FilteredColors(t *testing.T) {
+	img := createTestImage(10, 10)
+	filtered := []string{"#000000"}
+	obs := samplePixels(img, 1, filtered)
+	for _, o := range obs {
+		coords := o.Coordinates()
+		hex := rgbToHex(uint32(coords[0]*255), uint32(coords[1]*255), uint32(coords[2]*255))
+		if hex == "#000000" {
+			t.Errorf("Filtered color found in observations")
 		}
 	}
-
-	return palette, nil
 }
+
+func TestProcessImageForPalette_KnownImage(t *testing.T) {
+	img := image.NewRGBA(image.Rect(0, 0, 2, 2))
+	img.Set(0, 0, color.RGBA{255, 0, 0, 255})   // Red
+	img.Set(1, 0, color.RGBA{0, 255, 0, 255})   // Green
+	img.Set(0, 1, color.RGBA{0, 0, 255, 255})   // Blue
+	img.Set(1, 1, color.RGBA{255, 255, 0, 255}) // Yellow
+
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+	reader := bytes.NewReader(buf.Bytes())
+	file := &testMultipartFile{reader}
+
+	palette, err := processImageForPalette(file, 4, 1, nil)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, palette)
+}
+
+// --- API Integration Test ---
+
+func TestExtractPaletteHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.POST("/extract-palette", extractPaletteHandler)
+
+	img := createTestImage(10, 10)
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("files", "test.png")
+	part.Write(buf.Bytes())
+	writer.WriteField("sampleRate", "2")
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/extract-palette", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// The response is {"data":[{"palette":[...],"error":""}]}
+	var resp struct {
+		Data []struct {
+			Palette []Color `json:"palette"`
+			Error   string  `json:"error"`
+		} `json:"data"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resp.Data)
+	assert.NotEmpty(t, resp.Data[0].Palette)
+	assert.Empty(t, resp.Data[0].Error)
+}
+
+// --- Benchmarks ---
 
 func createTestImage(width, height int) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -51,9 +109,14 @@ func createTestImage(width, height int) image.Image {
 
 func BenchmarkLargeImage(b *testing.B) {
 	img := createTestImage(3000, 3000)
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+	fileBytes := buf.Bytes()
 
 	for b.Loop() {
-		_, err := extractPalette(img)
+		reader := bytes.NewReader(fileBytes)
+		file := &testMultipartFile{reader}
+		_, err := processImageForPalette(file, 5, 2, nil)
 		if err != nil {
 			b.Fatal(err)
 		}
