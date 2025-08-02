@@ -333,6 +333,37 @@
 			s.selected = s.id === 'green';
 		});
 	}
+
+	// === Save Palette Request ===
+	async function savePaletteToFile() {
+		if (!colors || colors.length === 0) {
+			toast.error('No palette to save!');
+			return;
+		}
+		const fileName = prompt('Enter a file name for your palette (e.g. palette.json):');
+		if (!fileName) return;
+
+		try {
+			const response = await fetch(
+				'http://localhost:8080/save-palette?fileName=' + encodeURIComponent(fileName),
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(colors)
+				}
+			);
+			const data = await response.json();
+			if (response.ok) {
+				toast.success('Palette saved as ' + (data.fileName || fileName));
+			} else {
+				toast.error(data.error || 'Failed to save palette.');
+			}
+		} catch (err) {
+			toast.error('Network error.');
+		}
+	}
 </script>
 
 <Toaster />
@@ -723,9 +754,10 @@
 			</div>
 			{#if imageLoaded}
 				<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
-					<button class="cursor-pointer text-sm font-bold tracking-tight" onclick={returnToUpload}>
-						Return to upload
-					</button>
+					<button class="cursor-pointer text-sm font-bold tracking-tight" onclick={returnToUpload}
+						>Back</button
+					>
+					<button class="action-button ml-4" onclick={savePaletteToFile}>💾 Save Palette</button>
 
 					<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
 						<button

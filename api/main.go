@@ -10,6 +10,7 @@ import (
 	_ "image/png"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"runtime"
 	"slices"
 	"sort"
@@ -159,7 +160,7 @@ func extractPaletteHandler(c *gin.Context) {
 	if sampleRateStr == "" {
 		sampleRateStr = "4"
 	}
-	
+
 	sampleRate, err := strconv.Atoi(sampleRateStr)
 	if err != nil || sampleRate < 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sampleRate parameter"})
@@ -211,6 +212,62 @@ func extractPaletteHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": results})
 }
 
+func savePaletteToFileHandler(c *gin.Context) {
+	var palette []Color
+	if err := c.BindJSON(&palette); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid palette data"})
+		return
+	}
+
+	fileName := c.Query("fileName")
+	if fileName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File name is required"})
+		return
+	}
+
+	// I want to saving a palatte to be fast and unique, so I will use a FNV-1a hashing on palette colors
+	hexConcat := make([]byte, 0, len(palette)*7)
+	for _, color := range palette {
+		hexConcat = append(hexConcat, color.Hex...)
+	}
+
+	var hash uint64 = 14695981039346656037
+	for _, b := range hexConcat {
+		hash ^= uint64(b)
+		hash *= 1099511628211
+	}
+	hashStr := fmt.Sprintf("%x", hash)[:8]
+
+	// Insert hash before file extension
+	extIdx := -1
+	for i := len(fileName) - 1; i >= 0; i-- {
+		if fileName[i] == '.' {
+			extIdx = i
+			break
+		}
+	}
+	name, ext := fileName, ""
+	if extIdx != -1 {
+		name = fileName[:extIdx]
+		ext = fileName[extIdx:]
+	}
+	uniqueFileName := fmt.Sprintf("%s_%s%s", name, hashStr, ext)
+
+	file, err := os.Create(uniqueFileName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create file: " + err.Error()})
+		return
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	if err := encoder.Encode(palette); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write palette to file: " + err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Palette saved successfully", "fileName": uniqueFileName})
+}
+
 func main() {
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
@@ -222,5 +279,6 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 	router.POST("/extract-palette", extractPaletteHandler)
+	router.POST("/save-palette", savePaletteToFileHandler)
 	router.Run(":8080")
 }

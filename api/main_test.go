@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -107,8 +108,16 @@ func createTestImage(width, height int) image.Image {
 	return img
 }
 
-func BenchmarkLargeImage(b *testing.B) {
-	img := createTestImage(3000, 3000)
+func BenchmarkPixelSampling(b *testing.B) {
+	img := createTestImage(300, 300)
+
+	for b.Loop() {
+		_ = samplePixels(img, 2, nil)
+	}
+}
+
+func BenchmarkImage(b *testing.B) {
+	img := createTestImage(300, 300)
 	var buf bytes.Buffer
 	png.Encode(&buf, img)
 	fileBytes := buf.Bytes()
@@ -123,10 +132,22 @@ func BenchmarkLargeImage(b *testing.B) {
 	}
 }
 
-func BenchmarkPixelSampling(b *testing.B) {
-	img := createTestImage(2000, 2000)
+// Benchmark processing a image 10 times and log total time taken
+func BenchmarkImageTenTimes(b *testing.B) {
+	img := createTestImage(300, 300)
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+	fileBytes := buf.Bytes()
 
-	for b.Loop() {
-		_ = samplePixels(img, 2, nil)
+	start := time.Now()
+	for range 10 {
+		reader := bytes.NewReader(fileBytes)
+		file := &testMultipartFile{reader}
+		_, err := processImageForPalette(file, 5, 2, nil)
+		if err != nil {
+			b.Fatal(err)
+		}
 	}
+	elapsed := time.Since(start)
+	b.Logf("Processing large image 10 times took: %s", elapsed)
 }
