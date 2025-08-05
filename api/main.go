@@ -225,7 +225,16 @@ func savePaletteToFileHandler(c *gin.Context) {
 		return
 	}
 
-	// I want to saving a palatte to be fast and unique, so I will use a FNV-1a hashing on palette colors
+	// Ensure the user_palettes directory exists
+	dir := "user_palettes"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err := os.Mkdir(dir, 0755); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user_palettes directory: " + err.Error()})
+			return
+		}
+	}
+
+	// I want saving a palette to be fast and somewhat unique, so I will use a FNV-1a hashing on palette colors
 	hexConcat := make([]byte, 0, len(palette)*7)
 	for _, color := range palette {
 		hexConcat = append(hexConcat, color.Hex...)
@@ -238,7 +247,7 @@ func savePaletteToFileHandler(c *gin.Context) {
 	}
 	hashStr := fmt.Sprintf("%x", hash)[:8]
 
-	// Insert hash before file extension
+	// Insert hash before file extension, and ensure .json extension
 	extIdx := -1
 	for i := len(fileName) - 1; i >= 0; i-- {
 		if fileName[i] == '.' {
@@ -251,9 +260,13 @@ func savePaletteToFileHandler(c *gin.Context) {
 		name = fileName[:extIdx]
 		ext = fileName[extIdx:]
 	}
+	if ext != ".json" {
+		ext = ".json"
+	}
 	uniqueFileName := fmt.Sprintf("%s_%s%s", name, hashStr, ext)
+	fullPath := fmt.Sprintf("%s/%s", dir, uniqueFileName)
 
-	file, err := os.Create(uniqueFileName)
+	file, err := os.Create(fullPath)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create file: " + err.Error()})
 		return
@@ -261,11 +274,12 @@ func savePaletteToFileHandler(c *gin.Context) {
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
 	if err := encoder.Encode(palette); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write palette to file: " + err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Palette saved successfully", "fileName": uniqueFileName})
+	c.JSON(http.StatusOK, gin.H{"message": "Palette saved successfully", "fileName": uniqueFileName, "path": fullPath})
 }
 
 func main() {

@@ -9,8 +9,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -93,6 +93,56 @@ func TestExtractPaletteHandler(t *testing.T) {
 	assert.Empty(t, resp.Data[0].Error)
 }
 
+// --- Test for savePaletteToFileHandler ---
+
+func TestSavePaletteToFileHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.POST("/save-palette", savePaletteToFileHandler)
+
+	// Prepare a palette
+	palette := []Color{
+		{Hex: "#FF0000"},
+		{Hex: "#00FF00"},
+		{Hex: "#0000FF"},
+	}
+	paletteJSON, _ := json.Marshal(palette)
+
+	fileName := "test_palette.json"
+	req := httptest.NewRequest("POST", "/save-palette?fileName="+fileName, bytes.NewReader(paletteJSON))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp struct {
+		Message  string `json:"message"`
+		FileName string `json:"fileName"`
+		Path     string `json:"path"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Contains(t, resp.Message, "Palette saved successfully")
+	assert.Contains(t, resp.FileName, "test_palette_")
+	assert.Contains(t, resp.FileName, ".json")
+	assert.Contains(t, resp.Path, "user_palettes/")
+
+	// Check file exists and is valid JSON
+	file, err := os.Open(resp.Path)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	var loadedPalette []Color
+	decoder := json.NewDecoder(file)
+	err = decoder.Decode(&loadedPalette)
+	assert.NoError(t, err)
+	assert.Equal(t, palette, loadedPalette)
+
+	// Cleanup
+	os.Remove(resp.Path)
+}
+
 // --- Benchmarks ---
 
 func createTestImage(width, height int) image.Image {
@@ -130,24 +180,4 @@ func BenchmarkImage(b *testing.B) {
 			b.Fatal(err)
 		}
 	}
-}
-
-// Benchmark processing a image 10 times and log total time taken
-func BenchmarkImageTenTimes(b *testing.B) {
-	img := createTestImage(300, 300)
-	var buf bytes.Buffer
-	png.Encode(&buf, img)
-	fileBytes := buf.Bytes()
-
-	start := time.Now()
-	for range 10 {
-		reader := bytes.NewReader(fileBytes)
-		file := &testMultipartFile{reader}
-		_, err := processImageForPalette(file, 5, 2, nil)
-		if err != nil {
-			b.Fatal(err)
-		}
-	}
-	elapsed := time.Since(start)
-	b.Logf("Processing large image 10 times took: %s", elapsed)
 }
