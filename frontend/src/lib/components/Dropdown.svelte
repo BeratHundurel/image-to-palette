@@ -22,7 +22,7 @@
 <div class="relative w-48">
 	<button
 		onclick={toggleDropdown}
-		class="flex w-full items-center justify-between rounded border border-[#D09E87] bg-transparent px-2 py-1 text-white focus:ring-1 focus:ring-[#D09E87] focus:outline-none"
+		class="flex w-full items-center justify-between rounded border border-[#D09E87] bg-transparent px-4 py-2 text-white focus:ring-1 focus:ring-[#D09E87] focus:outline-none"
 		aria-haspopup="listbox"
 		aria-expanded={isOpen}
 	>

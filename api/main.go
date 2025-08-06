@@ -41,6 +41,50 @@ func (c colorObservation) Coordinates() clusters.Coordinates {
 	return clusters.Coordinates(c)
 }
 
+func getPaletteHandler(c *gin.Context) {
+	fileName := c.Query("fileName")
+	if fileName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "File name is required"})
+		return
+	}
+	if len(fileName) > 256 || fileName != sanitizeFileName(fileName) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file name"})
+		return
+	}
+	fullPath := fmt.Sprintf("user_palettes/%s", fileName)
+	file, err := os.Open(fullPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Palette not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open palette file"})
+		}
+		return
+	}
+	defer file.Close()
+
+	var palette []Color
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&palette); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode palette JSON"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"palette": palette})
+}
+
+func sanitizeFileName(name string) string {
+	result := make([]rune, 0, len(name))
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') ||
+			(r >= 'A' && r <= 'Z') ||
+			(r >= '0' && r <= '9') ||
+			r == '-' || r == '_' || r == '.' {
+			result = append(result, r)
+		}
+	}
+	return string(result)
+}
+
 func (c colorObservation) Distance(p clusters.Coordinates) float64 {
 	var sum float64
 	for i, v := range c {
@@ -225,7 +269,6 @@ func savePaletteToFileHandler(c *gin.Context) {
 		return
 	}
 
-	// Ensure the user_palettes directory exists
 	dir := "user_palettes"
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err := os.Mkdir(dir, 0755); err != nil {
@@ -294,5 +337,6 @@ func main() {
 	}))
 	router.POST("/extract-palette", extractPaletteHandler)
 	router.POST("/save-palette", savePaletteToFileHandler)
+	router.GET("/get-palette", getPaletteHandler)
 	router.Run(":8080")
 }

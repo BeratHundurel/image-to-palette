@@ -53,6 +53,49 @@
 	let startX = 0,
 		startY = 0;
 
+	// === Saved Palettes Drawer State ===
+	import { onMount } from 'svelte';
+	let savedPalettes: { fileName: string; palette: Color[] }[] = $state([]);
+	let loadingSavedPalettes = $state(false);
+
+	onMount(async () => {
+		const savedPalettesKey = 'savedPalettes';
+		let fileNames: string[] = [];
+		try {
+			const stored = localStorage.getItem(savedPalettesKey);
+			if (stored) {
+				fileNames = JSON.parse(stored);
+			}
+		} catch (e) {
+			fileNames = [];
+		}
+		if (fileNames.length === 0) {
+			savedPalettes = [];
+			return;
+		}
+		loadingSavedPalettes = true;
+		const results: { fileName: string; palette: Color[] }[] = [];
+		await Promise.all(
+			fileNames.map(async (fileName) => {
+				try {
+					const res = await fetch(
+						`http://localhost:8080/get-palette?fileName=${encodeURIComponent(fileName)}`
+					);
+					if (res.ok) {
+						const data = await res.json();
+						if (data.palette && Array.isArray(data.palette)) {
+							results.push({ fileName, palette: data.palette });
+						}
+					}
+				} catch (e) {
+					// Ignore fetch errors for now
+				}
+			})
+		);
+		savedPalettes = results;
+		loadingSavedPalettes = false;
+	});
+
 	// === File Upload ===
 	async function onFileChange(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -300,6 +343,8 @@
 	let top = $state(100);
 	let moving = $state(false);
 	let showPaletteOptions = $state(false);
+	let showSavedPopover = $state(false);
+	let savedPopoverRef: HTMLDivElement | null = $state(null);
 	let openDirection: 'left' | 'right' = $state('right');
 	let dragHandle = $state<HTMLElement | undefined>(undefined);
 
@@ -357,6 +402,22 @@
 			const data = await response.json();
 			if (response.ok) {
 				toast.success('Palette saved as ' + (data.fileName || fileName));
+				// Store saved palette filename in localStorage
+				const savedPalettesKey = 'savedPalettes';
+				let savedPalettes: string[] = [];
+				try {
+					const stored = localStorage.getItem(savedPalettesKey);
+					if (stored) {
+						savedPalettes = JSON.parse(stored);
+					}
+				} catch (e) {
+					savedPalettes = [];
+				}
+				const newFileName = data.fileName || fileName;
+				if (!savedPalettes.includes(newFileName)) {
+					savedPalettes.push(newFileName);
+					localStorage.setItem(savedPalettesKey, JSON.stringify(savedPalettes));
+				}
 			} else {
 				toast.error(data.error || 'Failed to save palette.');
 			}
@@ -728,6 +789,77 @@
 									</div>
 								{/if}
 							</li>
+
+							<li>
+								<div class="relative" style="display: inline-block;">
+									<button
+										class="rounded bg-[#D09E87] px-2 py-1 text-xs font-bold text-black shadow transition hover:bg-[#EEB38F]"
+										onclick={() => (showSavedPopover = !showSavedPopover)}
+										aria-label="Show saved palettes"
+										type="button"
+									>
+										<span>🎨</span>
+									</button>
+									{#if showSavedPopover}
+										<div
+											class="absolute top-10 left-0 z-50 w-80 rounded-lg border border-[#D09E87]/40 bg-[#232323] p-3 shadow-2xl"
+											style="min-width: 260px;"
+										>
+											<div class="mb-2 flex items-center justify-between">
+												<span class="text-sm font-bold text-[#D09E87]">Saved Palettes</span>
+												<button
+													class="rounded-full bg-[#D09E87] px-2 py-1 text-xs font-bold text-black transition hover:bg-[#EEB38F]"
+													onclick={() => (showSavedPopover = false)}
+													aria-label="Close popover"
+													type="button"
+												>
+													&times;
+												</button>
+											</div>
+											<div class="max-h-64 overflow-y-auto">
+												{#if loadingSavedPalettes}
+													<div class="py-8 text-center text-white/70">Loading...</div>
+												{:else if savedPalettes.length === 0}
+													<div class="py-8 text-center text-white/70">No saved palettes yet.</div>
+												{:else}
+													<ul class="flex flex-col gap-3">
+														{#each savedPalettes as item}
+															<li class="flex flex-col gap-1 rounded bg-[#1a1a1a] p-2 shadow">
+																<div class="flex items-center justify-between">
+																	<span
+																		class="max-w-[120px] truncate font-mono text-xs text-[#D09E87]"
+																		title={item.fileName}>{item.fileName}</span
+																	>
+																	<button
+																		class="rounded bg-[#D09E87] px-2 py-1 text-xs font-bold text-black transition hover:bg-[#EEB38F]"
+																		onclick={() => {
+																			colors = [...item.palette];
+																			showSavedPopover = false;
+																			toast.success('Palette loaded!');
+																		}}
+																		type="button"
+																	>
+																		Load
+																	</button>
+																</div>
+																<div class="mt-1 flex flex-row flex-wrap gap-1">
+																	{#each item.palette as color}
+																		<span
+																			class="inline-block h-5 w-5 rounded border border-white/10 shadow"
+																			style="background-color: {color.hex}"
+																			title={color.hex}
+																		></span>
+																	{/each}
+																</div>
+															</li>
+														{/each}
+													</ul>
+												{/if}
+											</div>
+										</div>
+									{/if}
+								</div>
+							</li>
 						</ul>
 					</div>
 				</div>
@@ -752,25 +884,36 @@
 					</div>
 				{/each}
 			</div>
+
 			{#if imageLoaded}
 				<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
-					<button class="cursor-pointer text-sm font-bold tracking-tight" onclick={returnToUpload}
-						>Back</button
+					<button
+						class="cursor-pointer rounded border border-[#D09E87] px-4 py-2 text-sm font-bold tracking-tight transition-all hover:-translate-y-2 hover:bg-[#D09E87]"
+						onclick={returnToUpload}>Back</button
 					>
-					<button class="action-button ml-4" onclick={savePaletteToFile}>💾 Save Palette</button>
 
-					<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
+					<div class="flex flex-row items-center gap-4">
 						<button
-							class="bg-mint-500 cursor-pointer"
-							onclick={() => copyPaletteAs(copyClipboardValue, colors)}
+							class="ml-4 flex cursor-pointer items-center gap-2 rounded border border-[#D09E87] px-4 py-2 text-sm font-bold transition-all hover:-translate-y-1 hover:bg-[#D09E87]"
+							onclick={savePaletteToFile}
 						>
-							Copy as
+							Save Palette
+							<span> 💾 </span>
 						</button>
-						<Dropdown
-							options={copy_options}
-							value={copyClipboardValue}
-							onChange={handleCopyFormatChange}
-						/>
+
+						<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
+							<button
+								class="bg-mint-500 cursor-pointer"
+								onclick={() => copyPaletteAs(copyClipboardValue, colors)}
+							>
+								Copy as
+							</button>
+							<Dropdown
+								options={copy_options}
+								value={copyClipboardValue}
+								onChange={handleCopyFormatChange}
+							/>
+						</div>
 					</div>
 				</div>
 			{/if}
