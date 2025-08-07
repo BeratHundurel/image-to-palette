@@ -402,7 +402,6 @@
 			const data = await response.json();
 			if (response.ok) {
 				toast.success('Palette saved as ' + (data.fileName || fileName));
-				// Store saved palette filename in localStorage
 				const savedPalettesKey = 'savedPalettes';
 				let savedPalettes: string[] = [];
 				try {
@@ -511,8 +510,8 @@
 			>
 				<div
 					class={cn(
-						'rounded-lg border border-zinc-900/50 bg-zinc-900/75 shadow-2xl backdrop-blur-xl',
-						'hover:border-zinc-600/50 hover:bg-zinc-900 hover:shadow-[0_0_15px_rgba(238,179,143,0.15)]',
+						'rounded-lg border border-black bg-zinc-900 shadow-2xl backdrop-blur-xl',
+						'hover:border-zinc-600 hover:shadow-[0_0_15px_rgba(238,179,143,0.15)]',
 						'transition-all duration-300 ease-out'
 					)}
 				>
@@ -520,8 +519,7 @@
 						bind:this={dragHandle}
 						class={cn(
 							'flex cursor-move items-center justify-center p-3',
-							'border-b border-zinc-700/40',
-							'hover:border-[#EEB38F]/20 hover:from-zinc-600/30 hover:to-zinc-700/15',
+							'hover:border-[#EEB38F] hover:from-zinc-600 hover:to-zinc-700',
 							'drag-handle transition-all duration-200 ease-out'
 						)}
 					>
@@ -547,9 +545,9 @@
 									<button
 										class={cn(
 											'flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-white',
-											'border border-zinc-700/60 bg-zinc-800/70 backdrop-blur-sm',
+											'border border-zinc-700 bg-zinc-800 backdrop-blur-sm',
 											'action-button shadow-lg',
-											'focus:ring-1 focus:ring-[#EEB38F]/60 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
+											'focus:ring-1 focus:ring-[#EEB38F] focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
 											'cubic-bezier(0.4, 0, 0.2, 1) transition-all duration-200'
 										)}
 										onclick={() => {
@@ -593,7 +591,6 @@
 									)}
 									aria-label="select palette option"
 									onclick={(event) => {
-										// Toggle palette options dropdown according to available space
 										const rect = event.currentTarget.getBoundingClientRect();
 										const spaceLeft = rect.left;
 										const spaceRight = window.innerWidth - rect.right;
@@ -618,7 +615,7 @@
 								{#if showPaletteOptions}
 									<div
 										class={cn(
-											'absolute top-0 z-50 flex min-w-max flex-col gap-1 rounded-lg border border-zinc-700 bg-zinc-900/95 p-3 text-sm text-white shadow-xl backdrop-blur-md',
+											'absolute top-0 z-50 flex min-w-max flex-col gap-1 rounded-lg border border-zinc-700 bg-zinc-900 p-3 text-sm text-white shadow-xl backdrop-blur-md',
 											openDirection === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 										)}
 									>
@@ -793,8 +790,21 @@
 							<li>
 								<div class="relative" style="display: inline-block;">
 									<button
-										class="rounded bg-[#D09E87] px-2 py-1 text-xs font-bold text-black shadow transition hover:bg-[#EEB38F]"
-										onclick={() => (showSavedPopover = !showSavedPopover)}
+										class={cn(
+											'flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-white',
+											'border border-zinc-700/60 bg-zinc-800/70 backdrop-blur-sm',
+											'action-button shadow-lg',
+											'focus:ring-1 focus:ring-[#EEB38F]/60 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
+											'cubic-bezier(0.4, 0, 0.2, 1) transition-all duration-200'
+										)}
+										onclick={(event) => {
+											const rect = event.currentTarget.getBoundingClientRect();
+											const spaceLeft = rect.left;
+											const spaceRight = window.innerWidth - rect.right;
+
+											openDirection = spaceRight >= spaceLeft ? 'right' : 'left';
+											showSavedPopover = !showSavedPopover;
+										}}
 										aria-label="Show saved palettes"
 										type="button"
 									>
@@ -802,13 +812,16 @@
 									</button>
 									{#if showSavedPopover}
 										<div
-											class="absolute top-10 left-0 z-50 w-80 rounded-lg border border-[#D09E87]/40 bg-[#232323] p-3 shadow-2xl"
+											class={cn(
+												'absolute top-0 z-50 w-80 rounded-lg border border-[#D09E87]/40 bg-zinc-900 p-3 shadow-2xl',
+												openDirection === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
+											)}
 											style="min-width: 260px;"
 										>
 											<div class="mb-2 flex items-center justify-between">
-												<span class="text-sm font-bold text-[#D09E87]">Saved Palettes</span>
+												<span class="text-sm font-bold text-[#EEB38F]">Saved Palettes</span>
 												<button
-													class="rounded-full bg-[#D09E87] px-2 py-1 text-xs font-bold text-black transition hover:bg-[#EEB38F]"
+													class="rounded-full bg-[#EEB38F] px-2 py-1 text-xs font-bold text-black"
 													onclick={() => (showSavedPopover = false)}
 													aria-label="Close popover"
 													type="button"
@@ -824,14 +837,16 @@
 												{:else}
 													<ul class="flex flex-col gap-3">
 														{#each savedPalettes as item}
-															<li class="flex flex-col gap-1 rounded bg-[#1a1a1a] p-2 shadow">
+															<li
+																class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2"
+															>
 																<div class="flex items-center justify-between">
 																	<span
-																		class="max-w-[120px] truncate font-mono text-xs text-[#D09E87]"
+																		class="max-w-[120px] truncate font-mono text-xs text-[#EEB38F]"
 																		title={item.fileName}>{item.fileName}</span
 																	>
 																	<button
-																		class="rounded bg-[#D09E87] px-2 py-1 text-xs font-bold text-black transition hover:bg-[#EEB38F]"
+																		class="rounded bg-[#EEB38F] px-2 py-1 text-xs font-bold text-black"
 																		onclick={() => {
 																			colors = [...item.palette];
 																			showSavedPopover = false;
