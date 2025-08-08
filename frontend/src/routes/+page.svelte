@@ -78,9 +78,7 @@
 		await Promise.all(
 			fileNames.map(async (fileName) => {
 				try {
-					const res = await fetch(
-						`http://localhost:8080/get-palette?fileName=${encodeURIComponent(fileName)}`
-					);
+					const res = await fetch(`http://localhost:8080/get-palette?fileName=${encodeURIComponent(fileName)}`);
 					if (res.ok) {
 						const data = await res.json();
 						if (data.palette && Array.isArray(data.palette)) {
@@ -344,7 +342,6 @@
 	let moving = $state(false);
 	let showPaletteOptions = $state(false);
 	let showSavedPopover = $state(false);
-	let savedPopoverRef: HTMLDivElement | null = $state(null);
 	let openDirection: 'left' | 'right' = $state('right');
 	let dragHandle = $state<HTMLElement | undefined>(undefined);
 
@@ -389,16 +386,13 @@
 		if (!fileName) return;
 
 		try {
-			const response = await fetch(
-				'http://localhost:8080/save-palette?fileName=' + encodeURIComponent(fileName),
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify(colors)
-				}
-			);
+			const response = await fetch('http://localhost:8080/save-palette?fileName=' + encodeURIComponent(fileName), {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(colors)
+			});
 			const data = await response.json();
 			if (response.ok) {
 				toast.success('Palette saved as ' + (data.fileName || fileName));
@@ -441,9 +435,7 @@
 	<div class="absolute top-0 left-0 z-10 h-full w-full bg-black/60"></div>
 
 	<!-- Content -->
-	<div
-		class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden"
-	>
+	<div class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden">
 		<section
 			class="absolute inset-0 flex flex-col items-center justify-around transition-opacity duration-300"
 			class:opacity-0={imageLoaded}
@@ -459,26 +451,13 @@
 				onclick={triggerFileSelect}
 				class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 text-white transition duration-300 hover:border-white hover:bg-white/20"
 			>
-				<svg
-					viewBox="0 0 24 24"
-					width="4rem"
-					height="4rem"
-					fill="#fff"
-					class="mb-3 opacity-80 group-hover:opacity-100"
-				>
+				<svg viewBox="0 0 24 24" width="4rem" height="4rem" fill="#fff" class="mb-3 opacity-80 group-hover:opacity-100">
 					<path
 						d="M19 7v3h-2V7h-3V5h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5a2 2 0 00-2 2v12c0 1.1.9 2 2 2h12a2 2 0 002-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"
 					/>
 				</svg>
 				<span class="text-sm text-white/80 group-hover:text-white">Drop or click to upload</span>
-				<input
-					type="file"
-					name="file"
-					bind:this={fileInput}
-					class="hidden"
-					accept="image/*"
-					oninput={onFileChange}
-				/>
+				<input type="file" name="file" bind:this={fileInput} class="hidden" accept="image/*" oninput={onFileChange} />
 			</button>
 		</section>
 
@@ -662,8 +641,8 @@
 													<span
 														class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-white shadow-lg"
 													>
-														If sample size is decreased, colors will be more accurate but the
-														extraction will take longer.
+														If sample size is decreased, colors will be more accurate but the extraction will take
+														longer.
 													</span>
 												{/if}
 											</span>
@@ -705,7 +684,7 @@
 											/>
 											<button
 												type="button"
-												class="rounded p-2 transition hover:bg-zinc-700/60 focus:outline-none"
+												class="rounded p-2 transition hover:bg-zinc-700 focus:outline-none"
 												onclick={() => (sampleRate = Math.min(sampleRate + 1, 100))}
 												aria-label="Increase sample size"
 												tabindex="0"
@@ -744,17 +723,14 @@
 												type="text"
 												bind:value={newFilterColor}
 												placeholder="#fff"
-												class="rounded border border-zinc-700/60 bg-black/30 px-2 py-1 text-xs text-white focus:border-[#EEB38F]/60 focus:outline-none"
+												class="rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-white focus:border-[#EEB38F]/60 focus:outline-none"
 												maxlength="7"
 												style="width: 80px;"
 											/>
 											<button
 												class="action-button rounded bg-zinc-300 px-2 py-1 text-xs text-black hover:text-white focus:outline-none"
 												onclick={() => {
-													if (
-														/^#[0-9A-Fa-f]{3,6}$/.test(newFilterColor) &&
-														!filteredColors.includes(newFilterColor)
-													) {
+													if (/^#[0-9A-Fa-f]{3,6}$/.test(newFilterColor) && !filteredColors.includes(newFilterColor)) {
 														filteredColors = [...filteredColors, newFilterColor];
 														newFilterColor = '';
 														let validSelections = selectors.filter((s) => s.selection);
@@ -792,7 +768,7 @@
 									<button
 										class={cn(
 											'flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-white',
-											'border border-zinc-700/60 bg-zinc-800/70 backdrop-blur-sm',
+											'border border-zinc-700 bg-zinc-800 backdrop-blur-xl',
 											'action-button shadow-lg',
 											'focus:ring-1 focus:ring-[#EEB38F]/60 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
 											'cubic-bezier(0.4, 0, 0.2, 1) transition-all duration-200'
@@ -837,9 +813,7 @@
 												{:else}
 													<ul class="flex flex-col gap-3">
 														{#each savedPalettes as item}
-															<li
-																class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2"
-															>
+															<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
 																<div class="flex items-center justify-between">
 																	<span
 																		class="max-w-[120px] truncate font-mono text-xs text-[#EEB38F]"
@@ -882,9 +856,7 @@
 		{/if}
 
 		<section class="w-full max-w-5xl">
-			<div
-				class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5"
-			>
+			<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5">
 				{#each colors as color, i}
 					<div
 						role="button"
@@ -917,17 +889,10 @@
 						</button>
 
 						<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
-							<button
-								class="bg-mint-500 cursor-pointer"
-								onclick={() => copyPaletteAs(copyClipboardValue, colors)}
-							>
+							<button class="bg-mint-500 cursor-pointer" onclick={() => copyPaletteAs(copyClipboardValue, colors)}>
 								Copy as
 							</button>
-							<Dropdown
-								options={copy_options}
-								value={copyClipboardValue}
-								onChange={handleCopyFormatChange}
-							/>
+							<Dropdown options={copy_options} value={copyClipboardValue} onChange={handleCopyFormatChange} />
 						</div>
 					</div>
 				</div>
