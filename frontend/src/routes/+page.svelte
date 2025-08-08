@@ -19,7 +19,8 @@
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },
 		{ label: 'CSS Variables', value: 'css_variables' },
-		{ label: 'Tailwind Config', value: 'tailwind_config' }
+		{ label: 'Tailwind Config', value: 'tailwind_config' },
+		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' }
 	];
 
 	const draw_options = [
@@ -309,6 +310,9 @@
 			case 'tailwind_config':
 				output = generateTailwindThemeBlock(namedPalette);
 				break;
+			case 'bootstrap_variables':
+				output = generateBootstrapVariables(namedPalette);
+				break;
 		}
 		navigator.clipboard.writeText(output);
 		toast.success(`${format.replace('_', ' ').toUpperCase()} copied to clipboard`);
@@ -327,6 +331,10 @@
 
 	function generateTailwindThemeBlock(colors: NamedColor[]) {
 		return `@theme {\n${colors.map((c) => `  --color-${c.name}: ${c.hex};`).join('\n')}\n}`;
+	}
+
+	function generateBootstrapVariables(colors: NamedColor[]) {
+		return `:root {\n${colors.map((c) => `  --bs-${c.name}: ${c.hex};`).join('\n')}\n}`;
 	}
 
 	function slugifyName(name: string): string {
@@ -489,8 +497,8 @@
 			>
 				<div
 					class={cn(
-						'rounded-lg border border-black bg-zinc-900 shadow-2xl backdrop-blur-xl',
-						'hover:border-zinc-600 hover:shadow-[0_0_15px_rgba(238,179,143,0.15)]',
+						'rounded-lg border border-black bg-zinc-900 shadow-2xl ',
+						'hover:shadow-brand hover:border-zinc-600',
 						'transition-all duration-300 ease-out'
 					)}
 				>
@@ -498,7 +506,7 @@
 						bind:this={dragHandle}
 						class={cn(
 							'flex cursor-move items-center justify-center p-3',
-							'hover:border-[#EEB38F] hover:from-zinc-600 hover:to-zinc-700',
+							'hover:border-brand  hover:from-zinc-600 hover:to-zinc-900',
 							'drag-handle transition-all duration-200 ease-out'
 						)}
 					>
@@ -506,13 +514,13 @@
 							<div
 								class={cn(
 									'grip-line h-0.5 w-8 rounded-full transition-all duration-200 ease-out',
-									moving ? 'bg-[#EEB38F]/60 shadow-sm shadow-[#EEB38F]/25' : 'bg-zinc-400/80'
+									moving ? 'bg-brand/80 shadow-brand' : 'bg-zinc-400/80'
 								)}
 							></div>
 							<div
 								class={cn(
 									'grip-line h-0.5 w-6 rounded-full transition-all duration-200 ease-out',
-									moving ? 'bg-[#EEB38F]/45 shadow-sm shadow-[#EEB38F]/20' : 'bg-zinc-400/60'
+									moving ? 'bg-brand/40 shadow-brand' : 'bg-zinc-400/40'
 								)}
 							></div>
 						</div>
@@ -524,10 +532,10 @@
 									<button
 										class={cn(
 											'flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-white',
-											'border border-zinc-700 bg-zinc-800 backdrop-blur-sm',
+											'border border-zinc-600 bg-zinc-800 backdrop-blur-sm',
 											'action-button shadow-lg',
-											'focus:ring-1 focus:ring-[#EEB38F] focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
-											'cubic-bezier(0.4, 0, 0.2, 1) transition-all duration-200'
+											'focus:ring-brand focus:ring-1 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
+											'transition-all duration-200'
 										)}
 										onclick={() => {
 											activeSelectorId = selector.id;
@@ -538,9 +546,8 @@
 										aria-label="Selector {i + 1}"
 									>
 										<div
-											class="flex h-6 w-6 items-center justify-center rounded-full border-black"
+											class="flex h-6 w-6 items-center justify-center rounded-full border-zinc-900"
 											style="background-color: {selector.color}"
-											class:border-2={selector.selected}
 										>
 											{#if selector.selected}
 												<svg
@@ -563,9 +570,9 @@
 								<button
 									class={cn(
 										'flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-white',
-										'border border-zinc-700/60 bg-zinc-800/70 backdrop-blur-sm',
+										'border border-zinc-600 bg-zinc-800 backdrop-blur-sm',
 										'action-button shadow-lg',
-										'focus:ring-1 focus:ring-[#EEB38F]/60 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
+										'focus:ring-brand focus:ring-1 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
 										'cubic-bezier(0.4, 0, 0.2, 1) transition-all duration-200'
 									)}
 									aria-label="select palette option"
@@ -576,6 +583,9 @@
 
 										openDirection = spaceRight >= spaceLeft ? 'right' : 'left';
 										showPaletteOptions = !showPaletteOptions;
+										if (showSavedPopover) {
+											showSavedPopover = false;
+										}
 									}}
 								>
 									<svg
@@ -594,14 +604,14 @@
 								{#if showPaletteOptions}
 									<div
 										class={cn(
-											'absolute top-0 z-50 flex min-w-max flex-col gap-1 rounded-lg border border-zinc-700 bg-zinc-900 p-3 text-sm text-white shadow-xl backdrop-blur-md',
+											'absolute top-0 z-50 flex min-w-max flex-col gap-2 rounded-lg border border-zinc-600 bg-zinc-900 p-3 text-sm text-white shadow-2xl ',
 											openDirection === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 										)}
 									>
 										<h3 class="mb-1">Palette Options</h3>
 										{#each draw_options as option, i}
 											<button
-												class="w-full rounded-sm p-2 text-left transition hover:bg-zinc-700/60"
+												class="w-full rounded-sm p-2 text-left transition hover:bg-zinc-700"
 												class:bg-zinc-800={drawSelectionValue === option.value}
 												onclick={() => {
 													let oldValue = drawSelectionValue;
@@ -616,7 +626,7 @@
 											</button>
 
 											{#if i < draw_options.length - 1}
-												<hr class="border-[#EEB38F]/60" />
+												<hr class="border-brand" />
 											{/if}
 										{/each}
 										<div class="mt-3 flex items-center justify-between">
@@ -632,7 +642,7 @@
 													height="16px"
 													viewBox="0 -960 960 960"
 													width="16px"
-													fill="#e3e3e3"
+													fill="#fff"
 													><path
 														d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
 													/></svg
@@ -650,7 +660,7 @@
 										<div class="mt-2 flex items-center justify-between">
 											<button
 												type="button"
-												class="rounded p-2 transition hover:bg-zinc-700/60 focus:outline-none"
+												class="rounded p-2 transition hover:bg-zinc-700 focus:outline-none"
 												onclick={() => (sampleRate = Math.max(sampleRate - 1, 1))}
 												aria-label="Decrease sample size"
 												tabindex="0"
@@ -723,12 +733,12 @@
 												type="text"
 												bind:value={newFilterColor}
 												placeholder="#fff"
-												class="rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-white focus:border-[#EEB38F]/60 focus:outline-none"
+												class="focus:border-brand rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-white focus:outline-none"
 												maxlength="7"
 												style="width: 80px;"
 											/>
 											<button
-												class="action-button rounded bg-zinc-300 px-2 py-1 text-xs text-black hover:text-white focus:outline-none"
+												class="action-button rounded border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs text-white hover:text-white focus:outline-none"
 												onclick={() => {
 													if (/^#[0-9A-Fa-f]{3,6}$/.test(newFilterColor) && !filteredColors.includes(newFilterColor)) {
 														filteredColors = [...filteredColors, newFilterColor];
@@ -768,7 +778,7 @@
 									<button
 										class={cn(
 											'flex h-11 w-11 items-center justify-center rounded-lg text-sm font-semibold text-white',
-											'border border-zinc-700 bg-zinc-800 backdrop-blur-xl',
+											'border border-zinc-700 bg-zinc-800',
 											'action-button shadow-lg',
 											'focus:ring-1 focus:ring-[#EEB38F]/60 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none',
 											'cubic-bezier(0.4, 0, 0.2, 1) transition-all duration-200'
@@ -780,6 +790,9 @@
 
 											openDirection = spaceRight >= spaceLeft ? 'right' : 'left';
 											showSavedPopover = !showSavedPopover;
+											if (showPaletteOptions) {
+												showPaletteOptions = false;
+											}
 										}}
 										aria-label="Show saved palettes"
 										type="button"

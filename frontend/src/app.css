@@ -1,2 +1,8 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+@theme {
+    --shadow-brand: 0 0 15px #eeb38f26;
+	--shadow-brand-lg: 0 0 25px #eeb38f40;
+	--color-brand: #eeb38f;
+	--color-brand-hover: #d09e87;
+}
