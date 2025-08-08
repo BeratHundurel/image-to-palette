@@ -100,7 +100,6 @@ func TestSavePaletteToFileHandler(t *testing.T) {
 	router := gin.New()
 	router.POST("/save-palette", savePaletteToFileHandler)
 
-	// Prepare a palette
 	palette := []Color{
 		{Hex: "#FF0000"},
 		{Hex: "#00FF00"},
@@ -128,7 +127,6 @@ func TestSavePaletteToFileHandler(t *testing.T) {
 	assert.Contains(t, resp.FileName, ".json")
 	assert.Contains(t, resp.Path, "user_palettes/")
 
-	// Check file exists and is valid JSON
 	file, err := os.Open(resp.Path)
 	assert.NoError(t, err)
 	defer file.Close()
@@ -139,8 +137,154 @@ func TestSavePaletteToFileHandler(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, palette, loadedPalette)
 
-	// Cleanup
 	os.Remove(resp.Path)
+}
+
+// --- Test for getPaletteHandler ---
+
+func TestGetPaletteHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.GET("/get-palette", getPaletteHandler)
+
+	testDir := "user_palettes"
+	os.MkdirAll(testDir, 0755)
+	defer os.RemoveAll(testDir)
+
+	// Test 1: Happy path - valid file with palette
+	t.Run("ValidPalette", func(t *testing.T) {
+		palette := []Color{
+			{Hex: "#FF0000"},
+			{Hex: "#00FF00"},
+			{Hex: "#0000FF"},
+		}
+		testFileName := "test_palette.json"
+		testFilePath := testDir + "/" + testFileName
+
+		file, err := os.Create(testFilePath)
+		assert.NoError(t, err)
+		defer file.Close()
+
+		encoder := json.NewEncoder(file)
+		err = encoder.Encode(palette)
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/get-palette?fileName="+testFileName, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		var resp struct {
+			Palette []Color `json:"palette"`
+		}
+		err = json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, palette, resp.Palette)
+
+		os.Remove(testFilePath)
+	})
+
+	// Test 2: Missing fileName parameter
+	t.Run("MissingFileName", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/get-palette", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp struct {
+			Error string `json:"error"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, "File name is required", resp.Error)
+	})
+
+	// Test 3: Invalid fileName - too long
+	t.Run("InvalidFileNameTooLong", func(t *testing.T) {
+		longFileName := string(make([]byte, 257)) // 257 characters
+		for i := range longFileName {
+			longFileName = string(append([]byte(longFileName[:i]), 'a'))
+		}
+
+		req := httptest.NewRequest("GET", "/get-palette?fileName="+longFileName, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp struct {
+			Error string `json:"error"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, "Invalid file name", resp.Error)
+	})
+
+	// Test 4: Invalid fileName - contains invalid characters
+	t.Run("InvalidFileNameCharacters", func(t *testing.T) {
+		invalidFileName := "test<>|file.json"
+
+		req := httptest.NewRequest("GET", "/get-palette?fileName="+invalidFileName, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+
+		var resp struct {
+			Error string `json:"error"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, "Invalid file name", resp.Error)
+	})
+
+	// Test 5: File not found
+	t.Run("FileNotFound", func(t *testing.T) {
+		nonExistentFile := "nonexistent.json"
+
+		req := httptest.NewRequest("GET", "/get-palette?fileName="+nonExistentFile, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusNotFound, w.Code)
+
+		var resp struct {
+			Error string `json:"error"`
+		}
+		err := json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, "Palette not found", resp.Error)
+	})
+
+	// Test 6: Invalid JSON in file
+	t.Run("InvalidJSON", func(t *testing.T) {
+		invalidJsonFileName := "invalid.json"
+		invalidJsonFilePath := testDir + "/" + invalidJsonFileName
+
+		file, err := os.Create(invalidJsonFilePath)
+		assert.NoError(t, err)
+		defer file.Close()
+
+		_, err = file.WriteString("invalid json content")
+		assert.NoError(t, err)
+
+		req := httptest.NewRequest("GET", "/get-palette?fileName="+invalidJsonFileName, nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+		var resp struct {
+			Error string `json:"error"`
+		}
+		err = json.Unmarshal(w.Body.Bytes(), &resp)
+		assert.NoError(t, err)
+		assert.Equal(t, "Failed to decode palette JSON", resp.Error)
+
+		os.Remove(invalidJsonFilePath)
+	})
 }
 
 // --- Benchmarks ---
