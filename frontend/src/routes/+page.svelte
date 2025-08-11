@@ -50,6 +50,10 @@
 	let ctx: CanvasRenderingContext2D;
 	let image: HTMLImageElement;
 	let fileInput: HTMLInputElement;
+	let originalImageWidth: number = 0;
+	let originalImageHeight: number = 0;
+	let canvasScaleX: number = 1;
+	let canvasScaleY: number = 1;
 
 	let startX = 0,
 		startY = 0;
@@ -129,10 +133,45 @@
 			image = new Image();
 			image.onload = () => {
 				ctx = canvas.getContext('2d')!;
-				canvas.width = image.width;
-				canvas.height = image.height;
-				ctx.drawImage(image, 0, 0);
+
+				originalImageWidth = image.width;
+				originalImageHeight = image.height;
+
+				const maxWidth = 800;
+				const maxHeight = 400;
+
+				let { width: imgWidth, height: imgHeight } = image;
+				const aspectRatio = imgWidth / imgHeight;
+
+				if (imgWidth > maxWidth || imgHeight > maxHeight) {
+					if (aspectRatio > 1) {
+						imgWidth = maxWidth;
+						imgHeight = maxWidth / aspectRatio;
+						if (imgHeight > maxHeight) {
+							imgHeight = maxHeight;
+							imgWidth = maxHeight * aspectRatio;
+						}
+					} else {
+						imgHeight = maxHeight;
+						imgWidth = maxHeight * aspectRatio;
+						if (imgWidth > maxWidth) {
+							imgWidth = maxWidth;
+							imgHeight = maxWidth / aspectRatio;
+						}
+					}
+				}
+
+				canvasScaleX = originalImageWidth / imgWidth;
+				canvasScaleY = originalImageHeight / imgHeight;
+
+				canvas.width = imgWidth;
+				canvas.height = imgHeight;
+				canvas.style.width = imgWidth + 'px';
+				canvas.style.height = imgHeight + 'px';
+
+				ctx.drawImage(image, 0, 0, imgWidth, imgHeight);
 				imageLoaded = true;
+				drawImageAndBoxes();
 			};
 			image.src = reader.result as string;
 		};
@@ -143,12 +182,42 @@
 		if (!ctx || !image) return;
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
 		selectors.forEach((selector) => {
 			if (selector.selection) {
-				ctx.strokeStyle = selector.color;
-				ctx.lineWidth = 2;
 				const { x, y, w, h } = selector.selection;
-				ctx.strokeRect(x, y, w, h);
+
+				const clampedX = Math.max(0, Math.min(x, canvas.width - 1));
+				const clampedY = Math.max(0, Math.min(y, canvas.height - 1));
+				const clampedW = Math.min(w, canvas.width - clampedX);
+				const clampedH = Math.min(h, canvas.height - clampedY);
+
+				if (clampedW <= 0 || clampedH <= 0) return;
+
+				ctx.save();
+
+				ctx.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+				ctx.lineWidth = 4;
+				ctx.setLineDash([]);
+				ctx.strokeRect(clampedX - 2, clampedY - 2, clampedW + 4, clampedH + 4);
+
+				ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+				ctx.lineWidth = 2;
+				ctx.strokeRect(clampedX - 1, clampedY - 1, clampedW + 2, clampedH + 2);
+
+				ctx.strokeStyle = selector.color;
+				ctx.lineWidth = 3;
+				ctx.strokeRect(clampedX, clampedY, clampedW, clampedH);
+
+				if (selector.selected) {
+					ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+					ctx.lineWidth = 1;
+					ctx.setLineDash([5, 5]);
+					ctx.lineDashOffset = -(Date.now() / 150) % 10; // Animated dash
+					ctx.strokeRect(clampedX + 2, clampedY + 2, clampedW - 4, clampedH - 4);
+				}
+
+				ctx.restore();
 			}
 		});
 	}
@@ -199,13 +268,17 @@
 	// === Palette Extraction ===
 	async function extractPaletteFromSelection(selectors: Selector[]) {
 		if (!ctx || !canvas || !image) return;
+		if (canvasScaleX === 0 || canvasScaleY === 0) {
+			toast.error('Image scaling not properly initialized');
+			return;
+		}
 		const files: Blob[] = [];
 		if (drawSelectionValue === 'merge') {
 			const validSelections = selectors.filter((s) => s.selection);
 			if (validSelections.length === 0) return;
 
-			const totalHeight = validSelections.reduce((sum, s) => sum + s.selection!.h, 0);
-			const maxWidth = Math.max(...validSelections.map((s) => s.selection!.w));
+			const totalHeight = validSelections.reduce((sum, s) => sum + Math.round(s.selection!.h * canvasScaleY), 0);
+			const maxWidth = Math.max(...validSelections.map((s) => Math.round(s.selection!.w * canvasScaleX)));
 
 			const mergedCanvas = document.createElement('canvas');
 			mergedCanvas.width = maxWidth;
@@ -218,18 +291,23 @@
 
 			let currentY = 0;
 			for (const s of validSelections) {
-				mergedCtx.drawImage(
-					image,
-					s.selection!.x,
-					s.selection!.y,
-					s.selection!.w,
-					s.selection!.h,
-					0,
-					currentY,
-					s.selection!.w,
-					s.selection!.h
-				);
-				currentY += s.selection!.h;
+				// Scale selection coordinates to original image size
+				const scaledX = Math.round(s.selection!.x * canvasScaleX);
+				const scaledY = Math.round(s.selection!.y * canvasScaleY);
+				const scaledW = Math.round(s.selection!.w * canvasScaleX);
+				const scaledH = Math.round(s.selection!.h * canvasScaleY);
+
+				if (
+					scaledX >= 0 &&
+					scaledY >= 0 &&
+					scaledW > 0 &&
+					scaledH > 0 &&
+					scaledX + scaledW <= originalImageWidth &&
+					scaledY + scaledH <= originalImageHeight
+				) {
+					mergedCtx.drawImage(image, scaledX, scaledY, scaledW, scaledH, 0, currentY, scaledW, scaledH);
+				}
+				currentY += scaledH;
 			}
 
 			const blob = await createBlobFromCanvas(mergedCanvas);
@@ -237,27 +315,37 @@
 		} else {
 			for (const s of selectors) {
 				if (!s.selection) continue;
+
+				// Scale selection coordinates to original image size
+				const scaledX = Math.round(s.selection.x * canvasScaleX);
+				const scaledY = Math.round(s.selection.y * canvasScaleY);
+				const scaledW = Math.round(s.selection.w * canvasScaleX);
+				const scaledH = Math.round(s.selection.h * canvasScaleY);
+
 				const cropCanvas = document.createElement('canvas');
-				cropCanvas.width = s.selection.w;
-				cropCanvas.height = s.selection.h;
+				cropCanvas.width = scaledW;
+				cropCanvas.height = scaledH;
 				const cropCtx = cropCanvas.getContext('2d');
 				if (!cropCtx) continue;
-				cropCtx.drawImage(
-					image,
-					s.selection.x,
-					s.selection.y,
-					s.selection.w,
-					s.selection.h,
-					0,
-					0,
-					s.selection.w,
-					s.selection.h
-				);
-				const blob = await createBlobFromCanvas(cropCanvas);
-				files.push(blob);
+				if (
+					scaledX >= 0 &&
+					scaledY >= 0 &&
+					scaledW > 0 &&
+					scaledH > 0 &&
+					scaledX + scaledW <= originalImageWidth &&
+					scaledY + scaledH <= originalImageHeight
+				) {
+					cropCtx.drawImage(image, scaledX, scaledY, scaledW, scaledH, 0, 0, scaledW, scaledH);
+					const blob = await createBlobFromCanvas(cropCanvas);
+					files.push(blob);
+				}
 			}
 		}
-		if (files.length > 0) await uploadAndExtractPalette(files);
+		if (files.length > 0) {
+			await uploadAndExtractPalette(files);
+		} else {
+			toast.error('No valid selections to extract colors from');
+		}
 	}
 
 	function createBlobFromCanvas(canvas: HTMLCanvasElement): Promise<Blob> {
@@ -278,11 +366,16 @@
 			if (!res.ok) return toast.error('Error extracting palette');
 			const result: PaletteResponse = await res.json();
 			if (result.data.length > 0) {
-				colors = result.data.flatMap((p) => p.palette);
-				toast.success('Palette extracted');
+				const extractedColors = result.data.flatMap((p) => p.palette || []);
+				if (extractedColors.length > 0) {
+					colors = extractedColors;
+					toast.success('Palette extracted');
+				} else {
+					toast.error('No colors found in selected regions');
+				}
 			} else toast.error('No colors found');
-		} catch {
-			toast.error('Error extracting palette');
+		} catch (error) {
+			toast.error('Error extracting palette: ' + (error instanceof Error ? error.message : 'Unknown error'));
 		}
 	}
 
@@ -477,7 +570,7 @@
 					onmousedown={handleMouseDown}
 					onmousemove={handleMouseMove}
 					onmouseup={handleMouseUp}
-					class="h-auto max-h-[400px] w-full max-w-3xl rounded-xl shadow-lg transition-opacity duration-300"
+					class="rounded-xl border border-gray-300 shadow-lg transition-opacity duration-300"
 					class:opacity-100={imageLoaded}
 					class:pointer-events-auto={imageLoaded}
 					class:opacity-0={!imageLoaded}
