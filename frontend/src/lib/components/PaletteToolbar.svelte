@@ -145,7 +145,7 @@
 >
 	<div
 		class={cn(
-			'rounded-lg border border-black bg-zinc-900 shadow-2xl ',
+			'rounded-lg border border-brand/40 bg-zinc-900 shadow-2xl ',
 			'hover:shadow-brand hover:border-zinc-600',
 			'transition-all duration-300 ease-out'
 		)}
@@ -350,7 +350,7 @@
 						{#if showSavedPopover}
 							<div
 								class={cn(
-									'palette-dropdown-base w-80 border-[#D09E87]/40',
+									'palette-dropdown-base border-brand/40 w-80',
 									openDirection === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 								)}
 								style="min-width: 260px;"
@@ -449,5 +449,39 @@
 		opacity: 1;
 		transform: scaleX(1.05);
 		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(238, 179, 143, 0.4));
+	}
+
+	/* Action Button Effects */
+	.palette-button-base::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+		transform: translateX(-100%);
+		transition: transform 0.6s;
+	}
+
+	.palette-button-base:hover {
+		border-color: rgba(161, 161, 170, 0.6);
+		background-color: rgba(39, 39, 42, 0.9);
+		box-shadow:
+			0 10px 15px -3px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	}
+
+	.palette-button-base:hover::before {
+		transform: translateX(100%);
+	}
+
+	.palette-button-base:active {
+		transform: scale(0.95);
+		transition: transform 0.1s;
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
+
+	.palette-button-base:focus-visible {
+		outline: 2px solid rgba(161, 161, 170, 0.6);
+		outline-offset: 2px;
+		border-color: rgba(161, 161, 170, 0.8);
 	}
 </style>
