@@ -1,28 +1,11 @@
 <script lang="ts">
 	// === Imports ===
-	import Dropdown from '$lib/components/Dropdown.svelte';
-	import PaletteToolbar from '$lib/components/PaletteToolbar.svelte';
-	import { type Color, type NamedColor, type PaletteResponse } from '$lib/types/palette';
+	import { type Color, type PaletteResponse, type Selector } from '$lib/types/palette';
+	import Toolbar from '$lib/components/toolbar/Toolbar.svelte';
 	import { tick } from 'svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
-
-	// === Types ===
-	type Selector = {
-		id: string;
-		color: string;
-		selected: boolean;
-		selection?: { x: number; y: number; w: number; h: number };
-	};
-
-	// === Constants ===
-	const copy_options = [
-		{ label: 'JSON', value: 'json' },
-		{ label: 'CSS Variables', value: 'css_variables' },
-		{ label: 'Tailwind Config', value: 'tailwind_config' },
-		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' }
-	];
 
 	// === State ===
 	let selectors: Selector[] = $state([
@@ -30,9 +13,9 @@
 		{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false },
 		{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false }
 	]);
+
 	let activeSelectorId: string | null = $state('green');
 	let colors: Color[] = $state([]);
-	let copyClipboardValue = $state('json');
 	let drawSelectionValue = $state('separate');
 	let imageLoaded = $state(false);
 	let isDragging = $state(false);
@@ -104,11 +87,11 @@
 		await drawToCanvas(file);
 		await uploadAndExtractPalette([...input.files!]);
 	}
-	
+
 	function triggerFileSelect() {
 		fileInput?.click();
 	}
-	
+
 	async function handleDrop(event: DragEvent) {
 		event.preventDefault();
 		const files = event.dataTransfer?.files;
@@ -117,7 +100,7 @@
 			await uploadAndExtractPalette([files[0]]);
 		}
 	}
-	
+
 	function preventDefault(e: Event) {
 		e.preventDefault();
 	}
@@ -427,59 +410,6 @@
 		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
 	}
 
-	function handleCopyFormatChange(format: string) {
-		if (colors.length > 0) copyPaletteAs(format, colors);
-		else toast.error('No palette to copy');
-	}
-
-	async function copyPaletteAs(format: string, palette: Color[]) {
-		let output = '';
-		const hexValues = palette.map((c) => c.hex);
-		const namedPalette = await getNamedPalette(hexValues);
-		switch (format) {
-			case 'json':
-				output = JSON.stringify(namedPalette, null, 2);
-				break;
-			case 'css_variables':
-				output = namedPalette.map((c) => `--color-${c.name}: ${c.hex};`).join('\n');
-				break;
-			case 'tailwind_config':
-				output = generateTailwindThemeBlock(namedPalette);
-				break;
-			case 'bootstrap_variables':
-				output = generateBootstrapVariables(namedPalette);
-				break;
-		}
-		navigator.clipboard.writeText(output);
-		toast.success(`${format.replace('_', ' ').toUpperCase()} copied to clipboard`);
-	}
-
-	async function getNamedPalette(hexValues: string[]): Promise<NamedColor[]> {
-		const url = `https://api.color.pizza/v1/?values=${hexValues.map((h) => h.replace('#', '')).join(',')}`;
-		const res = await fetch(url);
-		if (!res.ok) return [];
-		const data = await res.json();
-		return data.colors.map((c: NamedColor) => ({
-			name: slugifyName(c.name),
-			hex: c.hex.toLowerCase()
-		}));
-	}
-
-	function generateTailwindThemeBlock(colors: NamedColor[]) {
-		return `@theme {\n${colors.map((c) => `  --color-${c.name}: ${c.hex};`).join('\n')}\n}`;
-	}
-
-	function generateBootstrapVariables(colors: NamedColor[]) {
-		return `:root {\n${colors.map((c) => `  --bs-${c.name}: ${c.hex};`).join('\n')}\n}`;
-	}
-
-	function slugifyName(name: string): string {
-		return name
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '');
-	}
-
 	// === State Reset ===
 	async function returnToUpload() {
 		await tick();
@@ -611,7 +541,8 @@
 		</section>
 
 		{#if imageLoaded}
-			<PaletteToolbar
+			<Toolbar
+				{colors}
 				{selectors}
 				{drawSelectionValue}
 				{sampleRate}
@@ -673,22 +604,13 @@
 						onclick={returnToUpload}>Back</button
 					>
 
-					<div class="flex flex-row items-center gap-4">
-						<button
-							class="ml-4 flex cursor-pointer items-center gap-2 rounded border border-[#D09E87] px-4 py-2 text-sm font-bold transition-all hover:-translate-y-1 hover:bg-[#D09E87]"
-							onclick={savePaletteToFile}
-						>
-							Save Palette
-							<span> 💾 </span>
-						</button>
-
-						<div class="flex flex-row items-center gap-2 text-sm font-bold tracking-tight">
-							<button class="bg-mint-500 cursor-pointer" onclick={() => copyPaletteAs(copyClipboardValue, colors)}>
-								Copy as
-							</button>
-							<Dropdown options={copy_options} value={copyClipboardValue} onChange={handleCopyFormatChange} />
-						</div>
-					</div>
+					<button
+						class="ml-4 flex cursor-pointer items-center gap-2 rounded border border-[#D09E87] px-4 py-2 text-sm font-bold transition-all hover:-translate-y-1 hover:bg-[#D09E87]"
+						onclick={savePaletteToFile}
+					>
+						Save Palette
+						<span> 💾 </span>
+					</button>
 				</div>
 			{/if}
 		</section>
