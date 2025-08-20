@@ -34,7 +34,6 @@
 				style="min-width: 260px;"
 			>
 				<p class="text-brand mb-2 text-sm font-bold">Saved Palettes</p>
-
 				<div class="max-h-64 overflow-y-auto">
 					{#if toolbar.loadingSavedPalettes}
 						<div class="py-8 text-center text-white/70">Loading...</div>
@@ -48,7 +47,6 @@
 										<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.fileName}>
 											{item.fileName}
 										</span>
-
 										<button
 											class="bg-brand rounded px-2 py-1 text-xs font-bold text-black"
 											onclick={() => handlePaletteLoad(item.palette)}
@@ -57,7 +55,6 @@
 											Load
 										</button>
 									</div>
-
 									<div class="mt-1 flex flex-row flex-wrap gap-1">
 										{#each item.palette as color}
 											<span

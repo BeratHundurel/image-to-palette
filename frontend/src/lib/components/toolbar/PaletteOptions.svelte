@@ -77,7 +77,6 @@
 			)}
 		>
 			<h3 class="mb-1">Palette Options</h3>
-
 			{#each draw_options as option, i}
 				<button
 					class="w-full cursor-pointer rounded-sm p-2 text-left transition hover:bg-zinc-700"
@@ -95,7 +94,6 @@
 
 			<div class="mt-3 flex items-center justify-between">
 				<h3>Sample Options</h3>
-
 				<span
 					class="relative"
 					onmouseenter={() => (showTooltip = true)}
@@ -107,7 +105,6 @@
 							d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
 						/></svg
 					>
-
 					{#if showTooltip}
 						<span
 							class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-white shadow-lg"
@@ -130,7 +127,6 @@
 						<line x1="4" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 					</svg>
 				</button>
-
 				<input
 					id="sample-size"
 					type="number"
@@ -141,7 +137,6 @@
 					max="10"
 					step="1"
 				/>
-
 				<button
 					type="button"
 					class="cursor-pointer rounded p-2 transition hover:bg-zinc-700 focus:outline-none"
@@ -159,7 +154,6 @@
 
 			<div class="my-3 flex items-center gap-3">
 				<h3>Color Filters</h3>
-
 				<input
 					type="text"
 					value={newFilterColor}
@@ -169,7 +163,6 @@
 					maxlength="7"
 					style="width: 80px;"
 				/>
-
 				<button
 					class="cursor-pointer rounded border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs text-white transition-colors hover:bg-zinc-700 hover:text-white focus:outline-none"
 					onclick={handleFilterColorAdd}
@@ -184,7 +177,6 @@
 				{#each filteredColors as color, i}
 					<li class="flex items-center gap-1 rounded bg-black/40 px-2 py-1 text-xs">
 						<span>{color}</span>
-
 						<button
 							class="text-red-400 hover:text-red-600"
 							onclick={() => actions.onFilterColorRemove(i)}

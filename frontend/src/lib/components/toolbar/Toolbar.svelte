@@ -68,7 +68,6 @@
 						moving ? 'bg-brand/80 shadow-brand' : 'bg-zinc-400/80'
 					)}
 				></div>
-
 				<div
 					class={cn(
 						'grip-line h-0.5 w-6 rounded-full transition-all duration-200 ease-out',
