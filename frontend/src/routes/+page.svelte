@@ -6,6 +6,7 @@
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
+	import { setToolbarContext } from '$lib/components/toolbar/context';
 
 	// === State ===
 	let selectors: Selector[] = $state([
@@ -446,13 +447,11 @@
 
 			if (response.ok) {
 				toast.success('Palette saved as ' + (data.fileName || fileName));
-
 				const savedPalettesKey = 'savedPalettes';
 				let savedPaletteNames: string[] = [];
 
 				try {
 					const stored = localStorage.getItem(savedPalettesKey);
-
 					if (stored) {
 						savedPaletteNames = JSON.parse(stored);
 					}
@@ -482,6 +481,61 @@
 			toast.error('Network error.');
 		}
 	}
+	
+	// === Toolbar Context ===
+	const toolbarState = $state({
+		colors: [] as Color[],
+		selectors: [] as Selector[],
+		drawSelectionValue: '',
+		sampleRate: 0,
+		filteredColors: [] as string[],
+		newFilterColor: '',
+		savedPalettes: [] as { fileName: string; palette: Color[] }[],
+		loadingSavedPalettes: false,
+		fileInput: undefined as HTMLInputElement | undefined
+	});
+
+	$effect(() => {
+		toolbarState.colors = colors;
+		toolbarState.selectors = selectors;
+		toolbarState.drawSelectionValue = drawSelectionValue;
+		toolbarState.sampleRate = sampleRate;
+		toolbarState.filteredColors = filteredColors;
+		toolbarState.newFilterColor = newFilterColor;
+		toolbarState.savedPalettes = savedPalettes;
+		toolbarState.loadingSavedPalettes = loadingSavedPalettes;
+		toolbarState.fileInput = fileInput;
+	});
+
+	setToolbarContext({
+		state: toolbarState,
+		actions: {
+			onSelectorSelect: (selectorId: string) => {
+				activeSelectorId = selectorId;
+				selectors = selectors.map((s) => (s.id === selectorId ? { ...s, selected: true } : { ...s, selected: false }));
+			},
+			onDrawOptionChange: (value: string) => {
+				drawSelectionValue = value;
+			},
+			onSampleRateChange: (rate: number) => {
+				sampleRate = rate;
+			},
+			onFilterColorAdd: (color: string) => {
+				filteredColors = [...filteredColors, color];
+			},
+			onFilterColorRemove: (index: number) => {
+				filteredColors = filteredColors.filter((_, idx) => idx !== index);
+			},
+			onNewFilterColorChange: (value: string) => {
+				newFilterColor = value;
+			},
+			onPaletteLoad: (palette: Color[]) => {
+				colors = palette;
+			},
+			extractPaletteFromSelection,
+			uploadAndExtractPalette
+		}
+	});
 </script>
 
 <Toaster />
@@ -541,43 +595,7 @@
 		</section>
 
 		{#if imageLoaded}
-			<Toolbar
-				{colors}
-				{selectors}
-				{drawSelectionValue}
-				{sampleRate}
-				{filteredColors}
-				{newFilterColor}
-				{savedPalettes}
-				{loadingSavedPalettes}
-				{fileInput}
-				onSelectorSelect={(selectorId: string) => {
-					activeSelectorId = selectorId;
-					selectors = selectors.map((s) =>
-						s.id === selectorId ? { ...s, selected: true } : { ...s, selected: false }
-					);
-				}}
-				onDrawOptionChange={(value: string) => {
-					drawSelectionValue = value;
-				}}
-				onSampleRateChange={(rate: number) => {
-					sampleRate = rate;
-				}}
-				onFilterColorAdd={(color: string) => {
-					filteredColors = [...filteredColors, color];
-				}}
-				onFilterColorRemove={(index: number) => {
-					filteredColors = filteredColors.filter((_, idx) => idx !== index);
-				}}
-				onNewFilterColorChange={(value: string) => {
-					newFilterColor = value;
-				}}
-				onPaletteLoad={(palette: Color[]) => {
-					colors = palette;
-				}}
-				{extractPaletteFromSelection}
-				{uploadAndExtractPalette}
-			/>
+			<Toolbar />
 		{/if}
 
 		<section class="w-full max-w-5xl">

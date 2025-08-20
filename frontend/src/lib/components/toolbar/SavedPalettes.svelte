@@ -3,20 +3,12 @@
 	import { cn } from '$lib/utils';
 	import toast from 'svelte-french-toast';
 	import { popovers, popoverState } from '$lib/stores/popovers';
+	import { getToolbarContext } from './context';
 
-	type SavedPaletteItem = {
-		fileName: string;
-		palette: Color[];
-	};
-
-	let { savedPalettes, loadingSavedPalettes, onPaletteLoad } = $props<{
-		savedPalettes: SavedPaletteItem[];
-		loadingSavedPalettes: boolean;
-		onPaletteLoad: (palette: Color[]) => void;
-	}>();
+	const { state: toolbar, actions } = getToolbarContext();
 
 	function handlePaletteLoad(palette: Color[]) {
-		onPaletteLoad([...palette]);
+		actions.onPaletteLoad([...palette]);
 		popovers.close('saved');
 		toast.success('Palette loaded!');
 	}
@@ -42,19 +34,21 @@
 				style="min-width: 260px;"
 			>
 				<p class="text-brand mb-2 text-sm font-bold">Saved Palettes</p>
+
 				<div class="max-h-64 overflow-y-auto">
-					{#if loadingSavedPalettes}
+					{#if toolbar.loadingSavedPalettes}
 						<div class="py-8 text-center text-white/70">Loading...</div>
-					{:else if savedPalettes.length === 0}
+					{:else if toolbar.savedPalettes.length === 0}
 						<div class="py-8 text-center text-white/70">No saved palettes yet.</div>
 					{:else}
 						<ul class="flex flex-col gap-3">
-							{#each savedPalettes as item}
+							{#each toolbar.savedPalettes as item}
 								<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
 									<div class="flex items-center justify-between">
 										<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.fileName}>
 											{item.fileName}
 										</span>
+
 										<button
 											class="bg-brand rounded px-2 py-1 text-xs font-bold text-black"
 											onclick={() => handlePaletteLoad(item.palette)}
@@ -63,6 +57,7 @@
 											Load
 										</button>
 									</div>
+
 									<div class="mt-1 flex flex-row flex-wrap gap-1">
 										{#each item.palette as color}
 											<span
