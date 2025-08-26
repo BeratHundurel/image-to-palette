@@ -499,8 +499,9 @@
 			formData.append('file', srcBlob, 'image.png');
 			formData.append('palette', JSON.stringify(colors.map((c) => c.hex)));
 			formData.append('luminosity', '1.0');
-			formData.append('nearest', '30');
-			formData.append('power', '4.0');
+			formData.append('nearest', '60');
+			formData.append('power', '5.0');
+			formData.append('maxDistance', '120');
 			const res = await fetch('http://localhost:8080/apply-palette', {
 				method: 'POST',
 				body: formData
@@ -686,7 +687,7 @@
 		{/if}
 
 		<section class="w-full max-w-5xl">
-			<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-5">
+			<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
 				{#each colors as color, i}
 					<div
 						role="button"
