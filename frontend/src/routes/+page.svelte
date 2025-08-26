@@ -481,7 +481,93 @@
 			toast.error('Network error.');
 		}
 	}
-	
+
+	// === Apply Palette ===
+	async function applyPaletteToImage() {
+		if (!imageLoaded) {
+			toast.error('Load an image first');
+			return;
+		}
+		if (!colors || colors.length === 0) {
+			toast.error('No palette to apply!');
+			return;
+		}
+		const toastId = toast.loading('Applying palette...');
+		try {
+			const srcBlob = await createBlobFromCanvas(canvas);
+			const formData = new FormData();
+			formData.append('file', srcBlob, 'image.png');
+			formData.append('palette', JSON.stringify(colors.map((c) => c.hex)));
+			formData.append('luminosity', '1.0');
+			formData.append('nearest', '30');
+			formData.append('power', '4.0');
+			const res = await fetch('http://localhost:8080/apply-palette', {
+				method: 'POST',
+				body: formData
+			});
+			if (!res.ok) {
+				toast.error('Failed to apply palette', { id: toastId });
+				return;
+			}
+			const outBlob = await res.blob();
+			await drawBlobToCanvas(outBlob);
+			toast.success('Applied palette', { id: toastId });
+		} catch (e) {
+			toast.error('Error applying palette', { id: toastId });
+		}
+	}
+
+	async function drawBlobToCanvas(blob: Blob) {
+		return new Promise<void>((resolve) => {
+			const url = URL.createObjectURL(blob);
+			const newImage = new Image();
+			newImage.onload = () => {
+				ctx = canvas.getContext('2d')!;
+				originalImageWidth = newImage.width;
+				originalImageHeight = newImage.height;
+
+				const maxWidth = 800,
+					maxHeight = 400;
+				let imgWidth = newImage.width,
+					imgHeight = newImage.height;
+				const aspectRatio = imgWidth / imgHeight;
+
+				if (imgWidth > maxWidth || imgHeight > maxHeight) {
+					if (aspectRatio > 1) {
+						imgWidth = maxWidth;
+						imgHeight = maxWidth / aspectRatio;
+						if (imgHeight > maxHeight) {
+							imgHeight = maxHeight;
+							imgWidth = maxHeight * aspectRatio;
+						}
+					} else {
+						imgHeight = maxHeight;
+						imgWidth = maxHeight * aspectRatio;
+						if (imgWidth > maxWidth) {
+							imgWidth = maxWidth;
+							imgHeight = maxWidth / aspectRatio;
+						}
+					}
+				}
+
+				canvasScaleX = originalImageWidth / imgWidth;
+				canvasScaleY = originalImageHeight / imgHeight;
+				canvas.width = imgWidth;
+				canvas.height = imgHeight;
+				canvas.style.width = imgWidth + 'px';
+				canvas.style.height = imgHeight + 'px';
+
+				ctx.drawImage(newImage, 0, 0, imgWidth, imgHeight);
+				image = newImage;
+				imageLoaded = true;
+				drawImageAndBoxes();
+				URL.revokeObjectURL(url);
+				resolve();
+			};
+			newImage.src = url;
+		});
+	}
+
 	// === Toolbar Context ===
 	const toolbarState = $state({
 		colors: [] as Color[],
@@ -531,6 +617,7 @@
 			},
 			onPaletteLoad: (palette: Color[]) => {
 				colors = palette;
+				applyPaletteToImage();
 			},
 			extractPaletteFromSelection,
 			uploadAndExtractPalette
@@ -621,11 +708,13 @@
 						class="cursor-pointer rounded border border-[#D09E87] px-4 py-2 text-sm font-bold tracking-tight transition-all hover:-translate-y-2 hover:bg-[#D09E87]"
 						onclick={returnToUpload}>Back</button
 					>
+
 					<button
 						class="ml-4 flex cursor-pointer items-center gap-2 rounded border border-[#D09E87] px-4 py-2 text-sm font-bold transition-all hover:-translate-y-1 hover:bg-[#D09E87]"
 						onclick={savePaletteToFile}
 					>
 						Save Palette
+
 						<span> 💾 </span>
 					</button>
 				</div>

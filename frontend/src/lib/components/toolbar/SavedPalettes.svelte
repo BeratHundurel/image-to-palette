@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Color } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
-	import toast from 'svelte-french-toast';
 	import { popovers, popoverState } from '$lib/stores/popovers';
 	import { getToolbarContext } from './context';
 
@@ -10,7 +9,6 @@
 	function handlePaletteLoad(palette: Color[]) {
 		actions.onPaletteLoad([...palette]);
 		popovers.close('saved');
-		toast.success('Palette loaded!');
 	}
 </script>
 
@@ -33,7 +31,7 @@
 				)}
 				style="min-width: 260px;"
 			>
-				<p class="text-brand mb-2 text-sm font-bold">Saved Palettes</p>
+				<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
 				<div class="max-h-64 overflow-y-auto">
 					{#if toolbar.loadingSavedPalettes}
 						<div class="py-8 text-center text-white/70">Loading...</div>
@@ -43,12 +41,12 @@
 						<ul class="flex flex-col gap-3">
 							{#each toolbar.savedPalettes as item}
 								<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
-									<div class="flex items-center justify-between">
+									<div class="flex items-center justify-between mb-2">
 										<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.fileName}>
 											{item.fileName}
 										</span>
 										<button
-											class="bg-brand rounded px-2 py-1 text-xs font-bold text-black"
+											class="text-brand cursor-pointer rounded text-xs font-bold"
 											onclick={() => handlePaletteLoad(item.palette)}
 											type="button"
 										>

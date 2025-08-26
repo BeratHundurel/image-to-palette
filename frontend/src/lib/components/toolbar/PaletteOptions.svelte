@@ -76,7 +76,7 @@
 				$popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 			)}
 		>
-			<h3 class="mb-1">Palette Options</h3>
+			<h3 class="text-brand mb-1 text-sm font-medium">Palette Options</h3>
 			{#each draw_options as option, i}
 				<button
 					class="w-full cursor-pointer rounded-sm p-2 text-left transition hover:bg-zinc-700"
@@ -93,7 +93,7 @@
 			{/each}
 
 			<div class="mt-3 flex items-center justify-between">
-				<h3>Sample Options</h3>
+				<h3 class="text-brand mb-1 text-sm font-medium">Sample Options</h3>
 				<span
 					class="relative"
 					onmouseenter={() => (showTooltip = true)}
@@ -115,7 +115,7 @@
 				</span>
 			</div>
 
-			<div class="mt-2 flex items-center justify-between">
+			<div class="mt-3 flex items-center justify-between">
 				<button
 					type="button"
 					class="cursor-pointer rounded p-2 transition hover:bg-zinc-700 focus:outline-none"
@@ -153,7 +153,7 @@
 			</div>
 
 			<div class="my-3 flex items-center gap-3">
-				<h3>Color Filters</h3>
+				<h3 class="text-brand mb-1 text-sm font-medium">Color Filters</h3>
 				<input
 					type="text"
 					value={newFilterColor}
@@ -173,7 +173,7 @@
 				</button>
 			</div>
 
-			<ul class="mb-2 flex flex-wrap gap-2">
+			<ul class="mb-3 flex flex-wrap gap-3">
 				{#each filteredColors as color, i}
 					<li class="flex items-center gap-1 rounded bg-black/40 px-2 py-1 text-xs">
 						<span>{color}</span>
