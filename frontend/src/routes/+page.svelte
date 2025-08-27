@@ -7,6 +7,15 @@
 	import { fly, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { setToolbarContext } from '$lib/components/toolbar/context';
+	import {
+		createBlobFromCanvas,
+		getMousePos,
+		calculateImageDimensions,
+		copyToClipboard,
+		getSavedPaletteNames,
+		addSavedPaletteName,
+		createCanvas
+	} from '$lib/utils';
 
 	// === State ===
 	let selectors: Selector[] = $state([
@@ -44,15 +53,7 @@
 	let loadingSavedPalettes = $state(false);
 
 	onMount(async () => {
-		const savedPalettesKey = 'savedPalettes';
-		let fileNames: string[] = [];
-
-		try {
-			const stored = localStorage.getItem(savedPalettesKey);
-			if (stored) fileNames = JSON.parse(stored);
-		} catch {
-			fileNames = [];
-		}
+		const fileNames = getSavedPaletteNames();
 
 		if (fileNames.length === 0) {
 			savedPalettes = [];
@@ -116,37 +117,16 @@
 				originalImageWidth = image.width;
 				originalImageHeight = image.height;
 
-				const maxWidth = 800,
-					maxHeight = 400;
-				let { width: imgWidth, height: imgHeight } = image;
-				const aspectRatio = imgWidth / imgHeight;
+				const dimensions = calculateImageDimensions(originalImageWidth, originalImageHeight);
 
-				if (imgWidth > maxWidth || imgHeight > maxHeight) {
-					if (aspectRatio > 1) {
-						imgWidth = maxWidth;
-						imgHeight = maxWidth / aspectRatio;
-						if (imgHeight > maxHeight) {
-							imgHeight = maxHeight;
-							imgWidth = maxHeight * aspectRatio;
-						}
-					} else {
-						imgHeight = maxHeight;
-						imgWidth = maxHeight * aspectRatio;
-						if (imgWidth > maxWidth) {
-							imgWidth = maxWidth;
-							imgHeight = maxWidth / aspectRatio;
-						}
-					}
-				}
+				canvasScaleX = dimensions.scaleX;
+				canvasScaleY = dimensions.scaleY;
+				canvas.width = dimensions.width;
+				canvas.height = dimensions.height;
+				canvas.style.width = dimensions.width + 'px';
+				canvas.style.height = dimensions.height + 'px';
 
-				canvasScaleX = originalImageWidth / imgWidth;
-				canvasScaleY = originalImageHeight / imgHeight;
-				canvas.width = imgWidth;
-				canvas.height = imgHeight;
-				canvas.style.width = imgWidth + 'px';
-				canvas.style.height = imgHeight + 'px';
-
-				ctx.drawImage(image, 0, 0, imgWidth, imgHeight);
+				ctx.drawImage(image, 0, 0, dimensions.width, dimensions.height);
 				imageLoaded = true;
 				drawImageAndBoxes();
 			};
@@ -195,11 +175,8 @@
 		});
 	}
 
-	function getMousePos(e: MouseEvent) {
-		const rect = dragRect ?? canvas.getBoundingClientRect();
-		const scaleX = dragRect ? dragScaleX : canvas.width / rect.width;
-		const scaleY = dragRect ? dragScaleY : canvas.height / rect.height;
-		return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+	function getMousePosition(e: MouseEvent) {
+		return getMousePos(e, canvas, dragRect, dragScaleX, dragScaleY);
 	}
 
 	function handleMouseDown(e: MouseEvent) {
@@ -208,7 +185,7 @@
 		dragRect = canvas.getBoundingClientRect();
 		dragScaleX = canvas.width / dragRect.width;
 		dragScaleY = canvas.height / dragRect.height;
-		const pos = getMousePos(e);
+		const pos = getMousePosition(e);
 		startX = pos.x;
 		startY = pos.y;
 	}
@@ -220,7 +197,7 @@
 			return;
 		}
 		if (!isDragging || !activeSelectorId) return;
-		const pos = getMousePos(e);
+		const pos = getMousePosition(e);
 		const idx = selectors.findIndex((s) => s.id === activeSelectorId);
 		if (idx !== -1) {
 			selectors[idx] = {
@@ -274,17 +251,7 @@
 			const totalHeight = validSelections.reduce((sum, s) => sum + Math.round(s.selection!.h * canvasScaleY), 0);
 			const maxWidth = Math.max(...validSelections.map((s) => Math.round(s.selection!.w * canvasScaleX)));
 
-			let mergedCanvas: HTMLCanvasElement | OffscreenCanvas;
-			if (typeof OffscreenCanvas !== 'undefined') {
-				mergedCanvas = new OffscreenCanvas(maxWidth, totalHeight);
-			} else {
-				const c = document.createElement('canvas');
-
-				c.width = maxWidth;
-				c.height = totalHeight;
-				mergedCanvas = c;
-			}
-
+			const mergedCanvas = createCanvas(maxWidth, totalHeight);
 			const mergedCtx = mergedCanvas.getContext('2d');
 			if (!mergedCtx) return;
 
@@ -319,16 +286,7 @@
 				const scaledW = Math.round(s.selection.w * canvasScaleX);
 				const scaledH = Math.round(s.selection.h * canvasScaleY);
 
-				let cropCanvas: HTMLCanvasElement | OffscreenCanvas;
-				if (typeof OffscreenCanvas !== 'undefined') {
-					cropCanvas = new OffscreenCanvas(scaledW, scaledH);
-				} else {
-					const c = document.createElement('canvas');
-
-					c.width = scaledW;
-					c.height = scaledH;
-					cropCanvas = c;
-				}
+				const cropCanvas = createCanvas(scaledW, scaledH);
 				const cropCtx = cropCanvas.getContext('2d');
 				if (!cropCtx) continue;
 
@@ -353,13 +311,6 @@
 			toast.error('No valid selections to extract colors from', { id: toastId });
 			isExtracting = false;
 		}
-	}
-
-	function createBlobFromCanvas(canvas: HTMLCanvasElement | OffscreenCanvas): Promise<Blob> {
-		if ('convertToBlob' in canvas) {
-			return (canvas as OffscreenCanvas).convertToBlob({ type: 'image/png' });
-		}
-		return new Promise((resolve) => (canvas as HTMLCanvasElement).toBlob((b) => resolve(b!), 'image/png'));
 	}
 
 	async function uploadAndExtractPalette(files: Blob[], existingToastId?: string) {
@@ -408,7 +359,11 @@
 
 	// === Clipboard and Formats ===
 	async function handleCopy(hex: string) {
-		navigator.clipboard.writeText(hex).then(() => toast.success('Copied to clipboard'));
+		try {
+			await copyToClipboard(hex, (message) => toast.success(message));
+		} catch (error) {
+			toast.error('Failed to copy to clipboard');
+		}
 	}
 
 	// === State Reset ===
@@ -447,24 +402,9 @@
 
 			if (response.ok) {
 				toast.success('Palette saved as ' + (data.fileName || fileName));
-				const savedPalettesKey = 'savedPalettes';
-				let savedPaletteNames: string[] = [];
-
-				try {
-					const stored = localStorage.getItem(savedPalettesKey);
-					if (stored) {
-						savedPaletteNames = JSON.parse(stored);
-					}
-				} catch (e) {
-					savedPaletteNames = [];
-				}
 
 				const newFileName = data.fileName || fileName;
-				if (!savedPaletteNames.includes(newFileName)) {
-					savedPaletteNames.push(newFileName);
-
-					localStorage.setItem(savedPalettesKey, JSON.stringify(savedPaletteNames));
-				}
+				addSavedPaletteName(newFileName);
 
 				const exists = savedPalettes.some((p) => p.fileName === newFileName);
 				if (exists) {
@@ -527,38 +467,16 @@
 				originalImageWidth = newImage.width;
 				originalImageHeight = newImage.height;
 
-				const maxWidth = 800,
-					maxHeight = 400;
-				let imgWidth = newImage.width,
-					imgHeight = newImage.height;
-				const aspectRatio = imgWidth / imgHeight;
+				const dimensions = calculateImageDimensions(originalImageWidth, originalImageHeight);
 
-				if (imgWidth > maxWidth || imgHeight > maxHeight) {
-					if (aspectRatio > 1) {
-						imgWidth = maxWidth;
-						imgHeight = maxWidth / aspectRatio;
-						if (imgHeight > maxHeight) {
-							imgHeight = maxHeight;
-							imgWidth = maxHeight * aspectRatio;
-						}
-					} else {
-						imgHeight = maxHeight;
-						imgWidth = maxHeight * aspectRatio;
-						if (imgWidth > maxWidth) {
-							imgWidth = maxWidth;
-							imgHeight = maxWidth / aspectRatio;
-						}
-					}
-				}
+				canvasScaleX = dimensions.scaleX;
+				canvasScaleY = dimensions.scaleY;
+				canvas.width = dimensions.width;
+				canvas.height = dimensions.height;
+				canvas.style.width = dimensions.width + 'px';
+				canvas.style.height = dimensions.height + 'px';
 
-				canvasScaleX = originalImageWidth / imgWidth;
-				canvasScaleY = originalImageHeight / imgHeight;
-				canvas.width = imgWidth;
-				canvas.height = imgHeight;
-				canvas.style.width = imgWidth + 'px';
-				canvas.style.height = imgHeight + 'px';
-
-				ctx.drawImage(newImage, 0, 0, imgWidth, imgHeight);
+				ctx.drawImage(newImage, 0, 0, dimensions.width, dimensions.height);
 				image = newImage;
 				imageLoaded = true;
 				drawImageAndBoxes();
@@ -632,11 +550,11 @@
 	<enhanced:img
 		src="../lib/assets/palette.jpg"
 		alt="Palette"
-		class="absolute top-0 left-0 h-full w-full object-cover"
+		class="absolute left-0 top-0 h-full w-full object-cover"
 	/>
 
 	<!-- Dark overlay -->
-	<div class="absolute top-0 left-0 z-10 h-full w-full bg-black/60"></div>
+	<div class="absolute left-0 top-0 z-10 h-full w-full bg-black/60"></div>
 
 	<!-- Content -->
 	<div class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden">
