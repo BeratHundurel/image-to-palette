@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Color } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
-	import { popovers, popoverState } from '$lib/stores/popovers';
-	import { getToolbarContext } from './context';
+	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
+	import { getToolbarContext } from './context.svelte';
 
 	const { state: toolbar, actions } = getToolbarContext();
 
@@ -23,11 +23,11 @@
 			<span>🎨</span>
 		</button>
 
-		{#if $popoverState.current === 'saved'}
+		{#if popoverState.current === 'saved'}
 			<div
 				class={cn(
 					'palette-dropdown-base border-brand/40 w-80',
-					$popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
+					popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 				)}
 				style="min-width: 260px;"
 			>
@@ -41,7 +41,7 @@
 						<ul class="flex flex-col gap-3">
 							{#each toolbar.savedPalettes as item}
 								<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
-									<div class="flex items-center justify-between mb-2">
+									<div class="mb-2 flex items-center justify-between">
 										<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.fileName}>
 											{item.fileName}
 										</span>

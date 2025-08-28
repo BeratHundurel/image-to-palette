@@ -6,7 +6,7 @@
 	import SavedPalettes from './SavedPalettes.svelte';
 	import ApplicationSettings from './ApplicationSettings.svelte';
 	import { fly } from 'svelte/transition';
-	import { getToolbarContext } from './context';
+	import { getToolbarContext } from './context.svelte';
 
 	// === Context ===
 	const { state: toolbar, actions } = getToolbarContext();

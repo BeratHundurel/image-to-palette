@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { popovers, popoverState } from '$lib/stores/popovers';
-	import { getToolbarContext } from './context';
+	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
+	import { getToolbarContext } from './context.svelte';
 
 	const { state: toolbar, actions } = getToolbarContext();
 
@@ -74,11 +74,11 @@
 		</svg>
 	</button>
 
-	{#if $popoverState.current === 'application'}
+	{#if popoverState.current === 'application'}
 		<div
 			class={cn(
 				'palette-dropdown-base flex min-w-80 flex-col gap-4 border-zinc-600',
-				$popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
+				popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 			)}
 		>
 			<h3 class="text-brand mb-2 text-sm font-medium">Application Settings</h3>
@@ -102,7 +102,7 @@
 							</svg>
 							{#if showTooltip === setting.id}
 								<div
-									class="absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs whitespace-normal text-white shadow-lg"
+									class="absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 whitespace-normal rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs text-white shadow-lg"
 								>
 									{setting.tooltip}
 								</div>

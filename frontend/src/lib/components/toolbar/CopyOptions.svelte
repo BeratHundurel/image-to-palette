@@ -2,8 +2,8 @@
 	import type { Color, NamedColor } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
 	import toast from 'svelte-french-toast';
-	import { popovers, popoverState } from '$lib/stores/popovers';
-	import { getToolbarContext } from './context';
+	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
+	import { getToolbarContext } from './context.svelte';
 
 	const { state: toolbar } = getToolbarContext();
 
@@ -82,11 +82,11 @@
 		>
 	</button>
 
-	{#if $popoverState.current === 'copy'}
+	{#if popoverState.current === 'copy'}
 		<div
 			class={cn(
 				'palette-dropdown-base border-brand/40 w-80',
-				$popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
+				popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 			)}
 		>
 			<p class="text-brand mb-2 text-sm font-bold">Copy Palette</p>

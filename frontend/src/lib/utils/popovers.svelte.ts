@@ -1,5 +1,3 @@
-import { writable, get, type Readable } from 'svelte/store';
-
 export type PopoverName = 'palette' | 'saved' | 'copy' | 'application';
 export type Direction = 'left' | 'right';
 
@@ -8,12 +6,10 @@ export interface PopoverState {
 	direction: Direction;
 }
 
-const initial: PopoverState = {
+const state = $state<PopoverState>({
 	current: null,
 	direction: 'right'
-};
-
-const store = writable<PopoverState>(initial);
+});
 
 function computeDirection(anchor?: HTMLElement | EventTarget | null): Direction {
 	if (typeof window === 'undefined' || !anchor) return 'right';
@@ -31,18 +27,19 @@ function anchorFromEvent(e?: MouseEvent | Event | null): HTMLElement | null {
 	return target ?? null;
 }
 
-export const popoverState: Readable<PopoverState> = {
-	subscribe: store.subscribe
+export function getPopoverState(): PopoverState {
+	return state;
+}
+
+export const popoverState = {
+	get current() { return state.current; },
+	get direction() { return state.direction; }
 };
 
 export const popovers = {
-	subscribe: store.subscribe,
-
 	open(name: PopoverName, anchor?: HTMLElement | EventTarget | null) {
-		store.set({
-			current: name,
-			direction: computeDirection(anchor)
-		});
+		state.current = name;
+		state.direction = computeDirection(anchor);
 	},
 
 	openFromEvent(name: PopoverName, e: MouseEvent) {
@@ -50,14 +47,11 @@ export const popovers = {
 	},
 
 	toggle(name: PopoverName, anchor?: HTMLElement | EventTarget | null) {
-		const s = get(store);
-		if (s.current === name) {
-			store.set({ ...s, current: null });
+		if (state.current === name) {
+			state.current = null;
 		} else {
-			store.set({
-				current: name,
-				direction: computeDirection(anchor)
-			});
+			state.current = name;
+			state.direction = computeDirection(anchor);
 		}
 	},
 
@@ -66,17 +60,16 @@ export const popovers = {
 	},
 
 	close(name?: PopoverName) {
-		const s = get(store);
-		if (!name || s.current === name) {
-			store.set({ ...s, current: null });
+		if (!name || state.current === name) {
+			state.current = null;
 		}
 	},
 
 	isOpen(name: PopoverName) {
-		return get(store).current === name;
+		return state.current === name;
 	},
 
 	getDirection(): Direction {
-		return get(store).direction;
+		return state.direction;
 	}
 };

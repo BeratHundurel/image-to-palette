@@ -43,16 +43,35 @@ export type ToolbarContext = {
 	actions: ToolbarActions;
 };
 
-export const toolbarContextKey = Symbol('toolbar-context');
+export const TOOLBAR_CONTEXT_KEY = Symbol('toolbar-context');
 
 export function setToolbarContext(ctx: ToolbarContext) {
-	setContext(toolbarContextKey, ctx);
+	setContext(TOOLBAR_CONTEXT_KEY, ctx);
 }
 
 export function getToolbarContext(): ToolbarContext {
-	return getContext(toolbarContextKey) as ToolbarContext;
+	return getContext(TOOLBAR_CONTEXT_KEY) as ToolbarContext;
 }
 
 export function hasToolbar(): boolean {
-	return hasContext(toolbarContextKey);
+	return hasContext(TOOLBAR_CONTEXT_KEY);
+}
+
+export function createToolbarStateInitializer(initial?: Partial<ToolbarState>) {
+	return {
+		colors: [],
+		selectors: [],
+		drawSelectionValue: '',
+		sampleRate: 1,
+		filteredColors: [],
+		newFilterColor: '',
+		savedPalettes: [],
+		loadingSavedPalettes: false,
+		fileInput: null,
+		luminosity: 0.5,
+		nearest: 10,
+		power: 2,
+		maxDistance: 100,
+		...initial
+	} satisfies ToolbarState;
 }

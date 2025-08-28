@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { popovers, popoverState } from '$lib/stores/popovers';
+	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
 	import { type Selector } from '$lib/types/palette';
-	import { getToolbarContext } from './context';
+	import { getToolbarContext } from './context.svelte';
 
 	const { state: toolbar, actions } = getToolbarContext();
 
@@ -13,7 +13,6 @@
 
 	let showTooltip = $state(false);
 
-	// Derive local bindings
 	let drawSelectionValue = $derived(toolbar.drawSelectionValue);
 	let sampleRate = $derived(toolbar.sampleRate);
 	let filteredColors = $derived(toolbar.filteredColors);
@@ -69,11 +68,11 @@
 		>
 	</button>
 
-	{#if $popoverState.current === 'palette'}
+	{#if popoverState.current === 'palette'}
 		<div
 			class={cn(
 				'palette-dropdown-base flex min-w-max flex-col gap-2 border-zinc-600',
-				$popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
+				popoverState.direction === 'right' ? 'left-14 ml-1' : 'right-14 mr-1'
 			)}
 		>
 			<h3 class="text-brand mb-1 text-sm font-medium">Palette Options</h3>
@@ -107,7 +106,7 @@
 					>
 					{#if showTooltip}
 						<span
-							class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-white shadow-lg"
+							class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 whitespace-normal rounded bg-zinc-800 px-3 py-2 text-sm text-white shadow-lg"
 						>
 							If sample size is decreased, colors will be more accurate but the extraction will take longer.
 						</span>
