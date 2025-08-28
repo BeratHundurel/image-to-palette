@@ -33,6 +33,10 @@
 	let sampleRate = $state(4);
 	let filteredColors: string[] = $state([]);
 	let newFilterColor: string = $state('#fff');
+	let luminosity = $state(1.0);
+	let nearest = $state(30);
+	let power = $state(4.0);
+	let maxDistance = $state(0);
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
@@ -438,10 +442,10 @@
 			const formData = new FormData();
 			formData.append('file', srcBlob, 'image.png');
 			formData.append('palette', JSON.stringify(colors.map((c) => c.hex)));
-			formData.append('luminosity', '1.0');
-			formData.append('nearest', '60');
-			formData.append('power', '5.0');
-			formData.append('maxDistance', '120');
+			formData.append('luminosity', luminosity.toString());
+			formData.append('nearest', nearest.toString());
+			formData.append('power', power.toString());
+			formData.append('maxDistance', maxDistance.toString());
 			const res = await fetch('http://localhost:8080/apply-palette', {
 				method: 'POST',
 				body: formData
@@ -497,7 +501,11 @@
 		newFilterColor: '',
 		savedPalettes: [] as { fileName: string; palette: Color[] }[],
 		loadingSavedPalettes: false,
-		fileInput: undefined as HTMLInputElement | undefined
+		fileInput: undefined as HTMLInputElement | undefined,
+		luminosity: 1.0,
+		nearest: 30,
+		power: 4.0,
+		maxDistance: 0
 	});
 
 	$effect(() => {
@@ -510,6 +518,10 @@
 		toolbarState.savedPalettes = savedPalettes;
 		toolbarState.loadingSavedPalettes = loadingSavedPalettes;
 		toolbarState.fileInput = fileInput;
+		toolbarState.luminosity = luminosity;
+		toolbarState.nearest = nearest;
+		toolbarState.power = power;
+		toolbarState.maxDistance = maxDistance;
 	});
 
 	setToolbarContext({
@@ -538,6 +550,18 @@
 				colors = palette;
 				applyPaletteToImage();
 			},
+			onLuminosityChange: (value: number) => {
+				luminosity = value;
+			},
+			onNearestChange: (value: number) => {
+				nearest = value;
+			},
+			onPowerChange: (value: number) => {
+				power = value;
+			},
+			onMaxDistanceChange: (value: number) => {
+				maxDistance = value;
+			},
 			extractPaletteFromSelection,
 			uploadAndExtractPalette
 		}
@@ -550,11 +574,11 @@
 	<enhanced:img
 		src="../lib/assets/palette.jpg"
 		alt="Palette"
-		class="absolute left-0 top-0 h-full w-full object-cover"
+		class="absolute top-0 left-0 h-full w-full object-cover"
 	/>
 
 	<!-- Dark overlay -->
-	<div class="absolute left-0 top-0 z-10 h-full w-full bg-black/60"></div>
+	<div class="absolute top-0 left-0 z-10 h-full w-full bg-black/60"></div>
 
 	<!-- Content -->
 	<div class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden">

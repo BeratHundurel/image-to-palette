@@ -4,6 +4,7 @@
 	import SelectorButton from './SelectorButton.svelte';
 	import PaletteOptions from './PaletteOptions.svelte';
 	import SavedPalettes from './SavedPalettes.svelte';
+	import ApplicationSettings from './ApplicationSettings.svelte';
 	import { fly } from 'svelte/transition';
 	import { getToolbarContext } from './context';
 
@@ -78,7 +79,7 @@
 		</div>
 
 		<div class="p-3">
-			<ul class="flex h-80 flex-col gap-3">
+			<ul class="flex flex-col gap-3">
 				{#each toolbar.selectors as selector, i}
 					<SelectorButton {selector} index={i} onSelect={actions.onSelectorSelect} />
 				{/each}
@@ -87,8 +88,86 @@
 
 				<SavedPalettes />
 
+				<ApplicationSettings />
+
 				<CopyOptions />
 			</ul>
 		</div>
 	</div>
 </section>
+
+<style>
+	.draggable {
+		position: fixed;
+		z-index: 50;
+		user-select: none;
+	}
+
+	.draggable.dragging {
+		cursor: move;
+	}
+
+	.draggable:not(.dragging) {
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+		cursor: auto;
+		z-index: 30;
+	}
+
+	.draggable.dragging * {
+		pointer-events: none;
+	}
+
+	.drag-handle {
+		cursor: move;
+	}
+
+	.grip-line {
+		background-color: rgba(161, 161, 170, 0.8);
+	}
+
+	.drag-handle:hover .grip-line {
+		opacity: 1;
+		transform: scaleX(1.15);
+		filter: drop-shadow(0 0 4px rgba(238, 179, 143, 0.3));
+	}
+
+	.dragging .grip-line {
+		opacity: 1;
+		transform: scaleX(1.05);
+		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(238, 179, 143, 0.4));
+	}
+
+	/* Action Button Effects */
+	.palette-button-base::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+		transform: translateX(-100%);
+		transition: transform 0.6s;
+	}
+
+	.palette-button-base:hover {
+		border-color: rgba(161, 161, 170, 0.6);
+		background-color: rgba(39, 39, 42, 0.9);
+		box-shadow:
+			0 10px 15px -3px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	}
+
+	.palette-button-base:hover::before {
+		transform: translateX(100%);
+	}
+
+	.palette-button-base:active {
+		transform: scale(0.95);
+		transition: transform 0.1s;
+		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
+
+	.palette-button-base:focus-visible {
+		outline: 2px solid rgba(161, 161, 170, 0.6);
+		outline-offset: 2px;
+		border-color: rgba(161, 161, 170, 0.8);
+	}
+</style>

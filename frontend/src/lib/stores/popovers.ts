@@ -1,6 +1,6 @@
 import { writable, get, type Readable } from 'svelte/store';
 
-export type PopoverName = 'palette' | 'saved' | 'copy';
+export type PopoverName = 'palette' | 'saved' | 'copy' | 'application';
 export type Direction = 'left' | 'right';
 
 export interface PopoverState {
