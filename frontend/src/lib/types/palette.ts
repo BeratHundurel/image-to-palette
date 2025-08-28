@@ -12,7 +12,6 @@ export type PaletteResponse = {
 
 export type NamedColor = {
 	name: string;
-
 	hex: string;
 };
 
