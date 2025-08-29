@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Color } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
-	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
-	import { getToolbarContext } from './context.svelte';
+	import { popovers, popoverState } from '$lib/context/popovers.svelte';
+	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar, actions } = getToolbarContext();
+	const { state: toolbar, actions } = getAppContext();
 
 	function handlePaletteLoad(palette: Color[]) {
 		actions.onPaletteLoad([...palette]);

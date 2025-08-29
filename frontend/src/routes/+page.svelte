@@ -6,7 +6,12 @@
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import { setToolbarContext } from '$lib/components/toolbar/context';
+	import {
+		createAppActions,
+		createAppStateInitializer,
+		setAppContext,
+		type AppState
+	} from '$lib/context/context.svelte';
 	import {
 		createBlobFromCanvas,
 		getMousePos,
@@ -18,25 +23,9 @@
 	} from '$lib/utils';
 
 	// === State ===
-	let selectors: Selector[] = $state([
-		{ id: 'green', color: 'oklch(79.2% 0.209 151.711)', selected: true },
-		{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false },
-		{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false }
-	]);
-
-	let activeSelectorId: string | null = $state('green');
-	let colors: Color[] = $state([]);
-	let drawSelectionValue = $state('separate');
 	let imageLoaded = $state(false);
 	let isDragging = $state(false);
 	let isExtracting = $state(false);
-	let sampleRate = $state(4);
-	let filteredColors: string[] = $state([]);
-	let newFilterColor: string = $state('#fff');
-	let luminosity = $state(1.0);
-	let nearest = $state(30);
-	let power = $state(4.0);
-	let maxDistance = $state(0);
 
 	let canvas: HTMLCanvasElement;
 	let ctx: CanvasRenderingContext2D;
@@ -46,25 +35,22 @@
 	let originalImageHeight = 0;
 	let canvasScaleX = 1;
 	let canvasScaleY = 1;
+	let dragRect: DOMRect | null = null;
+
 	let startX = 0,
 		startY = 0;
-	let dragRect: DOMRect | null = null;
+
 	let dragScaleX = 1,
 		dragScaleY = 1;
-
-	// === Saved Palettes ===
-	let savedPalettes: { fileName: string; palette: Color[] }[] = $state([]);
-	let loadingSavedPalettes = $state(false);
 
 	onMount(async () => {
 		const fileNames = getSavedPaletteNames();
 
 		if (fileNames.length === 0) {
-			savedPalettes = [];
+			appState.savedPalettes = [];
 			return;
 		}
 
-		loadingSavedPalettes = true;
 		const results: { fileName: string; palette: Color[] }[] = [];
 
 		await Promise.all(
@@ -81,8 +67,7 @@
 			})
 		);
 
-		savedPalettes = results;
-		loadingSavedPalettes = false;
+		appState.savedPalettes = results;
 	});
 
 	// === File Upload & Drop ===
@@ -144,7 +129,7 @@
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-		selectors.forEach((selector) => {
+		appState.selectors.forEach((selector) => {
 			if (!selector.selection) return;
 			const { x, y, w, h } = selector.selection;
 
@@ -184,7 +169,7 @@
 	}
 
 	function handleMouseDown(e: MouseEvent) {
-		if (isExtracting || !activeSelectorId) return;
+		if (isExtracting || !appState.activeSelectorId) return;
 		isDragging = true;
 		dragRect = canvas.getBoundingClientRect();
 		dragScaleX = canvas.width / dragRect.width;
@@ -200,12 +185,12 @@
 			dragRect = null;
 			return;
 		}
-		if (!isDragging || !activeSelectorId) return;
+		if (!isDragging || !appState.activeSelectorId) return;
 		const pos = getMousePosition(e);
-		const idx = selectors.findIndex((s) => s.id === activeSelectorId);
+		const idx = appState.selectors.findIndex((s) => s.id === appState.activeSelectorId);
 		if (idx !== -1) {
-			selectors[idx] = {
-				...selectors[idx],
+			appState.selectors[idx] = {
+				...appState.selectors[idx],
 				selection: {
 					x: Math.min(startX, pos.x),
 					y: Math.min(startY, pos.y),
@@ -220,7 +205,7 @@
 	function handleMouseUp() {
 		isDragging = false;
 		dragRect = null;
-		if (!isExtracting) extractPaletteFromSelection(selectors);
+		if (!isExtracting) extractPaletteFromSelection(appState.selectors);
 	}
 
 	// === Palette Extraction ===
@@ -243,7 +228,7 @@
 
 		const files: Blob[] = [];
 
-		if (drawSelectionValue === 'merge') {
+		if (appState.drawSelectionValue === 'merge') {
 			const validSelections = selectors.filter((s) => s.selection);
 
 			if (validSelections.length === 0) {
@@ -328,8 +313,8 @@
 		const toastId = existingToastId ?? toast.loading('Extracting palette...');
 
 		for (const file of files) formData.append('files', file);
-		formData.append('sampleRate', sampleRate.toString());
-		formData.append('filteredColors', JSON.stringify(filteredColors));
+		formData.append('sampleRate', appState.sampleRate.toString());
+		formData.append('filteredColors', JSON.stringify(appState.filteredColors));
 
 		try {
 			const res = await fetch('http://localhost:8080/extract-palette', {
@@ -344,7 +329,7 @@
 			if (result.data.length > 0) {
 				const extractedColors = result.data.flatMap((p) => p.palette || []);
 				if (extractedColors.length > 0) {
-					colors = extractedColors;
+					appState.colors = extractedColors;
 					toast.success('Palette extracted', { id: toastId });
 				} else {
 					toast.error('No colors found in selected regions', { id: toastId });
@@ -377,9 +362,9 @@
 		if (fileInput) {
 			fileInput.value = '';
 		}
-		colors = [];
-		activeSelectorId = 'green';
-		selectors.forEach((s) => {
+		appState.colors = [];
+		appState.activeSelectorId = 'green';
+		appState.selectors.forEach((s) => {
 			s.selection = undefined;
 			s.selected = s.id === 'green';
 		});
@@ -387,7 +372,7 @@
 
 	// === Save Palette Request ===
 	async function savePaletteToFile() {
-		if (!colors || colors.length === 0) {
+		if (!appState.colors || appState.colors.length === 0) {
 			toast.error('No palette to save!');
 			return;
 		}
@@ -400,7 +385,7 @@
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(colors)
+				body: JSON.stringify(appState.colors)
 			});
 			const data = await response.json();
 
@@ -410,13 +395,16 @@
 				const newFileName = data.fileName || fileName;
 				addSavedPaletteName(newFileName);
 
-				const exists = savedPalettes.some((p) => p.fileName === newFileName);
+				const exists = appState.savedPalettes.some((p) => p.fileName === newFileName);
 				if (exists) {
-					savedPalettes = savedPalettes.map((p) =>
-						p.fileName === newFileName ? { fileName: newFileName, palette: [...colors] } : p
+					appState.savedPalettes = appState.savedPalettes.map((p) =>
+						p.fileName === newFileName ? { fileName: newFileName, palette: [...appState.colors] } : p
 					);
 				} else {
-					savedPalettes = [...savedPalettes, { fileName: newFileName, palette: [...colors] }];
+					appState.savedPalettes = [
+						...appState.savedPalettes,
+						{ fileName: newFileName, palette: [...appState.colors] }
+					];
 				}
 			} else {
 				toast.error(data.error || 'Failed to save palette.');
@@ -432,7 +420,7 @@
 			toast.error('Load an image first');
 			return;
 		}
-		if (!colors || colors.length === 0) {
+		if (!appState.colors || appState.colors.length === 0) {
 			toast.error('No palette to apply!');
 			return;
 		}
@@ -441,11 +429,11 @@
 			const srcBlob = await createBlobFromCanvas(canvas);
 			const formData = new FormData();
 			formData.append('file', srcBlob, 'image.png');
-			formData.append('palette', JSON.stringify(colors.map((c) => c.hex)));
-			formData.append('luminosity', luminosity.toString());
-			formData.append('nearest', nearest.toString());
-			formData.append('power', power.toString());
-			formData.append('maxDistance', maxDistance.toString());
+			formData.append('palette', JSON.stringify(appState.colors.map((c) => c.hex)));
+			formData.append('luminosity', appState.luminosity.toString());
+			formData.append('nearest', appState.nearest.toString());
+			formData.append('power', appState.power.toString());
+			formData.append('maxDistance', appState.maxDistance.toString());
 			const res = await fetch('http://localhost:8080/apply-palette', {
 				method: 'POST',
 				body: formData
@@ -491,80 +479,11 @@
 		});
 	}
 
-	// === Toolbar Context ===
-	const toolbarState = $state({
-		colors: [] as Color[],
-		selectors: [] as Selector[],
-		drawSelectionValue: '',
-		sampleRate: 0,
-		filteredColors: [] as string[],
-		newFilterColor: '',
-		savedPalettes: [] as { fileName: string; palette: Color[] }[],
-		loadingSavedPalettes: false,
-		fileInput: undefined as HTMLInputElement | undefined,
-		luminosity: 1.0,
-		nearest: 30,
-		power: 4.0,
-		maxDistance: 0
-	});
+	const appState = $state<AppState>(createAppStateInitializer());
 
-	$effect(() => {
-		toolbarState.colors = colors;
-		toolbarState.selectors = selectors;
-		toolbarState.drawSelectionValue = drawSelectionValue;
-		toolbarState.sampleRate = sampleRate;
-		toolbarState.filteredColors = filteredColors;
-		toolbarState.newFilterColor = newFilterColor;
-		toolbarState.savedPalettes = savedPalettes;
-		toolbarState.loadingSavedPalettes = loadingSavedPalettes;
-		toolbarState.fileInput = fileInput;
-		toolbarState.luminosity = luminosity;
-		toolbarState.nearest = nearest;
-		toolbarState.power = power;
-		toolbarState.maxDistance = maxDistance;
-	});
-
-	setToolbarContext({
-		state: toolbarState,
-		actions: {
-			onSelectorSelect: (selectorId: string) => {
-				activeSelectorId = selectorId;
-				selectors = selectors.map((s) => (s.id === selectorId ? { ...s, selected: true } : { ...s, selected: false }));
-			},
-			onDrawOptionChange: (value: string) => {
-				drawSelectionValue = value;
-			},
-			onSampleRateChange: (rate: number) => {
-				sampleRate = rate;
-			},
-			onFilterColorAdd: (color: string) => {
-				filteredColors = [...filteredColors, color];
-			},
-			onFilterColorRemove: (index: number) => {
-				filteredColors = filteredColors.filter((_, idx) => idx !== index);
-			},
-			onNewFilterColorChange: (value: string) => {
-				newFilterColor = value;
-			},
-			onPaletteLoad: (palette: Color[]) => {
-				colors = palette;
-				applyPaletteToImage();
-			},
-			onLuminosityChange: (value: number) => {
-				luminosity = value;
-			},
-			onNearestChange: (value: number) => {
-				nearest = value;
-			},
-			onPowerChange: (value: number) => {
-				power = value;
-			},
-			onMaxDistanceChange: (value: number) => {
-				maxDistance = value;
-			},
-			extractPaletteFromSelection,
-			uploadAndExtractPalette
-		}
+	setAppContext({
+		state: appState,
+		actions: createAppActions(appState, applyPaletteToImage, extractPaletteFromSelection, uploadAndExtractPalette)
 	});
 </script>
 
@@ -630,7 +549,7 @@
 
 		<section class="w-full max-w-5xl">
 			<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
-				{#each colors as color, i}
+				{#each appState.colors as color, i}
 					<div
 						role="button"
 						tabindex="0"

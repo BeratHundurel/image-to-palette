@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
+	import { popovers, popoverState } from '$lib/context/popovers.svelte';
 	import { type Selector } from '$lib/types/palette';
-	import { getToolbarContext } from './context.svelte';
+	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar, actions } = getToolbarContext();
+	const { state: toolbar, actions } = getAppContext();
 
 	const draw_options = [
 		{ label: 'Get palettes separate for selections', value: 'separate' },
@@ -106,7 +106,7 @@
 					>
 					{#if showTooltip}
 						<span
-							class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 whitespace-normal rounded bg-zinc-800 px-3 py-2 text-sm text-white shadow-lg"
+							class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-white shadow-lg"
 						>
 							If sample size is decreased, colors will be more accurate but the extraction will take longer.
 						</span>

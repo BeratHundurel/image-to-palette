@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
-	import { getToolbarContext } from './context.svelte';
+	import { popovers, popoverState } from '$lib/context/popovers.svelte';
+	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar, actions } = getToolbarContext();
+	const { state: toolbar, actions: actions } = getAppContext();
 
 	let luminosity = $derived(toolbar.luminosity);
 	let nearest = $derived(toolbar.nearest);
@@ -102,7 +102,7 @@
 							</svg>
 							{#if showTooltip === setting.id}
 								<div
-									class="absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 whitespace-normal rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs text-white shadow-lg"
+									class="absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs whitespace-normal text-white shadow-lg"
 								>
 									{setting.tooltip}
 								</div>

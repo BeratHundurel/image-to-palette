@@ -2,10 +2,10 @@
 	import type { Color, NamedColor } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
 	import toast from 'svelte-french-toast';
-	import { popovers, popoverState } from '$lib/utils/popovers.svelte';
-	import { getToolbarContext } from './context.svelte';
+	import { popovers, popoverState } from '$lib/context/popovers.svelte';
+	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar } = getToolbarContext();
+	const { state: toolbar } = getAppContext();
 
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },

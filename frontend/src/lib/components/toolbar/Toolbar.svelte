@@ -6,10 +6,10 @@
 	import SavedPalettes from './SavedPalettes.svelte';
 	import ApplicationSettings from './ApplicationSettings.svelte';
 	import { fly } from 'svelte/transition';
-	import { getToolbarContext } from './context.svelte';
+	import { getAppContext } from '$lib/context/context.svelte';
 
 	// === Context ===
-	const { state: toolbar, actions } = getToolbarContext();
+	const { state: toolbar, actions } = getAppContext();
 
 	// === Drag State ===
 	let right = $state(100);
