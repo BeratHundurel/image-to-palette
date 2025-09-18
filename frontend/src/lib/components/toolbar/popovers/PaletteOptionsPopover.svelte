@@ -54,7 +54,7 @@
 
 <div
 	class={cn(
-		'palette-dropdown-base flex min-w-max flex-col gap-2 border-zinc-600',
+		'palette-dropdown-base flex min-w-max flex-col gap-2',
 		popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
 	)}
 	style={popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}

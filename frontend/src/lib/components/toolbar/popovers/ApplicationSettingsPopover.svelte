@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 	import { getAppContext } from '$lib/context/context.svelte';
-	import { popovers, popoverState } from '$lib/context/popovers.svelte';
+	import { popoverState } from '$lib/context/popovers.svelte';
 
 	const { state: appState } = getAppContext();
 
@@ -62,7 +62,7 @@
 
 <div
 	class={cn(
-		'palette-dropdown-base flex min-w-80 flex-col gap-4 border-zinc-600',
+		'palette-dropdown-base flex min-w-80 flex-col gap-4',
 		popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
 	)}
 	style={popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
@@ -121,9 +121,7 @@
 	{/each}
 
 	<div class="mt-2 border-t border-zinc-700 pt-3">
-		<p class="text-xs text-zinc-400">
-			Adjust these settings to fine-tune how the palette is applied to your image.
-		</p>
+		<p class="text-xs text-zinc-400">Adjust these settings to fine-tune how the palette is applied to your image.</p>
 	</div>
 </div>
 

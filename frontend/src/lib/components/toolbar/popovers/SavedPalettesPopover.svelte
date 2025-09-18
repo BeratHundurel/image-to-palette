@@ -14,10 +14,7 @@
 </script>
 
 <div
-	class={cn(
-		'palette-dropdown-base border-brand/40 w-80',
-		popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
-	)}
+	class={cn('palette-dropdown-base w-80', popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2')}
 	style={`min-width: 260px; ${popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}`}
 >
 	<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>

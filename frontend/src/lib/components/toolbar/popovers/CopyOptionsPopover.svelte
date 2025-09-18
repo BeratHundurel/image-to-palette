@@ -80,10 +80,7 @@
 </script>
 
 <div
-	class={cn(
-		'palette-dropdown-base border-brand/40 w-80',
-		popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
-	)}
+	class={cn('palette-dropdown-base w-80', popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2')}
 	style={popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
 	<p class="text-brand mb-2 text-sm font-bold">Copy Palette</p>

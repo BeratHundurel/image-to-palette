@@ -5,15 +5,13 @@
 	import PaletteOptions from './PaletteOptions.svelte';
 	import SavedPalettes from './SavedPalettes.svelte';
 	import ApplicationSettings from './ApplicationSettings.svelte';
+	import PaletteOptionsPopover from './popovers/PaletteOptionsPopover.svelte';
+	import ApplicationSettingsPopover from './popovers/ApplicationSettingsPopover.svelte';
+	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
+	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
 	import { fly } from 'svelte/transition';
 	import { getAppContext } from '$lib/context/context.svelte';
 	import { popovers, popoverState } from '$lib/context/popovers.svelte';
-
-	// Import popover content components
-	import PaletteOptionsPopover from './PaletteOptionsPopover.svelte';
-	import ApplicationSettingsPopover from './ApplicationSettingsPopover.svelte';
-	import CopyOptionsPopover from './CopyOptionsPopover.svelte';
-	import SavedPalettesPopover from './SavedPalettesPopover.svelte';
 
 	// === Context ===
 	const { state: appState } = getAppContext();
@@ -43,7 +41,6 @@
 		moving = false;
 	}
 
-	// Close popovers when toolbar is moved
 	$effect(() => {
 		if (moving) {
 			popovers.close();
@@ -72,29 +69,29 @@
 		<div
 			bind:this={dragHandle}
 			class={cn(
-				'flex cursor-move items-center justify-center border-b border-zinc-700/50 p-4',
-				'hover:border-brand hover:bg-zinc-800/50',
+				'flex cursor-move items-center justify-center border-b border-zinc-700/50 px-5 py-4',
+				'hover:border-brand/40 hover:bg-zinc-800/50',
 				'drag-handle transition-all duration-200 ease-out'
 			)}
 		>
 			<div class="flex flex-col items-center gap-1.5">
 				<div
 					class={cn(
-						'grip-line h-0.5 w-8 rounded-full transition-all duration-200 ease-out',
+						'h-0.5 w-8 rounded-full transition-all duration-200 ease-out',
 						moving ? 'bg-brand/80 shadow-brand' : 'bg-zinc-400/80'
 					)}
 				></div>
 				<div
 					class={cn(
-						'grip-line h-0.5 w-6 rounded-full transition-all duration-200 ease-out',
-						moving ? 'bg-brand/40 shadow-brand' : 'bg-zinc-400/40'
+						'h-0.5 w-6 rounded-full transition-all duration-200 ease-out',
+						moving ? 'bg-brand/50 shadow-brand' : 'bg-zinc-400/50'
 					)}
 				></div>
 			</div>
 		</div>
 
 		<!-- Toolbar Content -->
-		<div class="relative p-4">
+		<div class="relative p-5">
 			<!-- Main Controls -->
 			<ul class="flex flex-col gap-3">
 				<!-- Selection Tools Section -->
@@ -111,6 +108,19 @@
 						</div>
 					</li>
 				{/if}
+
+				<!-- Processing Section -->
+				<li class="relative">
+					<div class="mb-2 flex items-center gap-2">
+						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Processing</h3>
+						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+					</div>
+					<div class="flex justify-start gap-2">
+						<SavedPalettes />
+						<ApplicationSettings />
+					</div>
+				</li>
+
 				<!-- Extraction Section -->
 				<li class="relative">
 					<div class="mb-2 flex items-center gap-2">
@@ -120,52 +130,33 @@
 					<PaletteOptions />
 				</li>
 
-				<!-- Processing Section -->
+				<!-- Copy Section -->
 				<li class="relative">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Processing</h3>
-						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
-					</div>
-					<ApplicationSettings />
-				</li>
-
-				<!-- Output Section -->
-				<li class="relative">
-					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Output</h3>
+						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Copy</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
-						<SavedPalettes />
 						<CopyOptions />
 					</div>
 				</li>
 			</ul>
 		</div>
 
-		<!-- Popovers positioned relative to toolbar -->
 		{#if popoverState.current === 'palette'}
-			<div class="popover-container">
-				<PaletteOptionsPopover />
-			</div>
+			<PaletteOptionsPopover />
 		{/if}
 
 		{#if popoverState.current === 'application'}
-			<div class="popover-container">
-				<ApplicationSettingsPopover />
-			</div>
+			<ApplicationSettingsPopover />
 		{/if}
 
 		{#if popoverState.current === 'copy'}
-			<div class="popover-container">
-				<CopyOptionsPopover />
-			</div>
+			<CopyOptionsPopover />
 		{/if}
 
 		{#if popoverState.current === 'saved'}
-			<div class="popover-container">
-				<SavedPalettesPopover />
-			</div>
+			<SavedPalettesPopover />
 		{/if}
 	</div>
 </section>
@@ -173,13 +164,15 @@
 <style>
 	.draggable {
 		position: fixed;
-		z-index: 1000; /* Higher z-index to stay above other elements */
+		z-index: 50;
 		user-select: none;
+		transition: none;
 	}
 
 	.draggable.dragging {
 		cursor: move;
-		z-index: 1001; /* Even higher when dragging */
+		z-index: 51;
+		transition: none;
 	}
 
 	.draggable.dragging * {
@@ -190,29 +183,7 @@
 		cursor: move;
 	}
 
-	.grip-line {
-		background-color: rgba(161, 161, 170, 0.8);
-	}
-
-	.drag-handle:hover .grip-line {
-		opacity: 1;
-		transform: scaleX(1.15);
-		filter: drop-shadow(0 0 4px rgba(238, 179, 143, 0.3));
-	}
-
-	.dragging .grip-line {
-		opacity: 1;
-		transform: scaleX(1.05);
-		filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(238, 179, 143, 0.4));
-	}
-
 	/* Popover Container */
-	.popover-container {
-		position: absolute;
-		top: 0;
-		z-index: 10;
-	}
-
 	:global(.palette-button-base::before) {
 		content: '';
 		position: absolute;
@@ -241,21 +212,6 @@
 		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
-	:global(.palette-button-base:focus-visible) {
-		outline: 2px solid rgba(161, 161, 170, 0.6);
-		outline-offset: 2px;
-		border-color: rgba(161, 161, 170, 0.8);
-	}
-
-	/* Position popovers relative to toolbar direction */
-	:global(.palette-dropdown-base.left-full) {
-		left: calc(100% + 0.5rem);
-	}
-
-	:global(.palette-dropdown-base.right-full) {
-		right: calc(100% + 0.5rem);
-	}
-
 	@keyframes fadeInZoom {
 		from {
 			opacity: 0;
@@ -276,41 +232,5 @@
 	/* Enhanced visual feedback for sections */
 	li:hover .from-brand\/40 {
 		background: linear-gradient(to right, rgba(238, 179, 143, 0.6), transparent);
-	}
-
-	/* Scrollbar styles for popovers */
-	:global(.palette-dropdown-base::-webkit-scrollbar) {
-		width: 6px;
-	}
-
-	:global(.palette-dropdown-base::-webkit-scrollbar-track) {
-		background: rgba(63, 63, 70, 0.5);
-		border-radius: 3px;
-	}
-
-	:global(.palette-dropdown-base::-webkit-scrollbar-thumb) {
-		background: rgba(161, 161, 170, 0.5);
-		border-radius: 3px;
-	}
-
-	:global(.palette-dropdown-base::-webkit-scrollbar-thumb:hover) {
-		background: rgba(161, 161, 170, 0.7);
-	}
-
-	/* Responsive adjustments */
-	@media (max-width: 768px) {
-		.draggable {
-			position: fixed;
-			right: 1rem !important;
-			top: 1rem !important;
-		}
-
-		:global(.palette-dropdown-base) {
-			max-width: 90vw;
-			left: auto !important;
-			right: 0 !important;
-			margin-right: 0 !important;
-			margin-left: 0 !important;
-		}
 	}
 </style>
