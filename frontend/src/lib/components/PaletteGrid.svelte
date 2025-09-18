@@ -1,0 +1,67 @@
+<script lang="ts">
+	import { getAppContext } from '$lib/context/context.svelte';
+	import { copyToClipboard } from '$lib/utils';
+	import { tick } from 'svelte';
+	import toast from 'svelte-french-toast';
+	import { fly, scale } from 'svelte/transition';
+
+	const { state, actions } = getAppContext();
+
+	async function handleCopy(hex: string) {
+		try {
+			await copyToClipboard(hex, (message) => toast.success(message));
+		} catch (error) {
+			toast.error('Failed to copy to clipboard');
+		}
+	}
+
+	async function returnToUpload() {
+		await tick();
+		state.imageLoaded = false;
+		if (state.fileInput) {
+			state.fileInput.value = '';
+		}
+		state.colors = [];
+		state.activeSelectorId = 'green';
+		state.selectors.forEach((s) => {
+			s.selection = undefined;
+			s.selected = s.id === 'green';
+		});
+	}
+</script>
+
+<section class="w-full max-w-5xl">
+	<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
+		{#each state.colors as color, i}
+			<div
+				role="button"
+				tabindex="0"
+				onkeyup={(e) => (e.key === 'Enter' || e.key === ' ') && handleCopy(color.hex)}
+				onclick={() => handleCopy(color.hex)}
+				in:scale={{ delay: i * 80, duration: 300, start: 0.7 }}
+				class="flex h-9 cursor-pointer items-center justify-center rounded-lg p-2 shadow-md"
+				style="background-color: {color.hex}"
+			>
+				<span class="rounded bg-black/50 px-2 py-1 font-mono text-xs">{color.hex}</span>
+			</div>
+		{/each}
+	</div>
+
+	{#if state.imageLoaded}
+		<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
+			<button
+				class="cursor-pointer rounded border border-[#D09E87] px-4 py-2 text-sm font-bold tracking-tight transition-all hover:-translate-y-2 hover:bg-[#D09E87]"
+				onclick={returnToUpload}>Back</button
+			>
+
+			<button
+				class="ml-4 flex cursor-pointer items-center gap-2 rounded border border-[#D09E87] px-4 py-2 text-sm font-bold transition-all hover:-translate-y-1 hover:bg-[#D09E87]"
+				onclick={actions.palette.savePaletteToFile}
+			>
+				Save Palette
+
+				<span> 💾 </span>
+			</button>
+		</div>
+	{/if}
+</section>
