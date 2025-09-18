@@ -1,18 +1,20 @@
 <script lang="ts">
+	import { getAppContext } from '$lib/context/context.svelte';
 	import { type Selector } from '$lib/types/palette';
 
-	let {
-		selector,
-		index = 0,
-		onSelect
-	} = $props<{
+	let { selector, index = 0 } = $props<{
 		selector: Selector;
 		index?: number;
-		onSelect: (id: string) => void;
 	}>();
 
+	const { state: state } = getAppContext();
+
 	function handleClick() {
-		onSelect?.(selector.id);
+		state.activeSelectorId = selector.id;
+		state.selectors = state.selectors.map((s) => ({
+			...s,
+			selected: s.id === selector.id
+		}));
 	}
 </script>
 

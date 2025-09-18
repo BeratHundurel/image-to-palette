@@ -4,10 +4,11 @@
 	import { popovers, popoverState } from '$lib/context/popovers.svelte';
 	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar, actions } = getAppContext();
+	const { state: state, actions } = getAppContext();
 
 	function handlePaletteLoad(palette: Color[]) {
-		actions.onPaletteLoad([...palette]);
+		state.colors = palette;
+		actions.palette.applyPaletteToImage();
 		popovers.close('saved');
 	}
 </script>
@@ -33,13 +34,13 @@
 			>
 				<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
 				<div class="max-h-64 overflow-y-auto">
-					{#if toolbar.loadingSavedPalettes}
+					{#if state.loadingSavedPalettes}
 						<div class="py-8 text-center text-white/70">Loading...</div>
-					{:else if toolbar.savedPalettes.length === 0}
+					{:else if state.savedPalettes.length === 0}
 						<div class="py-8 text-center text-white/70">No saved palettes yet.</div>
 					{:else}
 						<ul class="flex flex-col gap-3">
-							{#each toolbar.savedPalettes as item}
+							{#each state.savedPalettes as item}
 								<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
 									<div class="mb-2 flex items-center justify-between">
 										<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.fileName}>

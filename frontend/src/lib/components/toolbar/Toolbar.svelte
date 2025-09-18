@@ -9,7 +9,7 @@
 	import { getAppContext } from '$lib/context/context.svelte';
 
 	// === Context ===
-	const { state: toolbar, actions } = getAppContext();
+	const { state: appState, actions } = getAppContext();
 
 	// === Drag State ===
 	let right = $state(100);
@@ -80,8 +80,8 @@
 
 		<div class="p-3">
 			<ul class="flex flex-col gap-3">
-				{#each toolbar.selectors as selector, i}
-					<SelectorButton {selector} index={i} onSelect={actions.onSelectorSelect} />
+				{#each appState.selectors as selector, i}
+					<SelectorButton {selector} index={i} />
 				{/each}
 
 				<PaletteOptions />

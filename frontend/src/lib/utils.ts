@@ -1,6 +1,5 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import type { Color } from './types/palette';
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -23,11 +22,13 @@ export function createBlobFromCanvas(canvas: HTMLCanvasElement | OffscreenCanvas
  */
 export function getMousePos(
 	event: MouseEvent,
-	canvas: HTMLCanvasElement,
+	canvas: HTMLCanvasElement | null,
 	dragRect: DOMRect | null = null,
 	dragScaleX = 1,
 	dragScaleY = 1
 ) {
+	if (!canvas) return { x: 0, y: 0 };
+
 	const rect = dragRect ?? canvas.getBoundingClientRect();
 	const scaleX = dragRect ? dragScaleX : canvas.width / rect.width;
 	const scaleY = dragRect ? dragScaleY : canvas.height / rect.height;
@@ -141,4 +142,8 @@ export function createCanvas(width: number, height: number): HTMLCanvasElement |
 		canvas.height = height;
 		return canvas;
 	}
+}
+
+export function preventDefault(event: Event) {
+	event.preventDefault();
 }

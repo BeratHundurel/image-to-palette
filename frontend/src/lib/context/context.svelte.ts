@@ -1,5 +1,8 @@
 import type { Color, Selector } from '$lib/types/palette';
 import { getContext, hasContext, setContext } from 'svelte';
+import { createPaletteActions, type PaletteActions } from './palette/palette.svelte';
+import { createCanvasActions, type CanvasActions } from './canvas/canvas.svelte';
+import { createUploadActions, type UploadActions } from './upload/upload.svelte';
 
 export type SavedPaletteItem = {
 	fileName: string;
@@ -17,26 +20,31 @@ export type AppState = {
 	savedPalettes: SavedPaletteItem[];
 	loadingSavedPalettes: boolean;
 	fileInput: HTMLInputElement | null | undefined;
+	canvas: HTMLCanvasElement | null;
+	canvasContext: CanvasRenderingContext2D | null;
+	image: HTMLImageElement | null;
+	dragRect: DOMRect | null;
+	originalImageWidth: number;
+	originalImageHeight: number;
+	canvasScaleX: number;
+	canvasScaleY: number;
 	luminosity: number;
 	nearest: number;
 	power: number;
 	maxDistance: number;
+	imageLoaded: boolean;
+	isDragging: boolean;
+	isExtracting: boolean;
+	startX: number;
+	startY: number;
+	dragScaleX: number;
+	dragScaleY: number;
 };
 
 export type AppActions = {
-	onSelectorSelect: (id: string) => void;
-	onDrawOptionChange: (value: string) => void;
-	onSampleRateChange: (value: number) => void;
-	onFilterColorAdd: (hex: string) => void;
-	onFilterColorRemove: (index: number) => void;
-	onNewFilterColorChange: (value: string) => void;
-	onPaletteLoad: (palette: Color[]) => void;
-	onLuminosityChange: (value: number) => void;
-	onNearestChange: (value: number) => void;
-	onPowerChange: (value: number) => void;
-	onMaxDistanceChange: (value: number) => void;
-	extractPaletteFromSelection: (selectors: Selector[]) => Promise<void>;
-	uploadAndExtractPalette: (files: File[]) => Promise<void>;
+	palette: PaletteActions;
+	canvas: CanvasActions;
+	upload: UploadActions;
 };
 
 export type AppContext = {
@@ -58,36 +66,22 @@ export function hasToolbar(): boolean {
 	return hasContext(APP_CONTEXT_KEY);
 }
 
-export function createAppActions(
-	state: AppState,
-	applyPaletteToImage: () => void,
-	extractPaletteFromSelection: (selectors: Selector[]) => Promise<void>,
-	uploadAndExtractPalette: (files: File[]) => Promise<void>
-): AppActions {
-	return {
-		onSelectorSelect: (id) => {
-			state.activeSelectorId = id;
-			state.selectors = state.selectors.map((s) => ({
-				...s,
-				selected: s.id === id
-			}));
-		},
-		onDrawOptionChange: (value) => (state.drawSelectionValue = value),
-		onSampleRateChange: (rate) => (state.sampleRate = rate),
-		onFilterColorAdd: (hex) => (state.filteredColors = [...state.filteredColors, hex]),
-		onFilterColorRemove: (index) => (state.filteredColors = state.filteredColors.filter((_, i) => i !== index)),
-		onNewFilterColorChange: (val) => (state.newFilterColor = val),
-		onPaletteLoad: (palette) => {
-			state.colors = palette;
-			applyPaletteToImage();
-		},
-		onLuminosityChange: (val) => (state.luminosity = val),
-		onNearestChange: (val) => (state.nearest = val),
-		onPowerChange: (val) => (state.power = val),
-		onMaxDistanceChange: (val) => (state.maxDistance = val),
-		extractPaletteFromSelection,
-		uploadAndExtractPalette
-	};
+export function createAppActions(context: AppContext): AppActions {
+	const actions = {} as AppActions;
+	context.actions = actions;
+
+	actions.canvas = createCanvasActions(context);
+	actions.palette = createPaletteActions(context);
+	actions.upload = createUploadActions(context);
+
+	return actions;
+}
+
+export function createAppContext(initial?: Partial<AppState>): AppContext {
+	const state = createAppStateInitializer(initial);
+	const ctx: AppContext = { state, actions: {} as AppActions };
+	ctx.actions = createAppActions(ctx);
+	return ctx;
 }
 
 export function createAppStateInitializer(initial?: Partial<AppState>) {
@@ -110,6 +104,21 @@ export function createAppStateInitializer(initial?: Partial<AppState>) {
 		nearest: 30,
 		power: 4,
 		maxDistance: 0,
+		imageLoaded: false,
+		isDragging: false,
+		isExtracting: false,
+		canvas: null,
+		canvasContext: null,
+		image: null,
+		originalImageWidth: 0,
+		originalImageHeight: 0,
+		canvasScaleX: 1,
+		canvasScaleY: 1,
+		startX: 0,
+		startY: 0,
+		dragScaleX: 1,
+		dragScaleY: 1,
+		dragRect: null,
 		...initial
 	} satisfies AppState;
 }

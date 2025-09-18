@@ -3,12 +3,12 @@
 	import { popovers, popoverState } from '$lib/context/popovers.svelte';
 	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar, actions: actions } = getAppContext();
+	const { state: appState, actions: actions } = getAppContext();
 
-	let luminosity = $derived(toolbar.luminosity);
-	let nearest = $derived(toolbar.nearest);
-	let power = $derived(toolbar.power);
-	let maxDistance = $derived(toolbar.maxDistance);
+	let luminosity = $derived(appState.luminosity);
+	let nearest = $derived(appState.nearest);
+	let power = $derived(appState.power);
+	let maxDistance = $derived(appState.maxDistance);
 
 	let showTooltip = $state('');
 
@@ -21,7 +21,7 @@
 			max: 3.0,
 			step: 0.1,
 			tooltip: 'Brightness adjustment factor. 1.0 = no change, >1.0 = brighter, <1.0 = darker',
-			action: actions.onLuminosityChange
+			action: (val: number) => (appState.luminosity = val)
 		},
 		{
 			id: 'nearest',
@@ -31,7 +31,7 @@
 			max: 20,
 			step: 1,
 			tooltip: 'Number of palette colors to use for interpolation. Higher = smoother blending',
-			action: actions.onNearestChange
+			action: (val: number) => (appState.nearest = val)
 		},
 		{
 			id: 'power',
@@ -41,7 +41,7 @@
 			max: 10.0,
 			step: 0.5,
 			tooltip: 'Distance weighting power. Lower = soft blending, higher = sharp transitions',
-			action: actions.onPowerChange
+			action: (val: number) => (appState.power = val)
 		},
 		{
 			id: 'maxDistance',
@@ -51,7 +51,7 @@
 			max: 200,
 			step: 5,
 			tooltip: 'Maximum distance threshold. Only pixels within this range get recolored (0 = all pixels)',
-			action: actions.onMaxDistanceChange
+			action: (val: number) => (appState.maxDistance = val)
 		}
 	]);
 

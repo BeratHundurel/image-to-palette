@@ -4,7 +4,7 @@
 	import { type Selector } from '$lib/types/palette';
 	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar, actions } = getAppContext();
+	const { state: appState, actions } = getAppContext();
 
 	const draw_options = [
 		{ label: 'Get palettes separate for selections', value: 'separate' },
@@ -13,22 +13,21 @@
 
 	let showTooltip = $state(false);
 
-	let drawSelectionValue = $derived(toolbar.drawSelectionValue);
-	let sampleRate = $derived(toolbar.sampleRate);
-	let filteredColors = $derived(toolbar.filteredColors);
-	let newFilterColor = $derived(toolbar.newFilterColor);
+	let drawSelectionValue = $derived(appState.drawSelectionValue);
+	let sampleRate = $derived(appState.sampleRate);
+	let filteredColors = $derived(appState.filteredColors);
+	let newFilterColor = $derived(appState.newFilterColor);
 
 	function handleSampleRateChange(delta: number) {
-		const newRate = delta > 0 ? Math.min(toolbar.sampleRate + delta, 10) : Math.max(toolbar.sampleRate + delta, 1);
-		actions.onSampleRateChange(newRate);
+		const newRate = delta > 0 ? Math.min(appState.sampleRate + delta, 10) : Math.max(appState.sampleRate + delta, 1);
+		appState.sampleRate == newRate;
 	}
 
 	async function handleDrawOptionChange(optionValue: string) {
-		const oldValue = toolbar.drawSelectionValue;
-
-		actions.onDrawOptionChange(optionValue);
+		const oldValue = appState.drawSelectionValue;
+		appState.drawSelectionValue = optionValue;
 		if (optionValue !== oldValue) {
-			await actions.extractPaletteFromSelection(toolbar.selectors);
+			await actions.palette.extractPaletteFromSelection(appState.selectors);
 		}
 
 		popovers.close('palette');
@@ -36,19 +35,18 @@
 
 	async function handleFilterColorAdd() {
 		if (
-			/^#[0-9A-Fa-f]{3,6}$/.test(toolbar.newFilterColor) &&
-			!toolbar.filteredColors.includes(toolbar.newFilterColor)
+			/^#[0-9A-Fa-f]{3,6}$/.test(appState.newFilterColor) &&
+			!appState.filteredColors.includes(appState.newFilterColor)
 		) {
-			actions.onFilterColorAdd(toolbar.newFilterColor);
-			actions.onNewFilterColorChange('');
+			appState.filteredColors = [...appState.filteredColors, appState.newFilterColor];
+			appState.newFilterColor = '';
 
-			let validSelections = toolbar.selectors.filter((s: Selector) => s.selection);
+			let validSelections = appState.selectors.filter((s: Selector) => s.selection);
 			if (validSelections.length > 0) {
-				await actions.extractPaletteFromSelection(validSelections);
-			} else if (toolbar.fileInput) {
-				const files = Array.from(toolbar.fileInput.files || []);
-
-				await actions.uploadAndExtractPalette(files);
+				await actions.palette.extractPaletteFromSelection(validSelections);
+			} else if (appState.fileInput) {
+				const files = Array.from(appState.fileInput.files || []);
+				await actions.palette.uploadAndExtractPalette(files);
 			}
 		}
 	}
@@ -131,7 +129,7 @@
 					type="number"
 					class="w-10 bg-transparent text-center text-xs text-white focus:outline-none"
 					value={sampleRate}
-					onchange={(e) => actions.onSampleRateChange(Number(e.currentTarget.value))}
+					onchange={(e) => (appState.sampleRate = parseInt(e.currentTarget.value) || 30)}
 					min="1"
 					max="10"
 					step="1"
@@ -156,7 +154,7 @@
 				<input
 					type="text"
 					value={newFilterColor}
-					oninput={(e) => actions.onNewFilterColorChange(e.currentTarget.value)}
+					oninput={(e) => (appState.newFilterColor = e.currentTarget.value)}
 					placeholder="#fff"
 					class="focus:border-brand rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-white focus:outline-none"
 					maxlength="7"
@@ -178,7 +176,7 @@
 						<span>{color}</span>
 						<button
 							class="text-red-400 hover:text-red-600"
-							onclick={() => actions.onFilterColorRemove(i)}
+							onclick={() => (appState.filteredColors = filteredColors.filter((_, index) => index !== i))}
 							title="Remove"
 							type="button"
 						>
