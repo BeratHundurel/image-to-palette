@@ -36,7 +36,7 @@
 								onclick={() => handlePaletteLoad(item.palette)}
 								type="button"
 							>
-								Load
+								Apply
 							</button>
 						</div>
 						<div class="mt-1 flex flex-row flex-wrap gap-1">
