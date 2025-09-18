@@ -1,4 +1,4 @@
-import { getMousePos, calculateImageDimensions } from '$lib/utils';
+import { getMousePos, calculateImageDimensions } from '.';
 import type { AppContext } from '../context.svelte';
 
 export type CanvasActions = {

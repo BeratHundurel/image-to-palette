@@ -9,7 +9,7 @@
 	import { getAppContext } from '$lib/context/context.svelte';
 
 	// === Context ===
-	const { state: appState, actions } = getAppContext();
+	const { state: appState } = getAppContext();
 
 	// === Drag State ===
 	let right = $state(100);

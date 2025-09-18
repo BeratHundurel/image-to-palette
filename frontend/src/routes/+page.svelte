@@ -6,15 +6,9 @@
 	import toast, { Toaster } from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import {
-		createAppActions,
-		createAppStateInitializer,
-		setAppContext,
-		type AppState,
-		type AppActions,
-		type AppContext
-	} from '$lib/context/context.svelte';
-	import { copyToClipboard, getSavedPaletteNames } from '$lib/utils';
+	import { setAppContext, type AppContext, createAppContext } from '$lib/context/context.svelte';
+	import { copyToClipboard } from '$lib/utils';
+	import { getSavedPaletteNames } from '$lib/context/palette';
 	import UploadOverlay from '$lib/components/upload/UploadOverlay.svelte';
 	import * as api from '$lib/api/palette';
 
@@ -65,14 +59,9 @@
 		});
 	}
 
-	const state = $state<AppState>(createAppStateInitializer());
-
-	const ctx: AppContext = { state, actions: {} as AppActions };
-	const actions = createAppActions(ctx);
-
-	ctx.actions = actions;
-
-	setAppContext(ctx);
+	// === Context Setup ===
+	const { state: state, actions: actions } = createAppContext();
+	setAppContext({ state, actions } as AppContext);
 </script>
 
 <Toaster />
@@ -148,12 +137,3 @@
 		</section>
 	</div>
 </div>
-
-<style>
-	/* Chrome, Safari, Edge, Opera */
-	input::-webkit-outer-spin-button,
-	input::-webkit-inner-spin-button {
-		-webkit-appearance: none;
-		margin: 0;
-	}
-</style>

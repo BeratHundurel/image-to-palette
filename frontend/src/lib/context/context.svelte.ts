@@ -78,7 +78,7 @@ export function createAppActions(context: AppContext): AppActions {
 }
 
 export function createAppContext(initial?: Partial<AppState>): AppContext {
-	const state = createAppStateInitializer(initial);
+	const state = $state<AppState>(createAppStateInitializer(initial));
 	const ctx: AppContext = { state, actions: {} as AppActions };
 	ctx.actions = createAppActions(ctx);
 	return ctx;

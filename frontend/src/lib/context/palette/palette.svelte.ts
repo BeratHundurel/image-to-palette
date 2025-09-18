@@ -1,7 +1,8 @@
 import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
 import type { Selector } from '$lib/types/palette';
-import { addSavedPaletteName, createBlobFromCanvas, createCanvas } from '$lib/utils';
+import { createBlobFromCanvas, createCanvas } from '../canvas';
+import { addSavedPaletteName } from '.';
 import type { AppContext } from '../context.svelte';
 import * as api from '$lib/api/palette';
 

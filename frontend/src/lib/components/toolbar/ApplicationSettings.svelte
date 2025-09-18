@@ -3,7 +3,7 @@
 	import { popovers, popoverState } from '$lib/context/popovers.svelte';
 	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: appState, actions: actions } = getAppContext();
+	const { state: appState } = getAppContext();
 
 	let luminosity = $derived(appState.luminosity);
 	let nearest = $derived(appState.nearest);

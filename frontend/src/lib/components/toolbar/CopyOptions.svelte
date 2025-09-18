@@ -5,7 +5,7 @@
 	import { popovers, popoverState } from '$lib/context/popovers.svelte';
 	import { getAppContext } from '$lib/context/context.svelte';
 
-	const { state: toolbar } = getAppContext();
+	const { state: appState } = getAppContext();
 
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },
@@ -15,8 +15,8 @@
 	];
 
 	function handleCopyFormatChange(format: string) {
-		if (toolbar.colors.length > 0) {
-			copyPaletteAs(format, toolbar.colors);
+		if (appState.colors.length > 0) {
+			copyPaletteAs(format, appState.colors);
 
 			popovers.close('copy');
 		} else {
