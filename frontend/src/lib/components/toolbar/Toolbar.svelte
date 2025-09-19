@@ -17,8 +17,8 @@
 	const { state: appState } = getAppContext();
 
 	// === Drag State ===
-	let right = $state(100);
-	let top = $state(100);
+	let right = $state(75);
+	let top = $state(75);
 	let moving = $state(false);
 	let dragHandle = $state<HTMLElement | undefined>(undefined);
 
