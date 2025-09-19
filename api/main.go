@@ -19,6 +19,7 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"log"
 	"math"
 	"mime/multipart"
 	"net/http"
@@ -660,24 +661,33 @@ func applyPaletteHandler(c *gin.Context) {
 ////////////////////////////////////////////////////////////////////////////////
 
 func main() {
+	if err := InitDatabase(); err != nil {
+		log.Printf("Failed to initialize database: %v", err)
+		log.Println("Continuing without database functionality...")
+	}
+
+	defer func() {
+		if DB != nil {
+			CloseDatabase()
+		}
+	}()
+
 	router := gin.Default()
 
-	// CORS
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"POST", "GET", "OPTIONS"},
+		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
-	// Routes
 	router.POST("/extract-palette", extractPaletteHandler)
 	router.POST("/save-palette", savePaletteToFileHandler)
 	router.GET("/get-palette", getPaletteHandler)
 	router.POST("/apply-palette", applyPaletteHandler)
 
-	// Start server
+	log.Println("Starting server on :8080")
 	router.Run(":8080")
 }

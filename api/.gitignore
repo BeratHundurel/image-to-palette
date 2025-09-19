@@ -1,2 +1,4 @@
 **/*.md
+**/*.env
+**/*.exe
 user_palettes
