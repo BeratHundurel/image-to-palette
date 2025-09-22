@@ -1,16 +1,5 @@
 package main
 
-// Image to Palette API
-//
-// Structure:
-// 1) Imports
-// 2) Types
-// 3) Utilities (color helpers, file sanitization, etc.)
-// 4) Palette Extraction core (sampling + kmeans)
-// 5) Palette Application core (Shepard's method)
-// 6) HTTP Handlers
-// 7) main()
-
 import (
 	"bytes"
 	"encoding/json"
@@ -43,10 +32,6 @@ import (
 	"github.com/muesli/kmeans"
 )
 
-////////////////////////////////////////////////////////////////////////////////
-// 2) Types
-////////////////////////////////////////////////////////////////////////////////
-
 type Color struct {
 	Hex string `json:"hex"`
 }
@@ -56,7 +41,6 @@ type ExtractResult struct {
 	Error   string  `json:"error,omitempty"`
 }
 
-// Observation for k-means clustering
 type colorObservation []float64
 
 func (c colorObservation) Coordinates() clusters.Coordinates {
@@ -71,10 +55,6 @@ func (c colorObservation) Distance(p clusters.Coordinates) float64 {
 	}
 	return sum
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// 3) Utilities
-////////////////////////////////////////////////////////////////////////////////
 
 func sanitizeFileName(name string) string {
 	result := make([]rune, 0, len(name))
@@ -243,10 +223,6 @@ func minInt(a, b int) int {
 	return b
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// 4) Palette Extraction core
-////////////////////////////////////////////////////////////////////////////////
-
 func samplePixels(img image.Image, sampleRate int, filteredColors []string) clusters.Observations {
 	bounds := img.Bounds()
 	width := bounds.Dx()
@@ -255,7 +231,6 @@ func samplePixels(img image.Image, sampleRate int, filteredColors []string) clus
 	estimatedSamples := (width * height) / (sampleRate * sampleRate)
 	observations := make(clusters.Observations, 0, estimatedSamples)
 
-	// Convert to RGBA once for fast pixel access
 	var rgbaImg *image.RGBA
 	if rgba, ok := img.(*image.RGBA); ok {
 		rgbaImg = rgba
@@ -292,7 +267,6 @@ func processImageForPalette(file multipart.File, numColors int, sampleRate int, 
 		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
 
-	// Conservative heuristic to reduce sampling rate on very large images.
 	bounds := img.Bounds()
 	pixels := bounds.Dx() * bounds.Dy()
 	if sampleRate == 4 {
@@ -314,12 +288,10 @@ func processImageForPalette(file multipart.File, numColors int, sampleRate int, 
 		return nil, fmt.Errorf("kmeans failed: %w", err)
 	}
 
-	// Sort by cluster population (desc)
 	sort.Slice(clustersResult, func(i, j int) bool {
 		return len(clustersResult[i].Observations) > len(clustersResult[j].Observations)
 	})
 
-	// Convert centers to hex colors
 	palette := make([]Color, 0, len(clustersResult))
 	for _, cluster := range clustersResult {
 		coords := cluster.Center.Coordinates()
@@ -332,10 +304,6 @@ func processImageForPalette(file multipart.File, numColors int, sampleRate int, 
 	}
 	return palette, nil
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// 5) Palette Application core (Shepard's method)
-////////////////////////////////////////////////////////////////////////////////
 
 func processImageWithShepardsMethod(
 	img image.Image,
@@ -370,8 +338,6 @@ func processImageWithShepardsMethod(
 						continue
 					}
 
-					// If a maxDistance threshold is set and the nearest palette color is farther than the threshold,
-					// keep the original color unchanged.
 					if maxDistanceSq > 0 {
 						if nearestDistanceSquared(originalRGBA, paletteRGBAs) > maxDistanceSq {
 							out.Set(x, y, originalRGBA)
@@ -391,12 +357,6 @@ func processImageWithShepardsMethod(
 	return out
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// 6) HTTP Handlers
-////////////////////////////////////////////////////////////////////////////////
-
-// POST /extract-palette
-// Multipart form: 'files' (one or many blobs), sampleRate (int), filteredColors (JSON array of hex)
 func extractPaletteHandler(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -463,8 +423,6 @@ func extractPaletteHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": results})
 }
 
-// POST /save-palette?fileName=<name.json>
-// Body: JSON array of Color
 func savePaletteToFileHandler(c *gin.Context) {
 	var palette []Color
 	if err := c.BindJSON(&palette); err != nil {
@@ -486,7 +444,6 @@ func savePaletteToFileHandler(c *gin.Context) {
 		}
 	}
 
-	// Fast semi-unique identifier using FNV-1a over hex strings
 	hexConcat := make([]byte, 0, len(palette)*7)
 	for _, color := range palette {
 		hexConcat = append(hexConcat, color.Hex...)
@@ -498,7 +455,6 @@ func savePaletteToFileHandler(c *gin.Context) {
 	}
 	hashStr := fmt.Sprintf("%x", hash)[:8]
 
-	// Insert hash before extension; ensure .json
 	extIdx := -1
 	for i := len(fileName) - 1; i >= 0; i-- {
 		if fileName[i] == '.' {
@@ -677,11 +633,24 @@ func main() {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
+
+	router.POST("/auth/register", registerHandler)
+	router.POST("/auth/login", loginHandler)
+
+	auth := router.Group("/auth")
+	auth.Use(authMiddleware())
+	{
+		auth.GET("/me", getMeHandler)
+		auth.POST("/change-password", changePasswordHandler)
+		auth.GET("/palettes", getUserPalettesHandler)
+		auth.POST("/palettes", saveUserPaletteHandler)
+		auth.DELETE("/palettes/:id", deleteUserPaletteHandler)
+	}
 
 	router.POST("/extract-palette", extractPaletteHandler)
 	router.POST("/save-palette", savePaletteToFileHandler)
