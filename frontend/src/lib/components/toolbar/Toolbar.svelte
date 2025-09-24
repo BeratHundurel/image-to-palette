@@ -10,11 +10,8 @@
 	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
 	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
 	import { fly } from 'svelte/transition';
-	import { getAppContext } from '$lib/context/context.svelte';
-	import { popovers, popoverState } from '$lib/context/popovers.svelte';
-
-	// === Context ===
-	const { state: appState } = getAppContext();
+	import { appStore } from '$lib/stores/app.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 
 	// === Drag State ===
 	let right = $state(75);
@@ -43,7 +40,7 @@
 
 	$effect(() => {
 		if (moving) {
-			popovers.close();
+			popoverStore.close();
 		}
 	});
 </script>
@@ -95,14 +92,14 @@
 			<!-- Main Controls -->
 			<ul class="flex flex-col gap-3">
 				<!-- Selection Tools Section -->
-				{#if appState.selectors.length > 0}
+				{#if appStore.state.selectors.length > 0}
 					<li class="relative">
 						<div class="mb-2 flex items-center gap-2">
 							<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Selection Tools</h3>
 							<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 						</div>
 						<div class="flex flex-wrap justify-center gap-2">
-							{#each appState.selectors as selector, i}
+							{#each appStore.state.selectors as selector, i}
 								<SelectorButton {selector} index={i} />
 							{/each}
 						</div>
@@ -143,19 +140,19 @@
 			</ul>
 		</div>
 
-		{#if popoverState.current === 'palette'}
+		{#if popoverStore.state.current === 'palette'}
 			<PaletteOptionsPopover />
 		{/if}
 
-		{#if popoverState.current === 'application'}
+		{#if popoverStore.state.current === 'application'}
 			<ApplicationSettingsPopover />
 		{/if}
 
-		{#if popoverState.current === 'copy'}
+		{#if popoverStore.state.current === 'copy'}
 			<CopyOptionsPopover />
 		{/if}
 
-		{#if popoverState.current === 'saved'}
+		{#if popoverStore.state.current === 'saved'}
 			<SavedPalettesPopover />
 		{/if}
 	</div>

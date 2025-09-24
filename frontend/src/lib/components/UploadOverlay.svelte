@@ -1,27 +1,23 @@
 <script lang="ts">
-	import { getAppContext } from '$lib/context/context.svelte';
+	import { appStore } from '$lib/stores/app.svelte';
 	import { preventDefault } from '$lib/utils';
-
-	let context = getAppContext();
-	let state = context.state;
-	let actions = context.actions;
 </script>
 
 <section
 	class="absolute inset-0 flex flex-col items-center justify-around transition-opacity duration-300"
-	class:opacity-0={state.imageLoaded}
-	class:pointer-events-none={state.imageLoaded}
-	class:opacity-100={!state.imageLoaded}
-	class:pointer-events-auto={!state.imageLoaded}
-	aria-hidden={state.imageLoaded ? 'true' : 'false'}
+	class:opacity-0={appStore.state.imageLoaded}
+	class:pointer-events-none={appStore.state.imageLoaded}
+	class:opacity-100={!appStore.state.imageLoaded}
+	class:pointer-events-auto={!appStore.state.imageLoaded}
+	aria-hidden={appStore.state.imageLoaded ? 'true' : 'false'}
 >
 	<button
 		type="button"
-		ondrop={actions.upload.handleDrop}
+		ondrop={appStore.handleDrop}
 		ondragover={preventDefault}
 		ondragenter={preventDefault}
 		ondragleave={preventDefault}
-		onclick={actions.upload.triggerFileSelect}
+		onclick={appStore.triggerFileSelect}
 		class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 text-white transition duration-300 outline-none hover:border-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
 	>
 		<svg
@@ -41,10 +37,10 @@
 		<input
 			type="file"
 			name="file"
-			bind:this={state.fileInput}
+			bind:this={appStore.state.fileInput}
 			class="hidden"
 			accept="image/*"
-			oninput={actions.upload.onFileChange}
+			oninput={appStore.onFileChange}
 			aria-label="Choose image to extract a palette from"
 		/>
 	</button>

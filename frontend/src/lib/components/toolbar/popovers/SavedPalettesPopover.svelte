@@ -1,31 +1,30 @@
 <script lang="ts">
 	import type { Color } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
-	import { getAppContext } from '$lib/context/context.svelte';
-	import { popovers, popoverState } from '$lib/context/popovers.svelte';
-
-	const { state: state, actions } = getAppContext();
+	import { appStore } from '$lib/stores/app.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 
 	function handlePaletteLoad(palette: Color[]) {
-		state.colors = palette;
-		actions.palette.applyPaletteToImage();
-		popovers.close('saved');
+		appStore.state.colors = palette;
+		appStore.applyPalette();
+		popoverStore.close('saved');
 	}
 </script>
 
 <div
-	class={cn('palette-dropdown-base w-80', popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2')}
-	style={`min-width: 260px; ${popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}`}
+	class={cn(
+		'palette-dropdown-base w-80',
+		popoverStore.state.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
+	)}
+	style={`min-width: 260px; ${popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}`}
 >
 	<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
 	<div class="max-h-64 overflow-y-auto">
-		{#if state.loadingSavedPalettes}
-			<div class="py-8 text-center text-white/70">Loading...</div>
-		{:else if state.savedPalettes.length === 0}
+		{#if appStore.state.savedPalettes.length === 0}
 			<div class="py-8 text-center text-white/70">No saved palettes yet.</div>
 		{:else}
 			<ul class="flex flex-col gap-3">
-				{#each state.savedPalettes as item}
+				{#each appStore.state.savedPalettes as item}
 					<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
 						<div class="mb-2 flex items-center justify-between">
 							<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.fileName}>

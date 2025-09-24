@@ -1,10 +1,8 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 	import { type Selector } from '$lib/types/palette';
-	import { getAppContext } from '$lib/context/context.svelte';
-	import { popovers, popoverState } from '$lib/context/popovers.svelte';
-
-	const { state: appState, actions } = getAppContext();
+	import { appStore } from '$lib/stores/app.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 
 	const draw_options = [
 		{ label: 'Get palettes separate for selections', value: 'separate' },
@@ -13,40 +11,41 @@
 
 	let showTooltip = $state(false);
 
-	let drawSelectionValue = $derived(appState.drawSelectionValue);
-	let sampleRate = $derived(appState.sampleRate);
-	let filteredColors = $derived(appState.filteredColors);
-	let newFilterColor = $derived(appState.newFilterColor);
+	let drawSelectionValue = $derived(appStore.state.drawSelectionValue);
+	let sampleRate = $derived(appStore.state.sampleRate);
+	let filteredColors = $derived(appStore.state.filteredColors);
+	let newFilterColor = $derived(appStore.state.newFilterColor);
 
 	function handleSampleRateChange(delta: number) {
-		const newRate = delta > 0 ? Math.min(appState.sampleRate + delta, 10) : Math.max(appState.sampleRate + delta, 1);
-		appState.sampleRate = newRate;
+		const newRate =
+			delta > 0 ? Math.min(appStore.state.sampleRate + delta, 10) : Math.max(appStore.state.sampleRate + delta, 1);
+		appStore.state.sampleRate = newRate;
 	}
 
 	async function handleDrawOptionChange(optionValue: string) {
-		const oldValue = appState.drawSelectionValue;
-		appState.drawSelectionValue = optionValue;
+		const oldValue = appStore.state.drawSelectionValue;
+		appStore.state.drawSelectionValue = optionValue;
 		if (optionValue !== oldValue) {
-			await actions.palette.extractPaletteFromSelection(appState.selectors);
+			await appStore.extractPaletteFromSelection();
 		}
 
-		popovers.close('palette');
+		popoverStore.close('palette');
 	}
 
 	async function handleFilterColorAdd() {
 		if (
-			/^#[0-9A-Fa-f]{3,6}$/.test(appState.newFilterColor) &&
-			!appState.filteredColors.includes(appState.newFilterColor)
+			/^#[0-9A-Fa-f]{3,6}$/.test(appStore.state.newFilterColor) &&
+			!appStore.state.filteredColors.includes(appStore.state.newFilterColor)
 		) {
-			appState.filteredColors = [...appState.filteredColors, appState.newFilterColor];
-			appState.newFilterColor = '';
+			appStore.state.filteredColors = [...appStore.state.filteredColors, appStore.state.newFilterColor];
+			appStore.state.newFilterColor = '';
 
-			let validSelections = appState.selectors.filter((s: Selector) => s.selection);
+			let validSelections = appStore.state.selectors.filter((s: Selector) => s.selection);
 			if (validSelections.length > 0) {
-				await actions.palette.extractPaletteFromSelection(validSelections);
-			} else if (appState.fileInput) {
-				const files = Array.from(appState.fileInput.files || []);
-				await actions.palette.uploadAndExtractPalette(files);
+				await appStore.extractPaletteFromSelection();
+			} else if (appStore.state.fileInput) {
+				const files = Array.from(appStore.state.fileInput.files || []);
+				await appStore.extractPalette(files);
 			}
 		}
 	}
@@ -55,9 +54,9 @@
 <div
 	class={cn(
 		'palette-dropdown-base flex min-w-max flex-col gap-2',
-		popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
+		popoverStore.state.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
 	)}
-	style={popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
+	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
 	<h3 class="text-brand mb-1 text-sm font-medium">Palette Options</h3>
 	{#each draw_options as option, i}
@@ -115,7 +114,7 @@
 			type="number"
 			class="w-10 bg-transparent text-center text-xs text-white focus:outline-none"
 			value={sampleRate}
-			onchange={(e) => (appState.sampleRate = parseInt(e.currentTarget.value) || 30)}
+			onchange={(e) => (appStore.state.sampleRate = parseInt(e.currentTarget.value) || 30)}
 			min="1"
 			max="10"
 			step="1"
@@ -140,7 +139,7 @@
 		<input
 			type="text"
 			value={newFilterColor}
-			oninput={(e) => (appState.newFilterColor = e.currentTarget.value)}
+			oninput={(e) => (appStore.state.newFilterColor = e.currentTarget.value)}
 			placeholder="#fff"
 			class="focus:border-brand rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-white focus:outline-none"
 			maxlength="7"
@@ -162,7 +161,7 @@
 				<span>{color}</span>
 				<button
 					class="text-red-400 hover:text-red-600"
-					onclick={() => (appState.filteredColors = filteredColors.filter((_, index) => index !== i))}
+					onclick={() => (appStore.state.filteredColors = filteredColors.filter((_, index) => index !== i))}
 					title="Remove"
 					type="button"
 				>

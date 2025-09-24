@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { getAppContext } from '$lib/context/context.svelte';
-	import { popoverState } from '$lib/context/popovers.svelte';
+	import { appStore } from '$lib/stores/app.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 
-	const { state: appState } = getAppContext();
-
-	let luminosity = $derived(appState.luminosity);
-	let nearest = $derived(appState.nearest);
-	let power = $derived(appState.power);
-	let maxDistance = $derived(appState.maxDistance);
+	let luminosity = $derived(appStore.state.luminosity);
+	let nearest = $derived(appStore.state.nearest);
+	let power = $derived(appStore.state.power);
+	let maxDistance = $derived(appStore.state.maxDistance);
 
 	let showTooltip = $state('');
 
@@ -21,7 +19,7 @@
 			max: 3.0,
 			step: 0.1,
 			tooltip: 'Brightness adjustment factor. 1.0 = no change, >1.0 = brighter, <1.0 = darker',
-			action: (val: number) => (appState.luminosity = val)
+			action: (val: number) => (appStore.state.luminosity = val)
 		},
 		{
 			id: 'nearest',
@@ -31,7 +29,7 @@
 			max: 20,
 			step: 1,
 			tooltip: 'Number of palette colors to use for interpolation. Higher = smoother blending',
-			action: (val: number) => (appState.nearest = val)
+			action: (val: number) => (appStore.state.nearest = val)
 		},
 		{
 			id: 'power',
@@ -41,7 +39,7 @@
 			max: 10.0,
 			step: 0.5,
 			tooltip: 'Distance weighting power. Lower = soft blending, higher = sharp transitions',
-			action: (val: number) => (appState.power = val)
+			action: (val: number) => (appStore.state.power = val)
 		},
 		{
 			id: 'maxDistance',
@@ -51,7 +49,7 @@
 			max: 200,
 			step: 5,
 			tooltip: 'Maximum distance threshold. Only pixels within this range get recolored (0 = all pixels)',
-			action: (val: number) => (appState.maxDistance = val)
+			action: (val: number) => (appStore.state.maxDistance = val)
 		}
 	]);
 
@@ -63,9 +61,9 @@
 <div
 	class={cn(
 		'palette-dropdown-base flex min-w-80 flex-col gap-4',
-		popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
+		popoverStore.state.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
 	)}
-	style={popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
+	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
 	<h3 class="text-brand mb-2 text-sm font-medium">Application Settings</h3>
 

@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { popovers } from '$lib/context/popovers.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 </script>
 
 <button
 	class="palette-button-base"
 	aria-label="select palette option"
-	onclick={(e) => popovers.toggle('palette', e)}
+	onclick={(e) => popoverStore.toggle('palette', e)}
 	type="button"
 >
 	<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="#fff"

@@ -2,10 +2,8 @@
 	import type { Color, NamedColor } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
 	import toast from 'svelte-french-toast';
-	import { getAppContext } from '$lib/context/context.svelte';
-	import { popovers, popoverState } from '$lib/context/popovers.svelte';
-
-	const { state: appState } = getAppContext();
+	import { appStore } from '$lib/stores/app.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },
@@ -15,9 +13,9 @@
 	];
 
 	function handleCopyFormatChange(format: string) {
-		if (appState.colors.length > 0) {
-			copyPaletteAs(format, appState.colors);
-			popovers.close('copy');
+		if (appStore.state.colors.length > 0) {
+			copyPaletteAs(format, appStore.state.colors);
+			popoverStore.close('copy');
 		} else {
 			toast.error('No palette to copy');
 		}
@@ -80,8 +78,11 @@
 </script>
 
 <div
-	class={cn('palette-dropdown-base w-80', popoverState.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2')}
-	style={popoverState.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
+	class={cn(
+		'palette-dropdown-base w-80',
+		popoverStore.state.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
+	)}
+	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
 	<p class="text-brand mb-2 text-sm font-bold">Copy Palette</p>
 

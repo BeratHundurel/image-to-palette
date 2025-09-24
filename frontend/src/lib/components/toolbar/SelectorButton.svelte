@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getAppContext } from '$lib/context/context.svelte';
+	import { appStore } from '$lib/stores/app.svelte';
 	import { type Selector } from '$lib/types/palette';
 	import { cn } from '$lib/utils';
 
@@ -8,11 +8,9 @@
 		index?: number;
 	}>();
 
-	const { state: state } = getAppContext();
-
 	function handleClick() {
-		state.activeSelectorId = selector.id;
-		state.selectors = state.selectors.map((s) => ({
+		appStore.state.activeSelectorId = selector.id;
+		appStore.state.selectors = appStore.state.selectors.map((s) => ({
 			...s,
 			selected: s.id === selector.id
 		}));
