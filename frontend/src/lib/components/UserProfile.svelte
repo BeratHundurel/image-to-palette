@@ -1,0 +1,92 @@
+<script lang="ts">
+	import { authStore } from '$lib/stores/auth.svelte';
+	import toast from 'svelte-french-toast';
+
+	let showDropdown = $state(false);
+
+	async function handleLogout() {
+		try {
+			await authStore.logout();
+			showDropdown = false;
+			toast.success('Logged out successfully');
+		} catch (error) {
+			toast.error('Failed to logout');
+		}
+	}
+
+	function toggleDropdown() {
+		showDropdown = !showDropdown;
+	}
+
+	function handleClickOutside(event: MouseEvent) {
+		if (event.target instanceof Element && !event.target.closest('.user-profile')) {
+			showDropdown = false;
+		}
+	}
+
+	$effect(() => {
+		if (showDropdown) {
+			document.addEventListener('click', handleClickOutside);
+			return () => document.removeEventListener('click', handleClickOutside);
+		}
+	});
+</script>
+
+{#if authStore.state.user}
+	<div class="user-profile relative">
+		<button
+			onclick={toggleDropdown}
+			class="flex cursor-pointer items-center space-x-2 rounded-full bg-white/20 px-3 py-2 text-white backdrop-blur-sm transition-all hover:bg-white/30"
+		>
+			<div class="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white">
+				{authStore.state.user.name.charAt(0).toUpperCase()}
+			</div>
+			<span class="hidden text-sm font-medium sm:block">{authStore.state.user.name}</span>
+			<svg
+				class="h-4 w-4 transition-transform duration-200"
+				class:rotate-180={showDropdown}
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+			</svg>
+		</button>
+
+		{#if showDropdown}
+			<div
+				class="border-brand/40 absolute top-full right-0 z-50 mt-2 w-64 rounded-lg border bg-zinc-900 shadow-lg backdrop-blur-sm"
+			>
+				<div class="border-b border-zinc-700 p-4">
+					<div class="flex items-center space-x-3">
+						<div class="bg-brand flex h-10 w-10 items-center justify-center rounded-full text-white">
+							{authStore.state.user.name.charAt(0).toUpperCase()}
+						</div>
+						<div class="min-w-0 flex-1">
+							<p class="truncate text-sm font-semibold text-white">{authStore.state.user.name}</p>
+							<p class="truncate text-xs text-zinc-400">{authStore.state.user.email}</p>
+						</div>
+					</div>
+				</div>
+
+				<div class="py-2">
+					<button
+						type="button"
+						onclick={handleLogout}
+						class="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+					>
+						<svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+							/>
+						</svg>
+						Sign Out
+					</button>
+				</div>
+			</div>
+		{/if}
+	</div>
+{/if}
