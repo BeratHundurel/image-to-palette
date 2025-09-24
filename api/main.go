@@ -612,10 +612,6 @@ func applyPaletteHandler(c *gin.Context) {
 	c.Data(http.StatusOK, "image/png", buf.Bytes())
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// 7) main()
-////////////////////////////////////////////////////////////////////////////////
-
 func main() {
 	if err := InitDatabase(); err != nil {
 		log.Printf("Failed to initialize database: %v", err)
