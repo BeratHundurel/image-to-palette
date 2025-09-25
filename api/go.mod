@@ -1,6 +1,6 @@
 module image-to-palette
 
-go 1.24.3
+go 1.25.1
 
 require github.com/gin-gonic/gin v1.11.0
 
