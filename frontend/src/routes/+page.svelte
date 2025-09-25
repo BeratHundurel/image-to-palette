@@ -14,7 +14,6 @@
 
 	onMount(async () => {
 		await authStore.init();
-		appStore.init();
 		await appStore.loadSavedPalettes();
 	});
 
