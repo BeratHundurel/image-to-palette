@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -54,7 +55,7 @@ func TestProcessImageForPalette_KnownImage(t *testing.T) {
 	assert.NotEmpty(t, palette)
 }
 
-// --- API Integration Test ---
+// --- API Integration Tests ---
 
 func TestExtractPaletteHandler(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -79,12 +80,8 @@ func TestExtractPaletteHandler(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	// The response is {"data":[{"palette":[...],"error":""}]}
 	var resp struct {
-		Data []struct {
-			Palette []Color `json:"palette"`
-			Error   string  `json:"error"`
-		} `json:"data"`
+		Data []ExtractResult `json:"data"`
 	}
 	err := json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.NoError(t, err)
@@ -93,12 +90,221 @@ func TestExtractPaletteHandler(t *testing.T) {
 	assert.Empty(t, resp.Data[0].Error)
 }
 
-// --- Test for savePaletteToFileHandler ---
+// --- Unified Palette Handler Tests ---
 
-func TestSavePaletteToFileHandler(t *testing.T) {
+func TestSavePaletteHandler_GuestUser(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	router.POST("/save-palette", savePaletteToFileHandler)
+	router.POST("/palettes", savePaletteHandler)
+
+	// Clean up test directory
+	testDir := "user_palettes"
+	os.RemoveAll(testDir)
+	defer os.RemoveAll(testDir)
+
+	palette := SavePaletteRequest{
+		Name: "test_palette",
+		Palette: []Color{
+			{Hex: "#FF0000"},
+			{Hex: "#00FF00"},
+			{Hex: "#0000FF"},
+		},
+	}
+	paletteJSON, _ := json.Marshal(palette)
+
+	req := httptest.NewRequest("POST", "/palettes", bytes.NewReader(paletteJSON))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusCreated, w.Code)
+
+	var resp struct {
+		Message string `json:"message"`
+		Name    string `json:"name"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Contains(t, resp.Message, "Palette saved successfully")
+	assert.Equal(t, "test_palette", resp.Name)
+}
+
+func TestGetPalettesHandler_GuestUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.GET("/palettes", getPalettesHandler)
+
+	// Clean up and setup test directory
+	testDir := "user_palettes"
+	os.RemoveAll(testDir)
+	os.MkdirAll(testDir, 0755)
+	defer os.RemoveAll(testDir)
+
+	// Create test palette file
+	testPalette := PaletteData{
+		ID:   "test_palette.json",
+		Name: "Test Palette",
+		Palette: []Color{
+			{Hex: "#FF0000"},
+			{Hex: "#00FF00"},
+		},
+		CreatedAt: time.Now(),
+	}
+
+	file, err := os.Create(testDir + "/test_palette.json")
+	assert.NoError(t, err)
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(testPalette)
+	assert.NoError(t, err)
+
+	req := httptest.NewRequest("GET", "/palettes", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp GetPalettesResponse
+	err = json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, resp.Palettes)
+	assert.Equal(t, "Test Palette", resp.Palettes[0].Name)
+	assert.Len(t, resp.Palettes[0].Palette, 2)
+}
+
+func TestDeletePaletteHandler_GuestUser(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.DELETE("/palettes/:id", deletePaletteHandler)
+
+	// Clean up and setup test directory
+	testDir := "user_palettes"
+	os.RemoveAll(testDir)
+	os.MkdirAll(testDir, 0755)
+	defer os.RemoveAll(testDir)
+
+	// Create test palette file
+	testFileName := "test_palette_123.json"
+	testPalette := PaletteData{
+		ID:   testFileName,
+		Name: "Test Palette",
+		Palette: []Color{
+			{Hex: "#FF0000"},
+		},
+		CreatedAt: time.Now(),
+	}
+
+	file, err := os.Create(testDir + "/" + testFileName)
+	assert.NoError(t, err)
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	err = encoder.Encode(testPalette)
+	assert.NoError(t, err)
+	file.Close()
+
+	req := httptest.NewRequest("DELETE", "/palettes/"+testFileName, nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var resp struct {
+		Message string `json:"message"`
+	}
+	err = json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Equal(t, "Palette deleted successfully", resp.Message)
+
+	// Verify file is deleted
+	_, err = os.Stat(testDir + "/" + testFileName)
+	assert.True(t, os.IsNotExist(err))
+}
+
+func TestSavePaletteHandler_InvalidRequest(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.POST("/palettes", savePaletteHandler)
+
+	// Test missing name
+	t.Run("MissingName", func(t *testing.T) {
+		palette := map[string]any{
+			"palette": []Color{{Hex: "#FF0000"}},
+		}
+		paletteJSON, _ := json.Marshal(palette)
+
+		req := httptest.NewRequest("POST", "/palettes", bytes.NewReader(paletteJSON))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	// Test missing palette
+	t.Run("MissingPalette", func(t *testing.T) {
+		palette := map[string]any{
+			"name": "test",
+		}
+		paletteJSON, _ := json.Marshal(palette)
+
+		req := httptest.NewRequest("POST", "/palettes", bytes.NewReader(paletteJSON))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}
+
+func TestDeletePaletteHandler_InvalidID(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.DELETE("/palettes/:id", deletePaletteHandler)
+
+	// Test invalid ID with path traversal attempt - this will be handled by deleteFilePalette
+	req := httptest.NewRequest("DELETE", "/palettes/test..path", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+	var resp struct {
+		Error string `json:"error"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Contains(t, resp.Error, "Failed to delete palette")
+}
+
+func TestDeletePaletteHandler_NotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.DELETE("/palettes/:id", deletePaletteHandler)
+
+	req := httptest.NewRequest("DELETE", "/palettes/nonexistent.json", nil)
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+
+	var resp struct {
+		Error string `json:"error"`
+	}
+	err := json.Unmarshal(w.Body.Bytes(), &resp)
+	assert.NoError(t, err)
+	assert.Contains(t, resp.Error, "Failed to delete palette")
+}
+
+func TestApplyPaletteHandler(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.POST("/apply-palette", applyPaletteHandler)
+
+	img := createTestImage(10, 10)
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
 
 	palette := []Color{
 		{Hex: "#FF0000"},
@@ -107,187 +313,24 @@ func TestSavePaletteToFileHandler(t *testing.T) {
 	}
 	paletteJSON, _ := json.Marshal(palette)
 
-	fileName := "test_palette.json"
-	req := httptest.NewRequest("POST", "/save-palette?fileName="+fileName, bytes.NewReader(paletteJSON))
-	req.Header.Set("Content-Type", "application/json")
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, _ := writer.CreateFormFile("file", "test.png")
+	part.Write(buf.Bytes())
+	writer.WriteField("palette", string(paletteJSON))
+	writer.Close()
+
+	req := httptest.NewRequest("POST", "/apply-palette", body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
-
-	var resp struct {
-		Message  string `json:"message"`
-		FileName string `json:"fileName"`
-		Path     string `json:"path"`
-	}
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(t, err)
-	assert.Contains(t, resp.Message, "Palette saved successfully")
-	assert.Contains(t, resp.FileName, "test_palette_")
-	assert.Contains(t, resp.FileName, ".json")
-	assert.Contains(t, resp.Path, "user_palettes/")
-
-	file, err := os.Open(resp.Path)
-	assert.NoError(t, err)
-	defer file.Close()
-
-	var loadedPalette []Color
-	decoder := json.NewDecoder(file)
-	err = decoder.Decode(&loadedPalette)
-	assert.NoError(t, err)
-	assert.Equal(t, palette, loadedPalette)
-
-	os.Remove(resp.Path)
+	assert.Equal(t, "image/png", w.Header().Get("Content-Type"))
+	assert.Greater(t, w.Body.Len(), 0)
 }
 
-// --- Test for getPaletteHandler ---
-
-func TestGetPaletteHandler(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
-	router.GET("/get-palette", getPaletteHandler)
-
-	testDir := "user_palettes"
-	os.MkdirAll(testDir, 0755)
-	defer os.RemoveAll(testDir)
-
-	// Test 1: Happy path - valid file with palette
-	t.Run("ValidPalette", func(t *testing.T) {
-		palette := []Color{
-			{Hex: "#FF0000"},
-			{Hex: "#00FF00"},
-			{Hex: "#0000FF"},
-		}
-		testFileName := "test_palette.json"
-		testFilePath := testDir + "/" + testFileName
-
-		file, err := os.Create(testFilePath)
-		assert.NoError(t, err)
-		defer file.Close()
-
-		encoder := json.NewEncoder(file)
-		err = encoder.Encode(palette)
-		assert.NoError(t, err)
-
-		req := httptest.NewRequest("GET", "/get-palette?fileName="+testFileName, nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-
-		var resp struct {
-			Palette []Color `json:"palette"`
-		}
-		err = json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.Equal(t, palette, resp.Palette)
-
-		os.Remove(testFilePath)
-	})
-
-	// Test 2: Missing fileName parameter
-	t.Run("MissingFileName", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/get-palette", nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		var resp struct {
-			Error string `json:"error"`
-		}
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.Equal(t, "File name is required", resp.Error)
-	})
-
-	// Test 3: Invalid fileName - too long
-	t.Run("InvalidFileNameTooLong", func(t *testing.T) {
-		longFileName := string(make([]byte, 257)) // 257 characters
-		for i := range longFileName {
-			longFileName = string(append([]byte(longFileName[:i]), 'a'))
-		}
-
-		req := httptest.NewRequest("GET", "/get-palette?fileName="+longFileName, nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		var resp struct {
-			Error string `json:"error"`
-		}
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.Equal(t, "Invalid file name", resp.Error)
-	})
-
-	// Test 4: Invalid fileName - contains invalid characters
-	t.Run("InvalidFileNameCharacters", func(t *testing.T) {
-		invalidFileName := "test<>|file.json"
-
-		req := httptest.NewRequest("GET", "/get-palette?fileName="+invalidFileName, nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusBadRequest, w.Code)
-
-		var resp struct {
-			Error string `json:"error"`
-		}
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.Equal(t, "Invalid file name", resp.Error)
-	})
-
-	// Test 5: File not found
-	t.Run("FileNotFound", func(t *testing.T) {
-		nonExistentFile := "nonexistent.json"
-
-		req := httptest.NewRequest("GET", "/get-palette?fileName="+nonExistentFile, nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusNotFound, w.Code)
-
-		var resp struct {
-			Error string `json:"error"`
-		}
-		err := json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.Equal(t, "Palette not found", resp.Error)
-	})
-
-	// Test 6: Invalid JSON in file
-	t.Run("InvalidJSON", func(t *testing.T) {
-		invalidJsonFileName := "invalid.json"
-		invalidJsonFilePath := testDir + "/" + invalidJsonFileName
-
-		file, err := os.Create(invalidJsonFilePath)
-		assert.NoError(t, err)
-		defer file.Close()
-
-		_, err = file.WriteString("invalid json content")
-		assert.NoError(t, err)
-
-		req := httptest.NewRequest("GET", "/get-palette?fileName="+invalidJsonFileName, nil)
-		w := httptest.NewRecorder()
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusInternalServerError, w.Code)
-
-		var resp struct {
-			Error string `json:"error"`
-		}
-		err = json.Unmarshal(w.Body.Bytes(), &resp)
-		assert.NoError(t, err)
-		assert.Equal(t, "Failed to decode palette JSON", resp.Error)
-
-		os.Remove(invalidJsonFilePath)
-	})
-}
-
-// --- Benchmarks ---
+// --- Utility Functions ---
 
 func createTestImage(width, height int) image.Image {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
@@ -302,6 +345,8 @@ func createTestImage(width, height int) image.Image {
 	return img
 }
 
+// --- Benchmarks ---
+
 func BenchmarkPixelSampling(b *testing.B) {
 	img := createTestImage(300, 300)
 
@@ -310,7 +355,7 @@ func BenchmarkPixelSampling(b *testing.B) {
 	}
 }
 
-func BenchmarkImage(b *testing.B) {
+func BenchmarkImageProcessing(b *testing.B) {
 	img := createTestImage(300, 300)
 	var buf bytes.Buffer
 	png.Encode(&buf, img)
