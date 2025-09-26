@@ -1,11 +1,15 @@
-import type { Color, PaletteResponse } from '$lib/types/palette';
+import type {
+	Color,
+	PaletteResponse,
+	SavePaletteRequest,
+	GetPalettesResponse,
+	SavePaletteResult
+} from '$lib/types/palette';
 
-/**
- * API base URL is configurable via Vite env var `VITE_API_BASE_URL`.
- * Falls back to http://localhost:8080 for local development.
- */
+import { getAuthHeaders } from './auth';
+
 export const API_BASE: string =
-	(typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL) || 'http://localhost:8080';
+	(typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL) || 'http://localhost:8088';
 
 function buildURL(path: string, params?: Record<string, string | number | boolean | undefined>): string {
 	const url = new URL(path, API_BASE);
@@ -40,17 +44,6 @@ export type ApplyParams = {
 	maxDistance: number;
 };
 
-export type SavePaletteResult = {
-	fileName: string;
-};
-
-/**
- * POST /extract-palette
- * - files: Blob[] | File[]
- * - sampleRate: number
- * - filteredColors: string[]
- * Returns: PaletteResponse
- */
 export async function extractPalette(
 	files: (Blob | File)[],
 	sampleRate: number,
@@ -71,13 +64,6 @@ export async function extractPalette(
 	return res.json();
 }
 
-/**
- * POST /apply-palette
- * - imageBlob: Blob (source image)
- * - colors: Color[]
- * - params: tuning params
- * Returns: Blob (transformed image)
- */
 export async function applyPaletteBlob(imageBlob: Blob, colors: Color[], params: ApplyParams): Promise<Blob> {
 	const formData = new FormData();
 	formData.append('file', imageBlob, 'image.png');
@@ -95,27 +81,35 @@ export async function applyPaletteBlob(imageBlob: Blob, colors: Color[], params:
 	return res.blob();
 }
 
-/**
- * POST /save-palette?fileName=...
- * - colors: Color[]
- * Returns: { fileName: string }
- */
-export async function savePalette(fileName: string, colors: Color[]): Promise<SavePaletteResult> {
-	const res = await fetch(buildURL('/save-palette', { fileName }), {
+export async function savePalette(name: string, colors: Color[]): Promise<SavePaletteResult> {
+	const payload: SavePaletteRequest = {
+		name,
+		palette: colors
+	};
+
+	const res = await fetch(buildURL('/palettes'), {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(colors)
+		headers: getAuthHeaders(),
+		body: JSON.stringify(payload)
 	});
 	await ensureOk(res);
 	return res.json();
 }
 
-/**
- * GET /get-palette?fileName=...
- * Returns: { palette: Color[] }
- */
-export async function getPalette(fileName: string): Promise<{ palette: Color[] }> {
-	const res = await fetch(buildURL('/get-palette', { fileName }));
+export async function getPalettes(): Promise<GetPalettesResponse> {
+	const res = await fetch(buildURL('/palettes'), {
+		method: 'GET',
+		headers: getAuthHeaders()
+	});
+	await ensureOk(res);
+	return res.json();
+}
+
+export async function deletePalette(id: string): Promise<{ message: string }> {
+	const res = await fetch(buildURL(`/palettes/${id}`), {
+		method: 'DELETE',
+		headers: getAuthHeaders()
+	});
 	await ensureOk(res);
 	return res.json();
 }

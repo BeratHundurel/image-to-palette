@@ -2,6 +2,27 @@ export type Color = {
 	hex: string;
 };
 
+export type PaletteData = {
+	id: string;
+	name: string;
+	palette: Color[];
+	createdAt: string;
+};
+
+export type SavePaletteRequest = {
+	name: string;
+	palette: Color[];
+};
+
+export type GetPalettesResponse = {
+	palettes: PaletteData[];
+};
+
+export type SavePaletteResult = {
+	message: string;
+	name: string;
+};
+
 export type Palettes = {
 	palette: Color[];
 };

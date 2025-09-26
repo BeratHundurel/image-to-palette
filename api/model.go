@@ -16,6 +16,7 @@ type Palette struct {
 	ID        uint      `json:"id" gorm:"primaryKey"`
 	UserID    *uint     `json:"userId" gorm:"index"`
 	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	Name      string    `json:"name" gorm:"size:255;not null"`
 	JsonData  string    `json:"jsonData" gorm:"type:jsonb;not null"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`

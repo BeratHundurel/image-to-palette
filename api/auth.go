@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -269,110 +268,4 @@ func changePasswordHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
-}
-
-func getUserPalettesHandler(c *gin.Context) {
-	userID, err := getCurrentUser(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	page := 1
-	if p := c.Query("page"); p != "" {
-		if parsedPage, err := strconv.Atoi(p); err == nil && parsedPage > 0 {
-			page = parsedPage
-		}
-	}
-
-	limit := 10
-	if l := c.Query("limit"); l != "" {
-		if parsedLimit, err := strconv.Atoi(l); err == nil && parsedLimit > 0 && parsedLimit <= 100 {
-			limit = parsedLimit
-		}
-	}
-
-	offset := (page - 1) * limit
-
-	var palettes []Palette
-	var total int64
-
-	DB.Model(&Palette{}).Where("user_id = ?", userID).Count(&total)
-
-	if err := DB.Where("user_id = ?", userID).
-		Order("created_at DESC").
-		Offset(offset).
-		Limit(limit).
-		Find(&palettes).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch palettes"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"palettes":    palettes,
-		"total":       total,
-		"page":        page,
-		"limit":       limit,
-		"total_pages": (total + int64(limit) - 1) / int64(limit),
-	})
-}
-
-func saveUserPaletteHandler(c *gin.Context) {
-	userID, err := getCurrentUser(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	var req struct {
-		JsonData string `json:"jsonData" binding:"required"`
-		Name     string `json:"name"`
-	}
-
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	palette := Palette{
-		UserID:   &userID,
-		JsonData: req.JsonData,
-	}
-
-	if err := DB.Create(&palette).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save palette"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "Palette saved successfully",
-		"palette": palette,
-	})
-}
-
-func deleteUserPaletteHandler(c *gin.Context) {
-	userID, err := getCurrentUser(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	paletteID := c.Param("id")
-	if paletteID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Palette ID is required"})
-		return
-	}
-
-	result := DB.Where("id = ? AND user_id = ?", paletteID, userID).Delete(&Palette{})
-	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete palette"})
-		return
-	}
-
-	if result.RowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Palette not found or unauthorized"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Palette deleted successfully"})
 }

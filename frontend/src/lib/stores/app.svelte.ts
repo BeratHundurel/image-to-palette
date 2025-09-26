@@ -1,16 +1,13 @@
 import { browser } from '$app/environment';
-import type { Color, Selector } from '$lib/types/palette';
+import type { Color, Selector, PaletteData } from '$lib/types/palette';
 import * as api from '$lib/api/palette';
+import { authStore } from './auth.svelte';
 import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
 
-export type SavedPaletteItem = {
-	fileName: string;
-	palette: Color[];
-};
+export type SavedPaletteItem = PaletteData;
 
 interface AppState {
-	// Image & Canvas
 	fileInput: HTMLInputElement | null;
 	canvas: HTMLCanvasElement | null;
 	canvasContext: CanvasRenderingContext2D | null;
@@ -20,7 +17,6 @@ interface AppState {
 	canvasScaleX: number;
 	canvasScaleY: number;
 
-	// UI State
 	imageLoaded: boolean;
 	isDragging: boolean;
 	isExtracting: boolean;
@@ -30,16 +26,14 @@ interface AppState {
 	dragScaleX: number;
 	dragScaleY: number;
 
-	// Palette
 	colors: Color[];
 	selectors: Selector[];
 	drawSelectionValue: string;
 	activeSelectorId: string;
 	newFilterColor: string;
 	filteredColors: string[];
-	savedPalettes: SavedPaletteItem[];
+	savedPalettes: PaletteData[];
 
-	// Extraction Settings
 	sampleRate: number;
 	luminosity: number;
 	nearest: number;
@@ -49,7 +43,6 @@ interface AppState {
 
 function createAppStore() {
 	let state = $state<AppState>({
-		// Image & Canvas
 		fileInput: null,
 		canvas: null,
 		canvasContext: null,
@@ -59,7 +52,6 @@ function createAppStore() {
 		canvasScaleX: 1,
 		canvasScaleY: 1,
 
-		// UI State
 		imageLoaded: false,
 		isDragging: false,
 		isExtracting: false,
@@ -69,7 +61,6 @@ function createAppStore() {
 		dragScaleX: 1,
 		dragScaleY: 1,
 
-		// Palette
 		colors: [],
 		selectors: [
 			{ id: 'green', color: 'oklch(79.2% 0.209 151.711)', selected: true },
@@ -82,7 +73,6 @@ function createAppStore() {
 		filteredColors: [],
 		savedPalettes: [],
 
-		// Extraction Settings
 		sampleRate: 4,
 		luminosity: 1,
 		nearest: 30,
@@ -452,29 +442,14 @@ function createAppStore() {
 				toast.error('No palette to save!');
 				return;
 			}
-			const fileName = prompt('Enter a file name for your palette (e.g. palette.json):');
-			if (!fileName) return;
+			const paletteName = prompt('Enter a name for your palette:');
+			if (!paletteName) return;
 
 			try {
-				const data = await api.savePalette(fileName, state.colors);
-				toast.success('Palette saved as ' + (data.fileName || fileName));
+				const data = await api.savePalette(paletteName, state.colors);
+				toast.success('Palette saved: ' + data.name);
 
-				const newFileName = data.fileName || fileName;
-				const exists = state.savedPalettes.some((p) => p.fileName === newFileName);
-
-				if (exists) {
-					state.savedPalettes = state.savedPalettes.map((p) =>
-						p.fileName === newFileName ? { fileName: newFileName, palette: [...state.colors] } : p
-					);
-				} else {
-					state.savedPalettes = [...state.savedPalettes, { fileName: newFileName, palette: [...state.colors] }];
-				}
-
-				// Save to localStorage
-				if (browser) {
-					const fileNames = state.savedPalettes.map((p) => p.fileName);
-					localStorage.setItem('savedPalettes', JSON.stringify(fileNames));
-				}
+				await appStore.loadSavedPalettes();
 			} catch (err) {
 				toast.error(err instanceof Error ? err.message : 'Failed to save palette.');
 			}
@@ -514,30 +489,76 @@ function createAppStore() {
 			if (!browser) return;
 
 			try {
-				const stored = localStorage.getItem('savedPalettes');
-				const fileNames = stored ? JSON.parse(stored) : [];
-
-				if (fileNames.length === 0) {
-					state.savedPalettes = [];
-					return;
-				}
-
-				const results: SavedPaletteItem[] = [];
-				await Promise.all(
-					fileNames.map(async (fileName: string) => {
+				if (authStore.state.isAuthenticated) {
+					const response = await api.getPalettes();
+					state.savedPalettes = response.palettes;
+				} else {
+					const stored = localStorage.getItem('savedPalettes');
+					if (stored) {
 						try {
-							const res = await api.getPalette(fileName);
-							if (Array.isArray(res.palette)) {
-								results.push({ fileName, palette: res.palette });
-							}
-						} catch {}
-					})
-				);
-
-				state.savedPalettes = results;
+							const localPalettes = JSON.parse(stored) as PaletteData[];
+							state.savedPalettes = localPalettes;
+						} catch {
+							state.savedPalettes = [];
+						}
+					} else {
+						try {
+							const response = await api.getPalettes();
+							state.savedPalettes = response.palettes;
+						} catch {
+							state.savedPalettes = [];
+						}
+					}
+				}
 			} catch (error) {
 				console.error('Failed to load saved palettes:', error);
+				state.savedPalettes = [];
 			}
+		},
+
+		async deletePalette(paletteId: string) {
+			try {
+				await api.deletePalette(paletteId);
+				toast.success('Palette deleted');
+
+				if (authStore.state.isAuthenticated) {
+					await appStore.loadSavedPalettes();
+				} else {
+					state.savedPalettes = state.savedPalettes.filter((p) => p.id !== paletteId);
+					if (browser) {
+						localStorage.setItem('savedPalettes', JSON.stringify(state.savedPalettes));
+					}
+				}
+			} catch (err) {
+				toast.error(err instanceof Error ? err.message : 'Failed to delete palette.');
+			}
+		},
+
+		async syncPalettesOnAuth() {
+			if (!browser) return;
+
+			if (authStore.state.isAuthenticated) {
+				const stored = localStorage.getItem('savedPalettes');
+				if (stored) {
+					try {
+						const localPalettes = JSON.parse(stored) as PaletteData[];
+						await Promise.all(
+							localPalettes.map(async (palette) => {
+								try {
+									await api.savePalette(palette.name, palette.palette);
+								} catch {}
+							})
+						);
+						localStorage.removeItem('savedPalettes');
+					} catch {}
+				}
+			} else {
+				if (state.savedPalettes.length > 0) {
+					localStorage.setItem('savedPalettes', JSON.stringify(state.savedPalettes));
+				}
+			}
+
+			await appStore.loadSavedPalettes();
 		}
 	};
 }
