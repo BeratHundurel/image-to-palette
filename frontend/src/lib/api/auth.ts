@@ -126,3 +126,18 @@ export async function changePassword(passwordData: ChangePasswordRequest): Promi
 
 	return handleAuthResponse(response);
 }
+
+export async function demoLogin(): Promise<AuthResponse> {
+	const response = await fetch(`${API_BASE}/auth/demo-login`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' }
+	});
+
+	const data = await handleAuthResponse(response);
+
+	if (data.token) {
+		setAuthToken(data.token);
+	}
+
+	return data;
+}

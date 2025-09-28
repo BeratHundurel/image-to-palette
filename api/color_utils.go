@@ -192,3 +192,9 @@ func minInt(a, b int) int {
 	}
 	return b
 }
+
+func createColor(r, g, b uint8) Color {
+	return Color{
+		Hex: fmt.Sprintf("#%02X%02X%02X", r, g, b),
+	}
+}

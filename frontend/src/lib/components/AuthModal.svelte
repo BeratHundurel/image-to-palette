@@ -81,6 +81,22 @@
 		}
 	}
 
+	async function handleDemoLogin() {
+		loading = true;
+
+		try {
+			await authStore.demoLogin();
+			toast.success('Welcome to the demo!');
+			resetForm();
+			isOpen = false;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'An error occurred';
+			toast.error(message);
+		} finally {
+			loading = false;
+		}
+	}
+
 	function resetForm() {
 		formData = {
 			name: '',
@@ -129,7 +145,6 @@
 </script>
 
 {#if isOpen}
-	<!-- Backdrop -->
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
 		role="dialog"
@@ -267,6 +282,68 @@
 						{/if}
 					</button>
 				</form>
+
+				{#if mode === 'login'}
+					<div class="mt-4">
+						<div class="relative">
+							<div class="absolute inset-0 flex items-center">
+								<div class="w-full border-t border-zinc-600"></div>
+							</div>
+							<div class="relative flex justify-center text-sm">
+								<span class="bg-zinc-900 px-2 text-zinc-400">or</span>
+							</div>
+						</div>
+
+						<div
+							class="mt-4 rounded-md border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-amber-500/10 p-3"
+						>
+							<div class="mb-2 flex items-center space-x-2">
+								<svg class="h-4 w-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+									/>
+								</svg>
+								<span class="text-sm font-medium text-orange-300">Try Without Signing Up</span>
+							</div>
+							<p class="mb-3 text-xs text-zinc-400">
+								Explore all features with pre-loaded sample palettes. Perfect for testing the app!
+							</p>
+							<button
+								type="button"
+								onclick={handleDemoLogin}
+								disabled={loading}
+								class="w-full transform cursor-pointer rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 font-medium text-white transition-all hover:scale-[1.02] hover:from-orange-600 hover:to-amber-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{#if loading}
+									<div class="flex items-center justify-center">
+										<svg
+											class="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+										>
+											<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+											<path
+												class="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+											></path>
+										</svg>
+										Processing...
+									</div>
+								{:else}
+									<div class="flex items-center justify-center space-x-2">
+										<span>🎨</span>
+										<span>Launch Demo</span>
+									</div>
+								{/if}
+							</button>
+						</div>
+					</div>
+				{/if}
 
 				<div class="mt-6 text-center">
 					<p class="text-sm text-zinc-400">

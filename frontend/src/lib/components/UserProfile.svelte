@@ -41,7 +41,12 @@
 			<div class="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white">
 				{authStore.state.user.name.charAt(0).toUpperCase()}
 			</div>
-			<span class="hidden text-sm font-medium sm:block">{authStore.state.user.name}</span>
+			<div class="hidden sm:block">
+				<span class="text-sm font-medium">{authStore.state.user.name}</span>
+				{#if authStore.state.user.email === 'demo@imagepalette.com'}
+					<span class="ml-1 rounded bg-orange-500/30 px-1.5 py-0.5 text-xs font-medium text-orange-200">Demo</span>
+				{/if}
+			</div>
 			<svg
 				class="h-4 w-4 transition-transform duration-200"
 				class:rotate-180={showDropdown}
@@ -63,8 +68,16 @@
 							{authStore.state.user.name.charAt(0).toUpperCase()}
 						</div>
 						<div class="min-w-0 flex-1">
-							<p class="truncate text-sm font-semibold text-white">{authStore.state.user.name}</p>
+							<div class="flex items-center space-x-2">
+								<p class="truncate text-sm font-semibold text-white">{authStore.state.user.name}</p>
+								{#if authStore.state.user.email === 'demo@imagepalette.com'}
+									<span class="rounded bg-orange-500/20 px-2 py-0.5 text-xs font-medium text-orange-300"> Demo </span>
+								{/if}
+							</div>
 							<p class="truncate text-xs text-zinc-400">{authStore.state.user.email}</p>
+							{#if authStore.state.user.email === 'demo@imagepalette.com'}
+								<p class="mt-1 text-xs text-zinc-500">Explore features without signing up</p>
+							{/if}
 						</div>
 					</div>
 				</div>

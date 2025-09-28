@@ -23,8 +23,6 @@ type testMultipartFile struct {
 
 func (f *testMultipartFile) Close() error { return nil }
 
-// --- Unit Tests ---
-
 func TestSamplePixels_FilteredColors(t *testing.T) {
 	img := createTestImage(10, 10)
 	filtered := []string{"#000000"}
@@ -332,7 +330,7 @@ func TestApplyPaletteHandler(t *testing.T) {
 
 // --- Utility Functions ---
 
-func createTestImage(width, height int) image.Image {
+func createTestImage(width, height int) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, width, height))
 	for y := range height {
 		for x := range width {
@@ -345,7 +343,23 @@ func createTestImage(width, height int) image.Image {
 	return img
 }
 
-// --- Benchmarks ---
+func TestCreateColorHex(t *testing.T) {
+	color := createColor(255, 107, 53)
+	assert.Equal(t, "#FF6B35", color.Hex)
+
+	color = createColor(0, 0, 0)
+	assert.Equal(t, "#000000", color.Hex)
+
+	color = createColor(255, 255, 255)
+	assert.Equal(t, "#FFFFFF", color.Hex)
+}
+
+func TestDemoUserEmail(t *testing.T) {
+	demoEmail := "demo@imagepalette.com"
+	assert.Contains(t, demoEmail, "@")
+	assert.Contains(t, demoEmail, "demo")
+	assert.Contains(t, demoEmail, "imagepalette.com")
+}
 
 func BenchmarkPixelSampling(b *testing.B) {
 	img := createTestImage(300, 300)

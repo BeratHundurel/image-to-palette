@@ -59,6 +59,10 @@ func InitDatabase() error {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
+	if err := initializeDemoUser(); err != nil {
+		log.Printf("Warning: Failed to initialize demo user: %v", err)
+	}
+
 	log.Println("Database connected and migrated successfully")
 	return nil
 }
@@ -83,6 +87,20 @@ func getEnv(key, defaultValue string) string {
 
 func runMigrations() error {
 	return DB.AutoMigrate(&Palette{}, &User{})
+}
+
+func initializeDemoUser() error {
+	if DB == nil {
+		return fmt.Errorf("database not available")
+	}
+
+	_, err := createDemoUserIfNotExists()
+	if err != nil {
+		return fmt.Errorf("failed to initialize demo user: %w", err)
+	}
+
+	log.Println("Demo user initialized successfully")
+	return nil
 }
 
 func CloseDatabase() error {

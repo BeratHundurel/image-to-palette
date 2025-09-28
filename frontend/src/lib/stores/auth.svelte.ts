@@ -84,6 +84,23 @@ function createAuthStore() {
 			}
 		},
 
+		async demoLogin() {
+			state.isLoading = true;
+
+			try {
+				const response = await authApi.demoLogin();
+				state = {
+					user: response.user,
+					isAuthenticated: true,
+					isLoading: false
+				};
+				return response;
+			} catch (error) {
+				state.isLoading = false;
+				throw error;
+			}
+		},
+
 		async logout() {
 			await authApi.logout();
 			state = {

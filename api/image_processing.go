@@ -91,7 +91,7 @@ func processImageForPalette(file multipart.File, numColors int, sampleRate int, 
 			r := uint32(coords[0] * 255)
 			g := uint32(coords[1] * 255)
 			b := uint32(coords[2] * 255)
-			palette = append(palette, Color{Hex: rgbToHex(r, g, b)})
+			palette = append(palette, createColor(uint8(r), uint8(g), uint8(b)))
 		}
 	}
 	return palette, nil
