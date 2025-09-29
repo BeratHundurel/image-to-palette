@@ -89,7 +89,6 @@ function createPopoverStore() {
 
 export const popoverStore = createPopoverStore();
 
-// Cleanup on page unload
 if (typeof window !== 'undefined') {
 	window.addEventListener('beforeunload', () => popoverStore.close());
 }
