@@ -25,7 +25,7 @@
 	style={`min-width: 260px; ${popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}`}
 >
 	<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
-	<div class="max-h-64 overflow-y-auto">
+	<div class="scrollable-content custom-scrollbar max-h-64 overflow-y-auto">
 		{#if appStore.state.savedPalettes.length === 0}
 			<div class="py-8 text-center text-white/70">No saved palettes yet.</div>
 		{:else}

@@ -2,6 +2,7 @@
 	import { cn } from '$lib/utils';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
+	import TutorialButton from '$lib/components/tutorial/TutorialButton.svelte';
 
 	let luminosity = $derived(appStore.state.luminosity);
 	let nearest = $derived(appStore.state.nearest);
@@ -118,8 +119,12 @@
 		</div>
 	{/each}
 
-	<div class="mt-2 border-t border-zinc-700 pt-3">
+	<div class="mt-2 space-y-3 border-t border-zinc-700 pt-3">
 		<p class="text-xs text-zinc-400">Adjust these settings to fine-tune how the palette is applied to your image.</p>
+
+		<div class="flex justify-center">
+			<TutorialButton />
+		</div>
 	</div>
 </div>
 

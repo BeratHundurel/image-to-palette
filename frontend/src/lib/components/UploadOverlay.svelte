@@ -19,6 +19,7 @@
 		ondragleave={preventDefault}
 		onclick={appStore.triggerFileSelect}
 		class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 text-white transition duration-300 outline-none hover:border-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
+		aria-label="Upload an image or drag and drop it here"
 	>
 		<svg
 			viewBox="0 0 24 24"

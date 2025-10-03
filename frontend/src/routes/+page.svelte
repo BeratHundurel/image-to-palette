@@ -7,6 +7,8 @@
 	import PaletteGrid from '$lib/components/PaletteGrid.svelte';
 	import AuthModal from '$lib/components/AuthModal.svelte';
 	import UserProfile from '$lib/components/UserProfile.svelte';
+	import Tutorial from '$lib/components/tutorial/Tutorial.svelte';
+	import TutorialStart from '$lib/components/tutorial/TutorialStart.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 
@@ -68,3 +70,7 @@
 </div>
 
 <AuthModal bind:isOpen={showAuthModal} />
+
+<!-- Tutorial Components -->
+<TutorialStart />
+<Tutorial />
