@@ -117,7 +117,6 @@ function createTutorialStore() {
 		hasStarted: false
 	});
 
-	// Additional state for tracking user actions
 	let hasImageUploaded = $state(false);
 	let hasSelection = $state(false);
 	let hasSavedPalette = $state(false);
@@ -216,7 +215,6 @@ function createTutorialStore() {
 			return currentStep.condition();
 		},
 
-		// Tracking methods for user actions
 		setImageUploaded(uploaded: boolean) {
 			hasImageUploaded = uploaded;
 		},

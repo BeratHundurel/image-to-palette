@@ -21,7 +21,6 @@
 		}
 	});
 
-	// Auto-advance tutorial when conditions are met
 	$effect(() => {
 		const currentStep = tutorialStore.getCurrentStep();
 		if (currentStep && currentStep.condition && tutorialStore.checkStepCondition()) {
@@ -31,13 +30,11 @@
 		}
 	});
 
-	// Update highlight position when step changes
 	$effect(() => {
 		if (tutorialStore.state.isActive) {
 			updateHighlight();
 		}
 	});
-
 	async function updateHighlight() {
 		await tick();
 		const currentStep = tutorialStore.getCurrentStep();
@@ -68,29 +65,17 @@
 
 		// Auto-adjust position based on viewport constraints
 		if (position === 'top' && rect.top - tooltipHeight - 20 < 0) {
-			console.log('Tutorial: Adjusting from top to side due to insufficient space above');
 			position = rect.left > viewportWidth / 2 ? 'left' : 'right';
 		}
 		if (position === 'bottom' && rect.bottom + tooltipHeight + 20 > viewportHeight) {
-			console.log('Tutorial: Adjusting from bottom to side due to insufficient space below');
 			position = rect.left > viewportWidth / 2 ? 'left' : 'right';
 		}
 		if (position === 'left' && rect.left - tooltipWidth - 20 < 0) {
-			console.log('Tutorial: Adjusting from left to right due to insufficient space on left');
 			position = 'right';
 		}
 		if (position === 'right' && rect.right + tooltipWidth + 20 > viewportWidth) {
-			console.log('Tutorial: Adjusting from right to left due to insufficient space on right');
 			position = 'left';
 		}
-
-		console.log('Tutorial: Positioning tooltip', {
-			originalPosition: step.position,
-			finalPosition: position,
-			elementRect: rect,
-			tooltipSize: { width: tooltipWidth, height: tooltipHeight },
-			viewport: { width: viewportWidth, height: viewportHeight }
-		});
 
 		let styles;
 		switch (position) {
@@ -158,12 +143,9 @@
 </script>
 
 {#if tutorialStore.state.isActive}
-	<!-- Overlay -->
 	<div class="tutorial-overlay" transition:fade={{ duration: 300 }}>
-		<!-- Backdrop -->
 		<div class="tutorial-backdrop"></div>
 
-		<!-- Highlight spotlight -->
 		{#if highlightElement && currentStep?.element}
 			<div
 				class="tutorial-highlight"
@@ -177,7 +159,6 @@
 			></div>
 		{/if}
 
-		<!-- Tooltip -->
 		{#if currentStep}
 			<div
 				bind:this={tooltipElement}
@@ -204,7 +185,6 @@
 						</span>
 					</div>
 
-					<!-- Content -->
 					<div class="tutorial-body">
 						<h3 class="tutorial-title">{currentStep.title}</h3>
 						<p class="tutorial-description">{currentStep.description}</p>
@@ -218,7 +198,6 @@
 						{/if}
 					</div>
 
-					<!-- Actions -->
 					<div class="tutorial-actions">
 						<div class="tutorial-navigation">
 							{#if !isFirstStep}
@@ -244,7 +223,6 @@
 					</div>
 				</div>
 
-				<!-- Arrow pointer -->
 				{#if currentStep.element && actualPosition !== 'center'}
 					<div class="tutorial-arrow tutorial-arrow-{actualPosition}"></div>
 				{/if}
@@ -485,7 +463,6 @@
 		}
 	}
 
-	/* Responsive adjustments */
 	@media (max-width: 768px) {
 		.tutorial-tooltip {
 			max-width: 90vw;
