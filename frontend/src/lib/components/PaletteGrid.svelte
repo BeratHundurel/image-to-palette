@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/app.svelte';
+	import { tutorialStore } from '$lib/stores/tutorial.svelte';
 	import { copyToClipboard } from '$lib/utils';
 	import { tick } from 'svelte';
 	import toast from 'svelte-french-toast';
@@ -8,6 +9,7 @@
 	async function handleCopy(hex: string) {
 		try {
 			await copyToClipboard(hex, (message) => toast.success(message));
+			tutorialStore.setColorCopied(true);
 		} catch (error) {
 			toast.error('Failed to copy to clipboard');
 		}

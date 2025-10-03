@@ -8,6 +8,8 @@
 	let tooltipElement: HTMLElement | null = $state(null);
 
 	$effect(() => {
+		const currentStep = tutorialStore.getCurrentStep();
+
 		if (appStore.state.imageLoaded) {
 			tutorialStore.setImageUploaded(true);
 		}
@@ -16,8 +18,12 @@
 			tutorialStore.setHasSelection(true);
 		}
 
-		if (appStore.state.savedPalettes.length > 0) {
-			tutorialStore.setHasSavedPalette(true);
+		if (
+			currentStep?.id === 'selection-tools' &&
+			appStore.state.activeSelectorId &&
+			appStore.state.activeSelectorId !== 'green'
+		) {
+			tutorialStore.setSelectorClicked(true);
 		}
 	});
 

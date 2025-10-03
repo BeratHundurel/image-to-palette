@@ -54,28 +54,31 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 		title: 'Use Different Selection Tools',
 		description:
 			'Notice the colored selection tools in the toolbar? Each color represents a different selection area. Try clicking a different color selector!',
-		element: '[role="toolbar"] ul li:first-child button',
+		element: '[role="toolbar"] button[aria-label="Selector 2"]',
 		position: 'left',
 		action: 'click',
+		condition: () => tutorialStore.state.hasSelectorClicked,
 		skipable: true
 	},
 	{
 		id: 'extract-colors',
-		title: 'Extract Your Palette',
+		title: 'Copy Colors from Your Palette',
 		description:
-			'Great! Now you can see the colors extracted from your selections. Click on any color to copy it to your clipboard.',
+			'Perfect! Your palette has been extracted. Now click on any color below to copy its hex code to your clipboard.',
 		element: 'section.w-full.max-w-5xl .grid.min-h-12',
 		position: 'top',
+		condition: () => tutorialStore.state.hasColorCopied,
 		skipable: true
 	},
 	{
 		id: 'save-palette',
-		title: 'Save Your Palette',
-		description: 'Love your palette? Click the "Save Palette" button to save it for later use!',
+		title: 'Save Your Current Palette',
+		description:
+			'Love this palette you just created? Click the "Save Palette" button below to save it for future projects!',
 		element: 'button[onclick*="savePalette"]',
 		position: 'top',
 		action: 'click',
-		condition: () => tutorialStore.state.hasSavedPalette,
+		condition: () => tutorialStore.state.hasCurrentPaletteSaved,
 		skipable: true
 	},
 	{
@@ -120,6 +123,9 @@ function createTutorialStore() {
 	let hasImageUploaded = $state(false);
 	let hasSelection = $state(false);
 	let hasSavedPalette = $state(false);
+	let hasSelectorClicked = $state(false);
+	let hasColorCopied = $state(false);
+	let hasCurrentPaletteSaved = $state(false);
 
 	return {
 		get state() {
@@ -127,7 +133,10 @@ function createTutorialStore() {
 				...state,
 				hasImageUploaded,
 				hasSelection,
-				hasSavedPalette
+				hasSavedPalette,
+				hasSelectorClicked,
+				hasColorCopied,
+				hasCurrentPaletteSaved
 			};
 		},
 
@@ -142,6 +151,10 @@ function createTutorialStore() {
 			state.hasStarted = true;
 			state.currentStepIndex = 0;
 			state.completedSteps.clear();
+
+			hasSelectorClicked = false;
+			hasColorCopied = false;
+			hasCurrentPaletteSaved = false;
 		},
 
 		next() {
@@ -192,6 +205,9 @@ function createTutorialStore() {
 			hasImageUploaded = false;
 			hasSelection = false;
 			hasSavedPalette = false;
+			hasSelectorClicked = false;
+			hasColorCopied = false;
+			hasCurrentPaletteSaved = false;
 			localStorage.removeItem('tutorial-completed');
 			localStorage.removeItem('tutorial-skipped');
 		},
@@ -223,8 +239,26 @@ function createTutorialStore() {
 			hasSelection = selection;
 		},
 
+		setSelectorClicked(clicked: boolean) {
+			if (state.currentStepIndex === 3) {
+				hasSelectorClicked = clicked;
+			}
+		},
+
+		setColorCopied(copied: boolean) {
+			if (state.currentStepIndex === 4) {
+				hasColorCopied = copied;
+			}
+		},
+
 		setHasSavedPalette(saved: boolean) {
 			hasSavedPalette = saved;
+		},
+
+		setCurrentPaletteSaved(saved: boolean) {
+			if (state.currentStepIndex === 5) {
+				hasCurrentPaletteSaved = saved;
+			}
 		},
 
 		shouldShowTutorial(): boolean {

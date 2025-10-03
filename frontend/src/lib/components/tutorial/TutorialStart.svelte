@@ -42,59 +42,61 @@
 		></div>
 		<div class="tutorial-start-modal custom-scrollbar-lg" transition:fly={{ y: 30, duration: 400 }}>
 			<div class="tutorial-start-content">
-				<div class="tutorial-start-header">
-					<div class="tutorial-start-icon">🎨</div>
-					<h2 class="tutorial-start-title">Welcome to Image to Palette!</h2>
-					<p class="tutorial-start-subtitle">Extract beautiful color palettes from any image</p>
-				</div>
+				<div class="max-h-[90vh] overflow-y-auto px-4">
+					<div class="tutorial-start-header">
+						<div class="tutorial-start-icon">🎨</div>
+						<h2 class="tutorial-start-title">Welcome to Image to Palette!</h2>
+						<p class="tutorial-start-subtitle">Extract beautiful color palettes from any image</p>
+					</div>
 
-				<div class="tutorial-start-features">
-					<div class="feature-item">
-						<div class="feature-icon">📸</div>
-						<div class="feature-text">
-							<strong>Upload Images</strong>
-							<span>Drag & drop or click to upload</span>
+					<div class="tutorial-start-features">
+						<div class="feature-item">
+							<div class="feature-icon">📸</div>
+							<div class="feature-text">
+								<strong>Upload Images</strong>
+								<span>Drag & drop or click to upload</span>
+							</div>
+						</div>
+
+						<div class="feature-item">
+							<div class="feature-icon">🎯</div>
+							<div class="feature-text">
+								<strong>Select Areas</strong>
+								<span>Choose specific regions for color extraction</span>
+							</div>
+						</div>
+
+						<div class="feature-item">
+							<div class="feature-icon">🎨</div>
+							<div class="feature-text">
+								<strong>Extract Colors</strong>
+								<span>Get perfect palettes instantly</span>
+							</div>
+						</div>
+
+						<div class="feature-item">
+							<div class="feature-icon">💾</div>
+							<div class="feature-text">
+								<strong>Save & Apply</strong>
+								<span>Save palettes and apply to new images</span>
+							</div>
 						</div>
 					</div>
 
-					<div class="feature-item">
-						<div class="feature-icon">🎯</div>
-						<div class="feature-text">
-							<strong>Select Areas</strong>
-							<span>Choose specific regions for color extraction</span>
-						</div>
+					<div class="tutorial-start-actions">
+						<button class="tutorial-start-btn tutorial-start-btn-primary" onclick={startTutorial}>
+							<span>Take the Tour</span>
+							<span class="tutorial-duration">(2 min)</span>
+						</button>
+
+						<button class="tutorial-start-btn tutorial-start-btn-secondary" onclick={dismissPrompt}>
+							Skip for now
+						</button>
 					</div>
 
-					<div class="feature-item">
-						<div class="feature-icon">🎨</div>
-						<div class="feature-text">
-							<strong>Extract Colors</strong>
-							<span>Get perfect palettes instantly</span>
-						</div>
+					<div class="tutorial-start-footer">
+						<p>You can always restart the tutorial from the settings menu</p>
 					</div>
-
-					<div class="feature-item">
-						<div class="feature-icon">💾</div>
-						<div class="feature-text">
-							<strong>Save & Apply</strong>
-							<span>Save palettes and apply to new images</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="tutorial-start-actions">
-					<button class="tutorial-start-btn tutorial-start-btn-primary" onclick={startTutorial}>
-						<span>Take the Tour</span>
-						<span class="tutorial-duration">(2 min)</span>
-					</button>
-
-					<button class="tutorial-start-btn tutorial-start-btn-secondary" onclick={dismissPrompt}>
-						Skip for now
-					</button>
-				</div>
-
-				<div class="tutorial-start-footer">
-					<p>You can always restart the tutorial from the settings menu</p>
 				</div>
 			</div>
 

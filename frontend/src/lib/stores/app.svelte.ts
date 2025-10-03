@@ -450,6 +450,9 @@ function createAppStore() {
 				toast.success('Palette saved: ' + data.name);
 
 				await appStore.loadSavedPalettes();
+
+				const { tutorialStore } = await import('./tutorial.svelte');
+				tutorialStore.setCurrentPaletteSaved(true);
 			} catch (err) {
 				toast.error(err instanceof Error ? err.message : 'Failed to save palette.');
 			}
