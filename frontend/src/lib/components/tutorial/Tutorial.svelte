@@ -32,7 +32,7 @@
 		if (currentStep && currentStep.condition && tutorialStore.checkStepCondition()) {
 			setTimeout(() => {
 				tutorialStore.next();
-			}, 300);
+			}, 1500);
 		}
 	});
 
@@ -57,6 +57,10 @@
 	}
 
 	function getTooltipPosition(step: any) {
+		if (step.position === 'center') {
+			return { styles: {}, actualPosition: 'center' };
+		}
+
 		if (!highlightElement) return { styles: {}, actualPosition: 'center' };
 
 		const rect = highlightElement.getBoundingClientRect();
@@ -66,7 +70,6 @@
 		const viewportWidth = window.innerWidth;
 		const viewportHeight = window.innerHeight;
 
-		// Check if there's enough space for the requested position
 		let position = step.position;
 
 		// Auto-adjust position based on viewport constraints
@@ -109,13 +112,8 @@
 					left: `${Math.min(viewportWidth - tooltipWidth - 20, rect.right + 20)}px`
 				};
 				break;
-			case 'center':
 			default:
-				styles = {
-					top: '50%',
-					left: '50%',
-					transform: 'translate(-50%, -50%)'
-				};
+				styles = {};
 				break;
 		}
 
@@ -168,10 +166,12 @@
 		{#if currentStep}
 			<div
 				bind:this={tooltipElement}
-				class="tutorial-tooltip"
-				style={Object.entries(tooltipStyles)
-					.map(([key, value]) => `${key}: ${value}`)
-					.join('; ')}
+				class="tutorial-tooltip {actualPosition === 'center' ? 'tutorial-tooltip-center' : ''}"
+				style={actualPosition === 'center'
+					? 'top: 50%; left: 50%; transform: translate(-50%, -50%);'
+					: Object.entries(tooltipStyles)
+							.map(([key, value]) => `${key}: ${value}`)
+							.join('; ')}
 				transition:fly={{ y: 20, duration: 300 }}
 			>
 				<div class="tutorial-content">
@@ -470,12 +470,17 @@
 	}
 
 	@media (max-width: 768px) {
-		.tutorial-tooltip {
+		.tutorial-tooltip:not(.tutorial-tooltip-center) {
 			max-width: 90vw;
 			min-width: 280px;
 			left: 5vw !important;
 			right: 5vw !important;
 			transform: none !important;
+		}
+
+		.tutorial-tooltip-center {
+			max-width: 90vw;
+			min-width: 280px;
 		}
 
 		.tutorial-content {

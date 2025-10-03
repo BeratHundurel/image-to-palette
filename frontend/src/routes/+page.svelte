@@ -11,6 +11,7 @@
 	import TutorialStart from '$lib/components/tutorial/TutorialStart.svelte';
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
+	import TutorialButton from '$lib/components/tutorial/TutorialButton.svelte';
 
 	let showAuthModal = $state(false);
 
@@ -35,25 +36,28 @@
 
 	<div class="absolute top-0 left-0 z-10 h-full w-full bg-black/60"></div>
 
-	<div class="absolute top-4 right-4 z-30">
-		{#if authStore.state.isAuthenticated}
-			<UserProfile />
-		{:else if !authStore.state.isLoading}
-			<button
-				onclick={openAuthModal}
-				class="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 text-white backdrop-blur-sm transition-all hover:bg-white/30"
-			>
-				<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						stroke-width="2"
-						d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-					/>
-				</svg>
-				<span class="text-sm font-medium">Sign In</span>
-			</button>
-		{/if}
+	<div class="absolute top-4 right-4 left-4 z-30">
+		<div class="flex flex-row items-center justify-between">
+			<TutorialButton />
+			{#if authStore.state.isAuthenticated}
+				<UserProfile />
+			{:else if !authStore.state.isLoading}
+				<button
+					onclick={openAuthModal}
+					class="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 text-white backdrop-blur-sm transition-all hover:bg-white/30"
+				>
+					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+						/>
+					</svg>
+					<span class="text-sm font-medium">Sign In</span>
+				</button>
+			{/if}
+		</div>
 	</div>
 
 	<div class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden">
