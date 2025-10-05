@@ -41,6 +41,7 @@
 			updateHighlight();
 		}
 	});
+
 	async function updateHighlight() {
 		await tick();
 		const currentStep = tutorialStore.getCurrentStep();
@@ -147,12 +148,15 @@
 </script>
 
 {#if tutorialStore.state.isActive}
-	<div class="tutorial-overlay" transition:fade={{ duration: 300 }}>
-		<div class="tutorial-backdrop"></div>
+	<div
+		class="tutorial-overlay pointer-events-none fixed top-0 right-0 bottom-0 left-0 z-[9999]"
+		transition:fade={{ duration: 300 }}
+	>
+		<div class="tutorial-backdrop absolute top-0 right-0 bottom-0 left-0 backdrop-blur-xs"></div>
 
 		{#if highlightElement && currentStep?.element}
 			<div
-				class="tutorial-highlight"
+				class="tutorial-highlight border-brand pointer-events-none absolute z-[10001] rounded-lg border-[3px]"
 				style={`
 					top: ${highlightElement.getBoundingClientRect().top - 8}px;
 					left: ${highlightElement.getBoundingClientRect().left - 8}px;
@@ -166,7 +170,9 @@
 		{#if currentStep}
 			<div
 				bind:this={tooltipElement}
-				class="tutorial-tooltip {actualPosition === 'center' ? 'tutorial-tooltip-center' : ''}"
+				class="tutorial-tooltip pointer-events-none absolute z-[10002] {actualPosition === 'center'
+					? 'tutorial-tooltip-center'
+					: ''}"
 				style={actualPosition === 'center'
 					? 'top: 50%; left: 50%; transform: translate(-50%, -50%);'
 					: Object.entries(tooltipStyles)
@@ -174,63 +180,101 @@
 							.join('; ')}
 				transition:fly={{ y: 20, duration: 300 }}
 			>
-				<div class="tutorial-content">
+				<div class="tutorial-content border-[#3f3f46 rounded-xl] border-[1px] p-6">
 					<!-- Progress indicators -->
-					<div class="tutorial-progress">
-						<div class="tutorial-dots">
+					<div class="tutorial-progress mb-4 flex items-center justify-between border-b border-[#3f3f46] pb-4">
+						<div class="tutorial-dots flex gap-2">
 							{#each tutorialStore.state.steps as step, index}
 								<div
-									class="tutorial-dot"
+									class="tutorial-dot h-2 w-2 rounded-full bg-gray-500 transition-all duration-300 ease-in-out"
 									class:active={index === tutorialStore.state.currentStepIndex}
 									class:completed={tutorialStore.state.completedSteps.has(step.id)}
 								></div>
 							{/each}
 						</div>
-						<span class="tutorial-counter">
+						<span class="tutorial-counter font-mono text-xs text-gray-400">
 							{tutorialStore.state.currentStepIndex + 1} of {tutorialStore.state.steps.length}
 						</span>
 					</div>
 
-					<div class="tutorial-body">
-						<h3 class="tutorial-title">{currentStep.title}</h3>
-						<p class="tutorial-description">{currentStep.description}</p>
+					<div class="tutorial-body mb-6">
+						<h3 class="tutorial-title text-brand text-lg font-semibold">{currentStep.title}</h3>
+						<p class="tutorial-description text-sm">{currentStep.description}</p>
 
 						{#if currentStep.action === 'upload'}
-							<div class="tutorial-hint">💡 Try uploading a photo with multiple colors for the best results!</div>
+							<div class="tutorial-hint mt-2 border-[6px] px-3 py-2 text-xs">
+								💡 Try uploading a photo with multiple colors for the best results!
+							</div>
 						{:else if currentStep.action === 'drag'}
-							<div class="tutorial-hint">💡 Click and drag to create a selection rectangle on the image</div>
+							<div class="tutorial-hint mt-2 border-[6px] px-3 py-2 text-xs">
+								💡 Click and drag to create a selection rectangle on the image
+							</div>
 						{:else if currentStep.action === 'click'}
-							<div class="tutorial-hint">💡 Click the highlighted element to continue</div>
+							<div class="tutorial-hint mt-2 border-[6px] px-3 py-2 text-xs">
+								💡 Click the highlighted element to continue
+							</div>
 						{/if}
 					</div>
 
-					<div class="tutorial-actions">
-						<div class="tutorial-navigation">
+					<div class="tutorial-actions flex flex-col gap-3">
+						<div class="tutorial-navigation flex justify-between gap-3">
 							{#if !isFirstStep}
-								<button class="tutorial-btn tutorial-btn-secondary" onclick={handlePrevious}> ← Previous </button>
+								<button
+									class="tutorial-btn tutorial-btn-ghost tutorial-btn-secondary cursor-pointer border-[6px] border-none px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out outline-none"
+									onclick={handlePrevious}
+								>
+									← Previous
+								</button>
 							{/if}
 
 							{#if currentStep.condition && !tutorialStore.checkStepCondition()}
-								<button class="tutorial-btn tutorial-btn-waiting" disabled> Waiting for action... </button>
+								<button
+									class="tutorial-btn tutorial-btn-ghost tutorial-btn-waiting cursor-pointer border-[6px] border-none px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out outline-none"
+									disabled
+								>
+									Waiting for action...
+								</button>
 							{:else if !isLastStep}
-								<button class="tutorial-btn tutorial-btn-primary" onclick={handleNext}> Next → </button>
+								<button
+									class="tutorial-btn tutorial-btn-ghost tutorial-btn-primary cursor-pointer border-[6px] border-none px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out outline-none"
+									onclick={handleNext}
+								>
+									Next →
+								</button>
 							{:else}
-								<button class="tutorial-btn tutorial-btn-primary" onclick={handleNext}> Complete 🎉 </button>
+								<button
+									class="tutorial-btn tutorial-btn-ghost tutorial-btn-primary cursor-pointer border-[6px] border-none px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out outline-none"
+									onclick={handleNext}
+								>
+									Complete 🎉
+								</button>
 							{/if}
 						</div>
 
-						<div class="tutorial-controls">
+						<div class="tutorial-controls flex justify-center gap-3">
 							{#if currentStep.skipable}
-								<button class="tutorial-btn tutorial-btn-ghost" onclick={handleSkip}> Skip </button>
+								<button
+									class="tutorial-btn tutorial-btn-ghost cursor-pointer border-[6px] border-none px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out outline-none"
+									onclick={handleSkip}
+								>
+									Skip
+								</button>
 							{/if}
 
-							<button class="tutorial-btn tutorial-btn-ghost" onclick={handleExit}> Exit Tutorial </button>
+							<button
+								class="tutorial-btn tutorial-btn-ghost tutorial-btn-ghost cursor-pointer border-[6px] border-none px-4 py-2 text-sm font-medium transition-all duration-200 ease-in-out outline-none"
+								onclick={handleExit}
+							>
+								Exit Tutorial
+							</button>
 						</div>
 					</div>
 				</div>
 
 				{#if currentStep.element && actualPosition !== 'center'}
-					<div class="tutorial-arrow tutorial-arrow-{actualPosition}"></div>
+					<div
+						class="tutorial-arrow absolute h-0 w-0 border-[8px] border-transparent tutorial-arrow-{actualPosition}"
+					></div>
 				{/if}
 			</div>
 		{/if}
@@ -238,77 +282,28 @@
 {/if}
 
 <style>
-	.tutorial-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 9999;
-		pointer-events: none;
-	}
-
 	.tutorial-backdrop {
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
-		backdrop-filter: blur(2px);
+		background: rgba(0, 0, 0, 0.4);
 	}
 
 	.tutorial-highlight {
-		position: absolute;
-		border: 3px solid #eeb38f;
-		border-radius: 8px;
 		box-shadow:
 			0 0 0 9999px rgba(0, 0, 0, 0.7),
 			0 0 20px rgba(238, 179, 143, 0.5),
 			inset 0 0 20px rgba(238, 179, 143, 0.2);
-		pointer-events: none;
-		z-index: 10001;
 	}
 
 	.tutorial-tooltip {
-		position: absolute;
 		max-width: 360px;
 		min-width: 300px;
-		pointer-events: auto;
-		z-index: 10002;
 	}
 
 	.tutorial-content {
 		background: linear-gradient(135deg, #1f1f23 0%, #27272a 100%);
-		border: 1px solid #3f3f46;
-		border-radius: 12px;
-		padding: 24px;
 		box-shadow:
 			0 20px 25px -5px rgba(0, 0, 0, 0.4),
 			0 10px 10px -5px rgba(0, 0, 0, 0.2);
 		backdrop-filter: blur(10px);
-	}
-
-	.tutorial-progress {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 16px;
-		padding-bottom: 16px;
-		border-bottom: 1px solid #3f3f46;
-	}
-
-	.tutorial-dots {
-		display: flex;
-		gap: 8px;
-	}
-
-	.tutorial-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: #52525b;
-		transition: all 0.3s ease;
 	}
 
 	.tutorial-dot.active {
@@ -321,67 +316,20 @@
 		background: #10b981;
 	}
 
-	.tutorial-counter {
-		font-size: 12px;
-		color: #a1a1aa;
-		font-family: monospace;
-	}
-
-	.tutorial-body {
-		margin-bottom: 24px;
-	}
-
 	.tutorial-title {
-		font-size: 18px;
-		font-weight: 600;
-		color: #eeb38f;
 		margin: 0 0 8px 0;
 	}
 
 	.tutorial-description {
-		font-size: 14px;
 		color: #d4d4d8;
 		line-height: 1.5;
 		margin: 0 0 12px 0;
 	}
 
 	.tutorial-hint {
-		font-size: 12px;
 		color: #a1a1aa;
 		background: rgba(238, 179, 143, 0.1);
 		border: 1px solid rgba(238, 179, 143, 0.2);
-		border-radius: 6px;
-		padding: 8px 12px;
-		margin-top: 8px;
-	}
-
-	.tutorial-actions {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-	.tutorial-navigation {
-		display: flex;
-		justify-content: space-between;
-		gap: 12px;
-	}
-
-	.tutorial-controls {
-		display: flex;
-		justify-content: center;
-		gap: 12px;
-	}
-
-	.tutorial-btn {
-		padding: 8px 16px;
-		border-radius: 6px;
-		font-size: 14px;
-		font-weight: 500;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		border: none;
-		outline: none;
 	}
 
 	.tutorial-btn:disabled {
@@ -424,13 +372,6 @@
 		animation: pulse 2s infinite;
 	}
 
-	.tutorial-arrow {
-		position: absolute;
-		width: 0;
-		height: 0;
-		border: 8px solid transparent;
-	}
-
 	.tutorial-arrow-top {
 		bottom: -16px;
 		left: 50%;
@@ -466,29 +407,6 @@
 		}
 		50% {
 			opacity: 0.5;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.tutorial-tooltip:not(.tutorial-tooltip-center) {
-			max-width: 90vw;
-			min-width: 280px;
-			left: 5vw !important;
-			right: 5vw !important;
-			transform: none !important;
-		}
-
-		.tutorial-tooltip-center {
-			max-width: 90vw;
-			min-width: 280px;
-		}
-
-		.tutorial-content {
-			padding: 20px;
-		}
-
-		.tutorial-navigation {
-			flex-direction: column;
 		}
 	}
 </style>
