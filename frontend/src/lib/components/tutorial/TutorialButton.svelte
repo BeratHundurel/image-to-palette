@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tutorialStore } from '$lib/stores/tutorial.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
+	import { cn } from '$lib/utils';
 
 	function restartTutorial() {
 		// Close any open popovers
@@ -13,59 +14,14 @@
 </script>
 
 <button
-	class="tutorial-restart-btn"
+	class={cn(
+		'flex h-10 w-28 cursor-pointer items-center justify-center gap-2 rounded-md bg-white/10 text-xs text-zinc-300 outline-0 transition-all duration-200',
+		'hover:bg-brand/10 hover:border-brand/30 hover:text-brand hover:-translate-y-px active:translate-y-0'
+	)}
 	onclick={restartTutorial}
 	title="Restart the interactive tutorial"
 	type="button"
 >
-	<span class="tutorial-restart-icon">🎓</span>
-	<span class="tutorial-restart-text">Tutorial</span>
+	<span class="text-base max-sm:text-sm">🎓</span>
+	<span class="font-medium">Tutorial</span>
 </button>
-
-<style>
-	.tutorial-restart-btn {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 8px 12px;
-		background: transparent;
-		border: 1px solid #3f3f46;
-		border-radius: 6px;
-		color: #d4d4d8;
-		font-size: 13px;
-		cursor: pointer;
-		transition: all 0.2s ease;
-		outline: none;
-	}
-
-	.tutorial-restart-btn:hover {
-		background: rgba(238, 179, 143, 0.1);
-		border-color: rgba(238, 179, 143, 0.3);
-		color: #eeb38f;
-		transform: translateY(-1px);
-	}
-
-	.tutorial-restart-btn:active {
-		transform: translateY(0);
-	}
-
-	.tutorial-restart-icon {
-		font-size: 16px;
-	}
-
-	.tutorial-restart-text {
-		font-weight: 500;
-	}
-
-	/* Responsive */
-	@media (max-width: 640px) {
-		.tutorial-restart-btn {
-			padding: 6px 10px;
-			font-size: 12px;
-		}
-
-		.tutorial-restart-icon {
-			font-size: 14px;
-		}
-	}
-</style>
