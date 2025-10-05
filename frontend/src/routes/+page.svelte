@@ -12,6 +12,7 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import TutorialButton from '$lib/components/tutorial/TutorialButton.svelte';
+	import { cn } from '$lib/utils';
 
 	let showAuthModal = $state(false);
 
@@ -44,7 +45,10 @@
 			{:else if !authStore.state.isLoading}
 				<button
 					onclick={openAuthModal}
-					class="flex items-center space-x-2 rounded-lg bg-white/20 px-4 py-2 text-white backdrop-blur-sm transition-all hover:bg-white/30"
+					class={cn(
+						'flex h-10 w-28 cursor-pointer items-center justify-center gap-2 rounded-md bg-white/10 text-zinc-300 outline-0 transition-all duration-200',
+						'hover:bg-brand/10 hover:border-brand/30 hover:text-brand hover:-translate-y-px active:translate-y-0'
+					)}
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -54,7 +58,7 @@
 							d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
 						/>
 					</svg>
-					<span class="text-sm font-medium">Sign In</span>
+					<span class="text-xs font-medium">Sign In</span>
 				</button>
 			{/if}
 		</div>

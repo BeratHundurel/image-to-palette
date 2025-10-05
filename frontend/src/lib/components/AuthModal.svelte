@@ -155,7 +155,7 @@
 		onkeydown={handleBackdropKeydown}
 	>
 		<div class="relative mx-4 w-full max-w-md">
-			<div class="border-brand/40 rounded-lg border bg-zinc-900 p-6 text-white shadow-lg backdrop-blur-sm">
+			<div class="border-brand rounded-xl border bg-zinc-900 p-6 text-white backdrop-blur-sm">
 				<button
 					type="button"
 					class="absolute top-4 right-4 cursor-pointer text-zinc-400 transition-colors hover:text-white"
@@ -294,11 +294,9 @@
 							</div>
 						</div>
 
-						<div
-							class="mt-4 rounded-md border border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-amber-500/10 p-3"
-						>
+						<div class="mt-4 rounded-md border border-zinc-600 bg-zinc-800 p-3">
 							<div class="mb-2 flex items-center space-x-2">
-								<svg class="h-4 w-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
 										stroke-linecap="round"
 										stroke-linejoin="round"
@@ -306,7 +304,7 @@
 										d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
 									/>
 								</svg>
-								<span class="text-sm font-medium text-orange-300">Try Without Signing Up</span>
+								<span class="text-sm font-medium text-zinc-300">Try Without Signing Up</span>
 							</div>
 							<p class="mb-3 text-xs text-zinc-400">
 								Explore all features with pre-loaded sample palettes. Perfect for testing the app!
@@ -315,7 +313,7 @@
 								type="button"
 								onclick={handleDemoLogin}
 								disabled={loading}
-								class="w-full transform cursor-pointer rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 font-medium text-white transition-all hover:scale-[1.02] hover:from-orange-600 hover:to-amber-600 focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+								class="w-full cursor-pointer rounded-md bg-zinc-900 py-3 font-medium text-white transition-all hover:-translate-y-px hover:bg-black focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{#if loading}
 									<div class="flex items-center justify-center">

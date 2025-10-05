@@ -4,10 +4,10 @@
 	--shadow-brand: 0 0 15px #eeb38f26;
 	--shadow-brand-lg: 0 0 25px #eeb38f40;
 	--color-brand: #eeb38f;
-	--color-brand-hover: #d09e87;
+	--color-brand-hover: #e6a875;
 }
 
-/* Component Base Classes */
+
 .palette-button-base {
 	@apply flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-sm font-semibold text-white;
 	@apply border-brand/40 border bg-zinc-800 backdrop-blur-sm;
@@ -18,84 +18,4 @@
 
 .palette-dropdown-base {
 	@apply border-brand/40 absolute top-0 z-50 rounded-lg border bg-zinc-900 p-3 text-sm text-white shadow-2xl;
-}
-
-/* Custom Scrollbar Utility Classes */
-.custom-scrollbar {
-	scrollbar-width: thin;
-	scrollbar-color: #eeb38f #27272a;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-	width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-	background: #27272a;
-	border-radius: 3px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-	background: linear-gradient(135deg, #eeb38f 0%, #d09e87 100%);
-	border-radius: 3px;
-	border: 1px solid #3f3f46;
-	transition: all 0.2s ease;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-	background: linear-gradient(135deg, #f4c2a0 0%, #dcab98 100%);
-	border-color: #52525b;
-	box-shadow: 0 0 6px rgba(238, 179, 143, 0.3);
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:active {
-	background: linear-gradient(135deg, #e6a875 0%, #cc9176 100%);
-}
-
-.custom-scrollbar::-webkit-scrollbar-corner {
-	background: #27272a;
-}
-
-/* Large scrollbar variant for main content areas */
-.custom-scrollbar-lg {
-	scrollbar-width: thin;
-	scrollbar-color: #eeb38f #27272a;
-}
-
-.custom-scrollbar-lg::-webkit-scrollbar {
-	width: 8px;
-}
-
-.custom-scrollbar-lg::-webkit-scrollbar-track {
-	background: #27272a;
-	border-radius: 4px;
-}
-
-.custom-scrollbar-lg::-webkit-scrollbar-thumb {
-	background: linear-gradient(135deg, #eeb38f 0%, #d09e87 100%);
-	border-radius: 4px;
-	border: 1px solid #3f3f46;
-	transition: all 0.2s ease;
-}
-
-.custom-scrollbar-lg::-webkit-scrollbar-thumb:hover {
-	background: linear-gradient(135deg, #f4c2a0 0%, #dcab98 100%);
-	border-color: #52525b;
-	box-shadow: 0 0 8px rgba(238, 179, 143, 0.3);
-}
-
-.custom-scrollbar-lg::-webkit-scrollbar-thumb:active {
-	background: linear-gradient(135deg, #e6a875 0%, #cc9176 100%);
-}
-
-.custom-scrollbar-lg::-webkit-scrollbar-corner {
-	background: #27272a;
-}
-
-/* Mobile adjustments */
-@media (max-width: 640px) {
-	.custom-scrollbar::-webkit-scrollbar,
-	.custom-scrollbar-lg::-webkit-scrollbar {
-		width: 4px;
-	}
 }
