@@ -42,6 +42,7 @@
 			updateHighlight();
 		}
 	});
+
 	async function updateHighlight() {
 		await tick();
 		const currentStep = tutorialStore.getCurrentStep();
@@ -298,7 +299,9 @@
 				</div>
 
 				{#if currentStep.element && actualPosition !== 'center'}
-					<div class="tutorial-arrow tutorial-arrow-{actualPosition}"></div>
+					<div
+						class="tutorial-arrow absolute h-0 w-0 border-[8px] border-transparent tutorial-arrow-{actualPosition}"
+					></div>
 				{/if}
 			</div>
 		{/if}
