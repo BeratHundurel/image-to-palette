@@ -3,11 +3,13 @@
 	import { cn } from '$lib/utils';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
+	import { tutorialStore } from '$lib/stores/tutorial.svelte';
 
 	function handlePaletteLoad(palette: Color[]) {
 		appStore.state.colors = palette;
 		appStore.applyPalette();
 		popoverStore.close('saved');
+		tutorialStore.setSavedPaletteApplied(true);
 	}
 
 	async function handlePaletteDelete(paletteId: string, paletteName: string) {
@@ -23,8 +25,11 @@
 		popoverStore.state.direction === 'right' ? 'left-full ml-2' : 'right-full mr-2'
 	)}
 	style={`min-width: 260px; ${popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}`}
+	role="dialog"
+	aria-labelledby="saved-palettes-title"
+	tabindex="-1"
 >
-	<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
+	<h3 id="saved-palettes-title" class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
 	<div class="scrollable-content custom-scrollbar max-h-72 overflow-y-auto">
 		{#if appStore.state.savedPalettes.length === 0}
 			<div class="py-8 text-center text-zinc-300">No saved palettes yet.</div>

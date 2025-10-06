@@ -55,6 +55,7 @@
 			>
 
 			<button
+				id="save-palette"
 				class="border-brand/50 hover:shadow-brand ml-4 flex w-36 cursor-pointer items-center justify-center gap-2 rounded border bg-zinc-900 py-2 text-center text-sm font-medium transition-all hover:-translate-y-1"
 				onclick={appStore.savePalette}
 			>

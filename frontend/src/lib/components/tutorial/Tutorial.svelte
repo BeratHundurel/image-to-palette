@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tutorialStore } from '$lib/stores/tutorial.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
 	import { tick } from 'svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { cn } from '$lib/utils';
@@ -25,6 +26,18 @@
 			appStore.state.activeSelectorId !== 'green'
 		) {
 			tutorialStore.setSelectorClicked(true);
+		}
+
+		if (currentStep?.id === 'toolbar-features' && popoverStore.isOpen('saved')) {
+			tutorialStore.setSavedPalettesPopoverOpen(true);
+
+			setTimeout(() => {
+				const popover = document.querySelector('.palette-dropdown-base') as HTMLElement;
+				if (popover) {
+					popover.focus();
+					popover.setAttribute('tabindex', '-1');
+				}
+			}, 100);
 		}
 	});
 
@@ -89,7 +102,6 @@
 
 		let position = step.position;
 
-		// Auto-adjust position based on viewport constraints
 		if (position === 'top' && rect.top - tooltipHeight - 20 < 0) {
 			position = rect.left > viewportWidth / 2 ? 'left' : 'right';
 		}
@@ -191,7 +203,6 @@
 				transition:fly={{ y: 20, duration: 300 }}
 			>
 				<div class="border-brand rounded-xl border bg-zinc-900 p-6 max-md:p-5">
-					<!-- Progress indicators -->
 					<div class="mb-4 flex items-center justify-between border-b border-zinc-600 pb-4">
 						<div class="flex gap-2">
 							{#each tutorialStore.state.steps as step, index}
@@ -231,12 +242,12 @@
 						{/if}
 					</div>
 
-					<div class="flex flex-col gap-3">
+					<div class="flex flex-col gap-4">
 						<div class="flex justify-between gap-3 max-md:flex-col">
 							{#if !isFirstStep}
 								<button
 									class={cn(
-										'cursor-pointer rounded-md border-0 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 outline-0 transition-all duration-200 hover:bg-zinc-500'
+										'cursor-pointer rounded-md border-0 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 outline-0 transition-all duration-200 hover:bg-zinc-700'
 									)}
 									onclick={handlePrevious}
 								>
@@ -274,7 +285,7 @@
 							{/if}
 						</div>
 
-						<div class="flex justify-center gap-3">
+						<div class="flex justify-between gap-3">
 							{#if currentStep.skipable}
 								<button
 									class={cn(

@@ -2,11 +2,11 @@ export interface TutorialStep {
 	id: string;
 	title: string;
 	description: string;
-	element?: string; // CSS selector for element to highlight
+	element?: string;
 	position: 'top' | 'bottom' | 'left' | 'right' | 'center';
 	action?: 'click' | 'drag' | 'upload' | 'wait';
-	condition?: () => boolean; // Function to check if step can proceed
-	onComplete?: () => void; // Callback when step is completed
+	condition?: () => boolean;
+	onComplete?: () => void;
 	skipable?: boolean;
 }
 
@@ -75,7 +75,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 		title: 'Save Your Current Palette',
 		description:
 			'Love this palette you just created? Click the "Save Palette" button below to save it for future projects!',
-		element: 'button[onclick*="savePalette"]',
+		element: '#save-palette',
 		position: 'top',
 		action: 'click',
 		condition: () => tutorialStore.state.hasCurrentPaletteSaved,
@@ -86,8 +86,10 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 		title: 'Explore the Toolbar',
 		description:
 			'The toolbar contains powerful features for processing and extraction. You can even drag it around! Try clicking the palette icon (🎨) to see your saved palettes.',
-		element: '[role="toolbar"]',
+		element: 'button[aria-label="Show saved palettes"]',
 		position: 'left',
+		action: 'click',
+		condition: () => tutorialStore.state.hasSavedPalettesPopoverOpen,
 		skipable: true
 	},
 	{
@@ -95,9 +97,9 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 		title: 'Apply Saved Palettes',
 		description:
 			'In the saved palettes popup, you can apply any saved palette to your current image. This is great for maintaining color consistency across projects!',
-		element: 'button[aria-label="Show saved palettes"]',
+		element: '.palette-dropdown-base',
 		position: 'left',
-		action: 'click',
+		condition: () => tutorialStore.state.hasSavedPaletteApplied,
 		skipable: true
 	},
 	{
@@ -126,6 +128,8 @@ function createTutorialStore() {
 	let hasSelectorClicked = $state(false);
 	let hasColorCopied = $state(false);
 	let hasCurrentPaletteSaved = $state(false);
+	let hasSavedPalettesPopoverOpen = $state(false);
+	let hasSavedPaletteApplied = $state(false);
 
 	return {
 		get state() {
@@ -136,7 +140,9 @@ function createTutorialStore() {
 				hasSavedPalette,
 				hasSelectorClicked,
 				hasColorCopied,
-				hasCurrentPaletteSaved
+				hasCurrentPaletteSaved,
+				hasSavedPalettesPopoverOpen,
+				hasSavedPaletteApplied
 			};
 		},
 
@@ -155,6 +161,8 @@ function createTutorialStore() {
 			hasSelectorClicked = false;
 			hasColorCopied = false;
 			hasCurrentPaletteSaved = false;
+			hasSavedPalettesPopoverOpen = false;
+			hasSavedPaletteApplied = false;
 		},
 
 		next() {
@@ -208,6 +216,8 @@ function createTutorialStore() {
 			hasSelectorClicked = false;
 			hasColorCopied = false;
 			hasCurrentPaletteSaved = false;
+			hasSavedPalettesPopoverOpen = false;
+			hasSavedPaletteApplied = false;
 			localStorage.removeItem('tutorial-completed');
 			localStorage.removeItem('tutorial-skipped');
 		},
@@ -258,6 +268,18 @@ function createTutorialStore() {
 		setCurrentPaletteSaved(saved: boolean) {
 			if (state.currentStepIndex === 5) {
 				hasCurrentPaletteSaved = saved;
+			}
+		},
+
+		setSavedPalettesPopoverOpen(open: boolean) {
+			if (state.currentStepIndex === 6) {
+				hasSavedPalettesPopoverOpen = open;
+			}
+		},
+
+		setSavedPaletteApplied(applied: boolean) {
+			if (state.currentStepIndex === 7) {
+				hasSavedPaletteApplied = applied;
 			}
 		},
 

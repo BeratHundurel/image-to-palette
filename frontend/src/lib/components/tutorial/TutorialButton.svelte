@@ -4,10 +4,7 @@
 	import { cn } from '$lib/utils';
 
 	function restartTutorial() {
-		// Close any open popovers
 		popoverStore.close();
-
-		// Reset and start tutorial
 		tutorialStore.reset();
 		tutorialStore.start();
 	}
