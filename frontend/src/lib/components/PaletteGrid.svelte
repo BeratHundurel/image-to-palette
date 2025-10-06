@@ -50,12 +50,12 @@
 	{#if appStore.state.imageLoaded}
 		<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
 			<button
-				class="cursor-pointer rounded border border-[#D09E87] px-4 py-2 text-sm font-bold tracking-tight transition-all hover:-translate-y-2 hover:bg-[#D09E87]"
+				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded border bg-zinc-900 py-2 text-sm font-medium tracking-tight shadow-2xl transition-all hover:-translate-y-1"
 				onclick={returnToUpload}>Back</button
 			>
 
 			<button
-				class="ml-4 flex cursor-pointer items-center gap-2 rounded border border-[#D09E87] px-4 py-2 text-sm font-bold transition-all hover:-translate-y-1 hover:bg-[#D09E87]"
+				class="border-brand/50 hover:shadow-brand ml-4 flex w-36 cursor-pointer items-center justify-center gap-2 rounded border bg-zinc-900 py-2 text-center text-sm font-medium transition-all hover:-translate-y-1"
 				onclick={appStore.savePalette}
 			>
 				Save Palette
