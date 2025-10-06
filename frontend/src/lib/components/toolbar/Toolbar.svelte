@@ -57,7 +57,7 @@
 >
 	<div
 		class={cn(
-			'border-brand/40 rounded-lg border bg-zinc-900 shadow-2xl ',
+			'border-brand/50 rounded-lg border bg-zinc-900 shadow-2xl ',
 			'hover:shadow-brand hover:border-zinc-600',
 			'transition-all duration-300 ease-out'
 		)}
