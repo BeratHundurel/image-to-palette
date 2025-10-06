@@ -33,7 +33,7 @@
 {#if showPrompt}
 	<div class="fixed inset-0 z-[9998] flex items-center justify-center p-5" transition:fade={{ duration: 300 }}>
 		<div
-			class="absolute inset-0 cursor-pointer bg-black/60 backdrop-blur-sm"
+			class="absolute inset-0 cursor-pointer bg-zinc-800/50"
 			onclick={dismissPrompt}
 			onkeydown={(e) => e.key === 'Escape' && dismissPrompt()}
 			role="button"
@@ -53,7 +53,7 @@
 
 					<div class="mb-8 flex flex-col gap-4">
 						<div
-							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">📸</div>
 							<div class="flex flex-col gap-0.5">
@@ -63,7 +63,7 @@
 						</div>
 
 						<div
-							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">🎯</div>
 							<div class="flex flex-col gap-0.5">
@@ -73,7 +73,7 @@
 						</div>
 
 						<div
-							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">🎨</div>
 							<div class="flex flex-col gap-0.5">
@@ -83,7 +83,7 @@
 						</div>
 
 						<div
-							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/20 flex items-center gap-4 rounded-[10px] border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-200 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">💾</div>
 							<div class="flex flex-col gap-0.5">

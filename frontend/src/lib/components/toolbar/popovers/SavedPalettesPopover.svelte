@@ -31,7 +31,7 @@
 		{:else}
 			<ul class="flex flex-col gap-4">
 				{#each appStore.state.savedPalettes as item}
-					<li class="flex flex-col gap-2 rounded border border-zinc-600/50 bg-zinc-800/50 px-2 py-3">
+					<li class="flex flex-col gap-2 rounded border border-zinc-600 bg-zinc-800/50 px-2 py-3">
 						<div class="mb-2 flex items-center justify-between">
 							<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.name}>
 								{item.name}
