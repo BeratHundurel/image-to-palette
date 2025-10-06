@@ -25,27 +25,27 @@
 	style={`min-width: 260px; ${popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}`}
 >
 	<h3 class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
-	<div class="scrollable-content custom-scrollbar max-h-64 overflow-y-auto">
+	<div class="scrollable-content custom-scrollbar max-h-72 overflow-y-auto">
 		{#if appStore.state.savedPalettes.length === 0}
-			<div class="py-8 text-center text-white/70">No saved palettes yet.</div>
+			<div class="py-8 text-center text-zinc-300">No saved palettes yet.</div>
 		{:else}
-			<ul class="flex flex-col gap-3">
+			<ul class="flex flex-col gap-4">
 				{#each appStore.state.savedPalettes as item}
-					<li class="flex flex-col gap-1 rounded border border-zinc-700/60 bg-zinc-800/70 p-2">
+					<li class="flex flex-col gap-2 rounded border border-zinc-600/50 bg-zinc-800/50 px-2 py-3">
 						<div class="mb-2 flex items-center justify-between">
 							<span class="text-brand max-w-[120px] truncate font-mono text-xs" title={item.name}>
 								{item.name}
 							</span>
-							<div class="flex items-center gap-2">
+							<div class="flex items-center gap-3">
 								<button
-									class="text-brand cursor-pointer rounded text-xs font-bold hover:text-white"
+									class="text-brand hover:text-brand/75 cursor-pointer rounded text-xs font-medium"
 									onclick={() => handlePaletteLoad(item.palette)}
 									type="button"
 								>
 									Apply
 								</button>
 								<button
-									class="cursor-pointer rounded text-xs font-bold text-red-400 hover:text-red-300"
+									class="cursor-pointer rounded text-xs font-medium text-red-400 hover:text-red-300"
 									onclick={() => handlePaletteDelete(item.id, item.name)}
 									type="button"
 									title="Delete palette"
@@ -63,7 +63,7 @@
 								></span>
 							{/each}
 						</div>
-						<div class="mt-2 text-xs text-white/50">
+						<div class="mt-2 text-xs text-zinc-400">
 							Created: {new Date(item.createdAt).toLocaleDateString()}
 						</div>
 					</li>
@@ -72,3 +72,11 @@
 		{/if}
 	</div>
 </div>
+
+<style>
+	.custom-scrollbar {
+		scrollbar-width: thin;
+		scrollbar-color: #eeb38f transparent;
+		padding: 5px;
+	}
+</style>

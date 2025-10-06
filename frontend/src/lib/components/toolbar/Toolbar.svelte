@@ -52,7 +52,7 @@
 	tabindex="0"
 	onmousedown={handleMouseDown}
 	style="right: {right}px; top: {top}px;"
-	class="draggable {moving ? 'dragging' : ''}"
+	class={cn('fixed z-50 select-none', moving ? 'z-[51] cursor-move [&_*]:pointer-events-none' : '')}
 	transition:fly={{ y: -300, duration: 500 }}
 >
 	<div
@@ -68,7 +68,7 @@
 			class={cn(
 				'flex cursor-move items-center justify-center border-b border-zinc-700/50 px-5 py-4',
 				'hover:border-brand/40 hover:bg-zinc-800/50',
-				'drag-handle transition-all duration-200 ease-out'
+				'transition-all duration-200 ease-out'
 			)}
 		>
 			<div class="flex flex-col items-center gap-1.5">
@@ -87,15 +87,12 @@
 			</div>
 		</div>
 
-		<!-- Toolbar Content -->
 		<div class="relative p-5">
-			<!-- Main Controls -->
 			<ul class="flex flex-col gap-3">
-				<!-- Selection Tools Section -->
 				{#if appStore.state.selectors.length > 0}
-					<li class="relative">
+					<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 						<div class="mb-2 flex items-center gap-2">
-							<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Selection Tools</h3>
+							<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Selection Tools</h3>
 							<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 						</div>
 						<div class="flex flex-wrap justify-center gap-2">
@@ -107,9 +104,9 @@
 				{/if}
 
 				<!-- Processing Section -->
-				<li class="relative">
+				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Processing</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Processing</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
@@ -119,18 +116,18 @@
 				</li>
 
 				<!-- Extraction Section -->
-				<li class="relative">
+				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Extraction</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Extraction</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<PaletteOptions />
 				</li>
 
 				<!-- Copy Section -->
-				<li class="relative">
+				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-semibold tracking-wide uppercase">Copy</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Copy</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
@@ -159,27 +156,6 @@
 </section>
 
 <style>
-	.draggable {
-		position: fixed;
-		z-index: 50;
-		user-select: none;
-		transition: none;
-	}
-
-	.draggable.dragging {
-		cursor: move;
-		z-index: 51;
-		transition: none;
-	}
-
-	.draggable.dragging * {
-		pointer-events: none;
-	}
-
-	.drag-handle {
-		cursor: move;
-	}
-
 	/* Popover Container */
 	:global(.palette-button-base::before) {
 		content: '';
@@ -218,12 +194,6 @@
 			opacity: 1;
 			transform: scale(1) translateY(0);
 		}
-	}
-
-	/* Section spacing improvements */
-	li:not(:last-child) {
-		border-bottom: 1px solid rgba(39, 39, 42, 0.5);
-		padding-bottom: 1rem;
 	}
 
 	/* Enhanced visual feedback for sections */

@@ -70,7 +70,7 @@
 	{#each settings as setting}
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center justify-between">
-				<label for={setting.id} class="text-sm font-medium text-white">
+				<label for={setting.id} class="text-xs font-medium text-white">
 					{setting.label}
 				</label>
 				<span
@@ -153,11 +153,6 @@
 	}
 
 	.slider::-webkit-slider-thumb:hover {
-		background: #e6c29a;
-		transform: scale(1.1);
-	}
-
-	.slider::-moz-range-thumb:hover {
 		background: #e6c29a;
 		transform: scale(1.1);
 	}
