@@ -2,7 +2,6 @@
 	import { tutorialStore } from '$lib/stores/tutorial.svelte';
 	import { fade, fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import { cn } from '$lib/utils';
 
 	let showPrompt = $state(false);
 
