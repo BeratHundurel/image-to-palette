@@ -562,6 +562,38 @@ function createAppStore() {
 			}
 
 			await appStore.loadSavedPalettes();
+		},
+
+		async downloadImage() {
+			if (!state.canvas || !state.imageLoaded) {
+				toast.error('No image to download');
+				return;
+			}
+
+			const toastId = toast.loading('Preparing download...');
+
+			try {
+				const blob = await new Promise<Blob>((resolve, reject) => {
+					state.canvas!.toBlob((b) => {
+						if (b) resolve(b);
+						else reject(new Error('Failed to create blob'));
+					}, 'image/png');
+				});
+
+				const url = URL.createObjectURL(blob);
+				const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+				const filename = `palette-applied-${timestamp}.png`;
+
+				const link = document.createElement('a');
+				link.href = url;
+				link.download = filename;
+				link.click();
+
+				URL.revokeObjectURL(url);
+				toast.success('Image downloaded', { id: toastId });
+			} catch (error) {
+				toast.error('Failed to download image', { id: toastId });
+			}
 		}
 	};
 }
