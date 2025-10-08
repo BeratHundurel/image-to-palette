@@ -71,6 +71,9 @@
 				toast.success('Account created successfully!');
 			}
 
+			const { appStore } = await import('$lib/stores/app.svelte');
+			await appStore.syncPalettesOnAuth();
+
 			resetForm();
 			isOpen = false;
 		} catch (error) {
@@ -87,6 +90,10 @@
 		try {
 			await authStore.demoLogin();
 			toast.success('Welcome to the demo!');
+
+			const { appStore } = await import('$lib/stores/app.svelte');
+			await appStore.syncPalettesOnAuth();
+
 			resetForm();
 			isOpen = false;
 		} catch (error) {
@@ -158,7 +165,7 @@
 			<div class="border-brand rounded-xl border bg-zinc-900 p-6 text-white backdrop-blur-sm">
 				<button
 					type="button"
-					class="absolute top-4 right-4 cursor-pointer text-zinc-400 transition-colors hover:text-white"
+					class="absolute right-4 top-4 cursor-pointer text-zinc-400 transition-colors hover:text-white"
 					onclick={handleClose}
 					aria-label="Close modal"
 				>
@@ -184,7 +191,7 @@
 								type="text"
 								id="name"
 								bind:value={formData.name}
-								class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:ring-2 focus:outline-none"
+								class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
 								class:border-red-500={touched.name && errors.name}
 								placeholder="Enter your name"
 								disabled={loading}
@@ -203,7 +210,7 @@
 							type="email"
 							id="email"
 							bind:value={formData.email}
-							class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:ring-2 focus:outline-none"
+							class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
 							class:border-red-500={touched.email && errors.email}
 							placeholder="Enter your email"
 							disabled={loading}
@@ -221,7 +228,7 @@
 							type="password"
 							id="password"
 							bind:value={formData.password}
-							class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:ring-2 focus:outline-none"
+							class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
 							class:border-red-500={touched.password && errors.password}
 							placeholder="Enter your password"
 							disabled={loading}
@@ -242,7 +249,7 @@
 								type="password"
 								id="confirmPassword"
 								bind:value={formData.confirmPassword}
-								class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:ring-2 focus:outline-none"
+								class="focus:border-brand focus:ring-brand/40 w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-white placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
 								class:border-red-500={touched.confirmPassword && errors.confirmPassword}
 								placeholder="Confirm your password"
 								disabled={loading}
@@ -258,12 +265,12 @@
 					<button
 						type="submit"
 						disabled={loading}
-						class="bg-brand hover:bg-brand-hover focus:ring-brand w-full cursor-pointer rounded-md px-4 py-2 text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+						class="bg-brand hover:bg-brand-hover focus:ring-brand w-full cursor-pointer rounded-md px-4 py-2 text-white transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{#if loading}
 							<div class="flex items-center justify-center">
 								<svg
-									class="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
+									class="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
 									viewBox="0 0 24 24"
@@ -313,12 +320,12 @@
 								type="button"
 								onclick={handleDemoLogin}
 								disabled={loading}
-								class="w-full cursor-pointer rounded-md bg-zinc-900 py-3 font-medium text-white transition-all hover:-translate-y-px hover:bg-black focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+								class="w-full cursor-pointer rounded-md bg-zinc-900 py-3 font-medium text-white transition-all hover:-translate-y-px hover:bg-black focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{#if loading}
 									<div class="flex items-center justify-center">
 										<svg
-											class="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
+											class="-ml-1 mr-3 h-5 w-5 animate-spin text-white"
 											xmlns="http://www.w3.org/2000/svg"
 											fill="none"
 											viewBox="0 0 24 24"

@@ -101,7 +101,6 @@ func createDemoUserIfNotExists() (*User, error) {
 	}
 
 	if err := createSamplePalettes(demoUser.ID); err != nil {
-
 		fmt.Printf("Warning: Failed to create sample palettes for demo user: %v\n", err)
 	}
 
@@ -144,6 +143,7 @@ func createSamplePalettes(userID uint) error {
 			UserID:   &userID,
 			Name:     palette.Name,
 			JsonData: palette.JsonData,
+			IsSystem: true,
 		}
 
 		if err := DB.Create(&dbPalette).Error; err != nil {
@@ -353,29 +353,6 @@ func changePasswordHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
-}
-
-func resetDemoUserPalettes() error {
-	if DB == nil {
-		return fmt.Errorf("database not available")
-	}
-
-	demoEmail := "demo@imagepalette.com"
-	var demoUser User
-
-	if err := DB.Where("email = ?", demoEmail).First(&demoUser).Error; err != nil {
-		return fmt.Errorf("demo user not found: %w", err)
-	}
-
-	if err := DB.Where("user_id = ?", demoUser.ID).Delete(&Palette{}).Error; err != nil {
-		return fmt.Errorf("failed to delete existing demo palettes: %w", err)
-	}
-
-	if err := createSamplePalettes(demoUser.ID); err != nil {
-		return fmt.Errorf("failed to recreate sample palettes: %w", err)
-	}
-
-	return nil
 }
 
 func demoLoginHandler(c *gin.Context) {

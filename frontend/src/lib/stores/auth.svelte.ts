@@ -112,6 +112,10 @@ function createAuthStore() {
 
 		setUser(user: User) {
 			state.user = user;
+		},
+
+		isDemoUser(): boolean {
+			return state.user?.email === 'demo@imagepalette.com';
 		}
 	};
 }

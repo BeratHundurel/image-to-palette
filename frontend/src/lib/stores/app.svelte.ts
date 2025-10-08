@@ -446,10 +446,28 @@ function createAppStore() {
 			if (!paletteName) return;
 
 			try {
-				const data = await api.savePalette(paletteName, state.colors);
-				toast.success('Palette saved: ' + data.name);
+				if (authStore.state.isAuthenticated && !authStore.isDemoUser()) {
+					const data = await api.savePalette(paletteName, state.colors);
+					toast.success('Palette saved: ' + data.name);
+					await appStore.loadSavedPalettes();
+				} else {
+					if (browser) {
+						const newPalette: PaletteData = {
+							id: `local_${Date.now()}`,
+							name: paletteName,
+							palette: state.colors,
+							createdAt: new Date().toISOString()
+						};
 
-				await appStore.loadSavedPalettes();
+						const stored = localStorage.getItem('savedPalettes');
+						const palettes = stored ? JSON.parse(stored) : [];
+						palettes.push(newPalette);
+						localStorage.setItem('savedPalettes', JSON.stringify(palettes));
+
+						await appStore.loadSavedPalettes();
+						toast.success('Palette saved: ' + paletteName);
+					}
+				}
 
 				const { tutorialStore } = await import('./tutorial.svelte');
 				tutorialStore.setCurrentPaletteSaved(true);
@@ -492,9 +510,17 @@ function createAppStore() {
 			if (!browser) return;
 
 			try {
-				if (authStore.state.isAuthenticated) {
+				if (authStore.state.isAuthenticated && !authStore.isDemoUser()) {
 					const response = await api.getPalettes();
 					state.savedPalettes = response.palettes;
+				} else if (authStore.state.isAuthenticated && authStore.isDemoUser()) {
+					const response = await api.getPalettes();
+					const serverPalettes = response.palettes;
+
+					const stored = localStorage.getItem('savedPalettes');
+					const localPalettes = stored ? (JSON.parse(stored) as PaletteData[]) : [];
+
+					state.savedPalettes = [...localPalettes, ...serverPalettes];
 				} else {
 					const stored = localStorage.getItem('savedPalettes');
 					if (stored) {
@@ -505,12 +531,7 @@ function createAppStore() {
 							state.savedPalettes = [];
 						}
 					} else {
-						try {
-							const response = await api.getPalettes();
-							state.savedPalettes = response.palettes;
-						} catch {
-							state.savedPalettes = [];
-						}
+						state.savedPalettes = [];
 					}
 				}
 			} catch (error) {
@@ -521,16 +542,26 @@ function createAppStore() {
 
 		async deletePalette(paletteId: string) {
 			try {
-				await api.deletePalette(paletteId);
-				toast.success('Palette deleted');
+				const palette = state.savedPalettes.find((p) => p.id === paletteId);
+				const isLocalPalette = paletteId.startsWith('local_');
 
-				if (authStore.state.isAuthenticated) {
+				if (authStore.state.isAuthenticated && !authStore.isDemoUser() && !isLocalPalette) {
+					await api.deletePalette(paletteId);
+					toast.success('Palette deleted');
+					await appStore.loadSavedPalettes();
+				} else if (authStore.isDemoUser() && !isLocalPalette) {
+					await api.deletePalette(paletteId);
+					toast.success('Palette deleted');
 					await appStore.loadSavedPalettes();
 				} else {
-					state.savedPalettes = state.savedPalettes.filter((p) => p.id !== paletteId);
 					if (browser) {
-						localStorage.setItem('savedPalettes', JSON.stringify(state.savedPalettes));
+						const stored = localStorage.getItem('savedPalettes');
+						const palettes = stored ? JSON.parse(stored) : [];
+						const filtered = palettes.filter((p: PaletteData) => p.id !== paletteId);
+						localStorage.setItem('savedPalettes', JSON.stringify(filtered));
 					}
+					await appStore.loadSavedPalettes();
+					toast.success('Palette deleted');
 				}
 			} catch (err) {
 				toast.error(err instanceof Error ? err.message : 'Failed to delete palette.');
@@ -540,28 +571,39 @@ function createAppStore() {
 		async syncPalettesOnAuth() {
 			if (!browser) return;
 
-			if (authStore.state.isAuthenticated) {
+			if (authStore.state.isAuthenticated && !authStore.isDemoUser()) {
 				const stored = localStorage.getItem('savedPalettes');
 				if (stored) {
 					try {
 						const localPalettes = JSON.parse(stored) as PaletteData[];
-						await Promise.all(
-							localPalettes.map(async (palette) => {
-								try {
-									await api.savePalette(palette.name, palette.palette);
-								} catch {}
-							})
-						);
-						localStorage.removeItem('savedPalettes');
-					} catch {}
+						const toastId = toast.loading('Syncing your palettes...');
+						try {
+							await Promise.all(
+								localPalettes.map(async (palette) => {
+									try {
+										await api.savePalette(palette.name, palette.palette);
+									} catch (err) {
+										console.error('Failed to sync palette:', palette.name, err);
+									}
+								})
+							);
+							localStorage.removeItem('savedPalettes');
+							toast.success('Palettes synced successfully', { id: toastId });
+						} catch (err) {
+							toast.error('Failed to sync some palettes', { id: toastId });
+						}
+					} catch (err) {
+						console.error('Failed to parse local palettes:', err);
+					}
 				}
+				await appStore.loadSavedPalettes();
+			} else if (authStore.state.isAuthenticated && authStore.isDemoUser()) {
+				await appStore.loadSavedPalettes();
 			} else {
 				if (state.savedPalettes.length > 0) {
 					localStorage.setItem('savedPalettes', JSON.stringify(state.savedPalettes));
 				}
 			}
-
-			await appStore.loadSavedPalettes();
 		},
 
 		async downloadImage() {

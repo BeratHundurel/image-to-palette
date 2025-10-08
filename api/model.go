@@ -18,6 +18,7 @@ type Palette struct {
 	User      *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	Name      string    `json:"name" gorm:"size:255;not null"`
 	JsonData  string    `json:"jsonData" gorm:"type:jsonb;not null"`
+	IsSystem  bool      `json:"isSystem" gorm:"default:false"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }

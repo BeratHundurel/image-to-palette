@@ -7,6 +7,10 @@
 	async function handleLogout() {
 		try {
 			await authStore.logout();
+
+			const { appStore } = await import('$lib/stores/app.svelte');
+			await appStore.loadSavedPalettes();
+
 			showDropdown = false;
 			toast.success('Logged out successfully');
 		} catch (error) {
@@ -60,7 +64,7 @@
 
 		{#if showDropdown}
 			<div
-				class="border-brand/40 absolute top-full right-0 z-50 mt-2 w-64 rounded-lg border bg-zinc-900 shadow-lg backdrop-blur-sm"
+				class="border-brand/40 absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border bg-zinc-900 shadow-lg backdrop-blur-sm"
 			>
 				<div class="border-b border-zinc-700 p-4">
 					<div class="flex items-center space-x-3">

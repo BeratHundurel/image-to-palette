@@ -7,6 +7,7 @@ export type PaletteData = {
 	name: string;
 	palette: Color[];
 	createdAt: string;
+	isSystem?: boolean;
 };
 
 export type SavePaletteRequest = {

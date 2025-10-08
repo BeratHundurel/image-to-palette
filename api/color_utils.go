@@ -26,20 +26,6 @@ func (c colorObservation) Distance(p clusters.Coordinates) float64 {
 	return sum
 }
 
-func sanitizeFileName(name string) string {
-	result := make([]rune, 0, len(name))
-	for _, r := range name {
-		switch {
-		case r >= 'a' && r <= 'z',
-			r >= 'A' && r <= 'Z',
-			r >= '0' && r <= '9',
-			r == '-', r == '_', r == '.':
-			result = append(result, r)
-		}
-	}
-	return string(result)
-}
-
 func rgbToHex(r, g, b uint32) string {
 	return fmt.Sprintf("#%02X%02X%02X", r, g, b)
 }

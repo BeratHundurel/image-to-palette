@@ -49,14 +49,16 @@
 								>
 									Apply
 								</button>
-								<button
-									class="cursor-pointer rounded text-xs font-medium text-red-400 hover:text-red-300"
-									onclick={() => handlePaletteDelete(item.id, item.name)}
-									type="button"
-									title="Delete palette"
-								>
-									Delete
-								</button>
+								{#if !item.isSystem}
+									<button
+										class="cursor-pointer rounded text-xs font-medium text-red-400 hover:text-red-300"
+										onclick={() => handlePaletteDelete(item.id, item.name)}
+										type="button"
+										title="Delete palette"
+									>
+										Delete
+									</button>
+								{/if}
 							</div>
 						</div>
 						<div class="mt-1 flex flex-row flex-wrap gap-1">
