@@ -53,10 +53,10 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 		id: 'selection-tools',
 		title: 'Use Different Selection Tools',
 		description:
-			'Notice the colored selection tools in the toolbar? Each color represents a different selection area. Try clicking a different color selector!',
+			'Notice the colored selection tools in the toolbar? Each color represents a different selection area. Click the red selector and make a selection similar to the previous step!',
 		element: '[role="toolbar"] button[aria-label="Selector 2"]',
 		position: 'left',
-		action: 'click',
+		action: 'drag',
 		condition: () => tutorialStore.state.hasSelectorClicked,
 		skipable: true
 	},
@@ -210,6 +210,7 @@ function createTutorialStore() {
 			state.completedSteps.clear();
 			state.isCompleted = false;
 			state.hasStarted = false;
+
 			hasImageUploaded = false;
 			hasSelection = false;
 			hasSavedPalette = false;
@@ -218,6 +219,7 @@ function createTutorialStore() {
 			hasCurrentPaletteSaved = false;
 			hasSavedPalettesPopoverOpen = false;
 			hasSavedPaletteApplied = false;
+
 			localStorage.removeItem('tutorial-completed');
 			localStorage.removeItem('tutorial-skipped');
 		},
@@ -250,13 +252,15 @@ function createTutorialStore() {
 		},
 
 		setSelectorClicked(clicked: boolean) {
-			if (state.currentStepIndex === 3) {
+			const currentStep = this.getCurrentStep();
+			if (currentStep?.id === 'selection-tools') {
 				hasSelectorClicked = clicked;
 			}
 		},
 
 		setColorCopied(copied: boolean) {
-			if (state.currentStepIndex === 4) {
+			const currentStep = this.getCurrentStep();
+			if (currentStep?.id === 'extract-colors') {
 				hasColorCopied = copied;
 			}
 		},
@@ -266,19 +270,22 @@ function createTutorialStore() {
 		},
 
 		setCurrentPaletteSaved(saved: boolean) {
-			if (state.currentStepIndex === 5) {
+			const currentStep = this.getCurrentStep();
+			if (currentStep?.id === 'save-palette') {
 				hasCurrentPaletteSaved = saved;
 			}
 		},
 
 		setSavedPalettesPopoverOpen(open: boolean) {
-			if (state.currentStepIndex === 6) {
+			const currentStep = this.getCurrentStep();
+			if (currentStep?.id === 'toolbar-features') {
 				hasSavedPalettesPopoverOpen = open;
 			}
 		},
 
 		setSavedPaletteApplied(applied: boolean) {
-			if (state.currentStepIndex === 7) {
+			const currentStep = this.getCurrentStep();
+			if (currentStep?.id === 'apply-palette') {
 				hasSavedPaletteApplied = applied;
 			}
 		},

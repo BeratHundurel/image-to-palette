@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tutorialStore } from '$lib/stores/tutorial.svelte';
+	import { tutorialStore, type TutorialStep } from '$lib/stores/tutorial.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
 	import { tick } from 'svelte';
@@ -8,16 +8,30 @@
 
 	let highlightElement: HTMLElement | null = $state(null);
 	let tooltipElement: HTMLElement | null = $state(null);
+	let selectionTimeout: ReturnType<typeof setTimeout> | null = null;
+	let popoverFocusTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	$effect(() => {
 		const currentStep = tutorialStore.getCurrentStep();
 
-		if (appStore.state.imageLoaded) {
+		if (appStore.state.imageLoaded && appStore.state.canvas) {
 			tutorialStore.setImageUploaded(true);
 		}
 
-		if (appStore.state.selectors.some((s) => s.selection)) {
-			tutorialStore.setHasSelection(true);
+		if (
+			currentStep?.id === 'canvas-interaction' &&
+			appStore.state.selectors.some((s) => s.selection) &&
+			!appStore.state.isDragging &&
+			!appStore.state.isExtracting
+		) {
+			if (selectionTimeout) {
+				clearTimeout(selectionTimeout);
+			}
+
+			selectionTimeout = setTimeout(() => {
+				tutorialStore.setHasSelection(true);
+				selectionTimeout = null;
+			}, 200);
 		}
 
 		if (
@@ -25,28 +39,55 @@
 			appStore.state.activeSelectorId &&
 			appStore.state.activeSelectorId !== 'green'
 		) {
-			tutorialStore.setSelectorClicked(true);
+			const nonGreenSelector = appStore.state.selectors.find(
+				(s) => s.id === appStore.state.activeSelectorId && s.id !== 'green'
+			);
+
+			if (nonGreenSelector?.selection && !appStore.state.isDragging && !appStore.state.isExtracting) {
+				if (selectionTimeout) {
+					clearTimeout(selectionTimeout);
+				}
+
+				selectionTimeout = setTimeout(() => {
+					tutorialStore.setSelectorClicked(true);
+					selectionTimeout = null;
+				}, 200);
+			}
 		}
 
 		if (currentStep?.id === 'toolbar-features' && popoverStore.isOpen('saved')) {
 			tutorialStore.setSavedPalettesPopoverOpen(true);
 
-			setTimeout(() => {
+			if (popoverFocusTimeout) {
+				clearTimeout(popoverFocusTimeout);
+			}
+
+			popoverFocusTimeout = setTimeout(() => {
 				const popover = document.querySelector('.palette-dropdown-base') as HTMLElement;
 				if (popover) {
 					popover.focus();
 					popover.setAttribute('tabindex', '-1');
 				}
+				popoverFocusTimeout = null;
 			}, 100);
 		}
+
+		return () => {
+			if (selectionTimeout) {
+				clearTimeout(selectionTimeout);
+				selectionTimeout = null;
+			}
+			if (popoverFocusTimeout) {
+				clearTimeout(popoverFocusTimeout);
+				popoverFocusTimeout = null;
+			}
+		};
 	});
 
 	$effect(() => {
 		const currentStep = tutorialStore.getCurrentStep();
 		if (currentStep && currentStep.condition && tutorialStore.checkStepCondition()) {
-			setTimeout(() => {
-				tutorialStore.next();
-			}, 1500);
+			tutorialStore.next();
 		}
 	});
 
@@ -71,7 +112,7 @@
 		highlightElement = null;
 	}
 
-	function getTooltipPosition(step: any) {
+	function getTooltipPosition(step: TutorialStep) {
 		if (step.position === 'center') {
 			return {
 				styles: {
@@ -178,13 +219,14 @@
 {#if tutorialStore.state.isActive}
 	<div class="pointer-events-none fixed inset-0 z-[9999]" transition:fade={{ duration: 300 }}>
 		{#if highlightElement && currentStep?.element}
+			{@const rect = highlightElement.getBoundingClientRect()}
 			<div
 				class="border-brand pointer-events-none absolute z-[10001] rounded-lg border-[3px] shadow-[0_0_0_9999px_rgba(0,0,0,0.7),0_0_20px_rgba(238,179,143,0.5),inset_0_0_20px_rgba(238,179,143,0.2)]"
 				style={`
-					top: ${highlightElement.getBoundingClientRect().top - 8}px;
-					left: ${highlightElement.getBoundingClientRect().left - 8}px;
-					width: ${highlightElement.getBoundingClientRect().width + 16}px;
-					height: ${highlightElement.getBoundingClientRect().height + 16}px;
+					top: ${rect.top - 8}px;
+					left: ${rect.left - 8}px;
+					width: ${rect.width + 16}px;
+					height: ${rect.height + 16}px;
 				`}
 				transition:scale={{ duration: 300 }}
 			></div>
@@ -194,8 +236,8 @@
 			<div
 				bind:this={tooltipElement}
 				class={cn(
-					'pointer-events-auto absolute z-[10002] max-w-[360px] min-w-[300px]',
-					'max-md:!right-[5vw] max-md:!left-[5vw] max-md:max-w-[90vw] max-md:min-w-[280px]'
+					'pointer-events-auto absolute z-[10002] min-w-[300px] max-w-[360px]',
+					'max-md:!left-[5vw] max-md:!right-[5vw] max-md:min-w-[280px] max-md:max-w-[90vw]'
 				)}
 				style={Object.entries(tooltipStyles)
 					.map(([key, value]) => `${key}: ${value}`)
@@ -223,7 +265,7 @@
 						</span>
 					</div>
 
-					<div class="mb-6">
+					<div class="mb-4">
 						<h3 class="text-brand mb-2 text-lg font-semibold">{currentStep.title}</h3>
 						<p class="mb-0 text-sm leading-relaxed text-zinc-300">{currentStep.description}</p>
 
