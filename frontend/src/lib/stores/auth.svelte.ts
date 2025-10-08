@@ -40,7 +40,7 @@ function createAuthStore() {
 						isLoading: false
 					};
 				}
-			} catch (error) {
+			} catch (_error) {
 				authApi.removeAuthToken();
 				state = {
 					user: null,

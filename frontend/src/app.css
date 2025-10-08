@@ -7,7 +7,6 @@
 	--color-brand-hover: #e6a875;
 }
 
-
 .palette-button-base {
 	@apply flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-sm font-semibold text-white;
 	@apply border-brand/40 border bg-zinc-800 backdrop-blur-sm;

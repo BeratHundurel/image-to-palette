@@ -4,6 +4,7 @@ import * as api from '$lib/api/palette';
 import { authStore } from './auth.svelte';
 import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
+import { CANVAS, SELECTION, IMAGE } from '$lib/constants';
 
 export type SavedPaletteItem = PaletteData;
 
@@ -42,7 +43,7 @@ interface AppState {
 }
 
 function createAppStore() {
-	let state = $state<AppState>({
+	const state = $state<AppState>({
 		fileInput: null,
 		canvas: null,
 		canvasContext: null,
@@ -80,34 +81,21 @@ function createAppStore() {
 		maxDistance: 0
 	});
 
-	function calculateImageDimensions(originalWidth: number, originalHeight: number, maxWidth = 800, maxHeight = 400) {
-		let imgWidth = originalWidth;
-		let imgHeight = originalHeight;
-		const aspectRatio = imgWidth / imgHeight;
-
-		if (imgWidth > maxWidth || imgHeight > maxHeight) {
-			if (aspectRatio > 1) {
-				imgWidth = maxWidth;
-				imgHeight = maxWidth / aspectRatio;
-				if (imgHeight > maxHeight) {
-					imgHeight = maxHeight;
-					imgWidth = maxHeight * aspectRatio;
-				}
-			} else {
-				imgHeight = maxHeight;
-				imgWidth = maxHeight * aspectRatio;
-				if (imgWidth > maxWidth) {
-					imgWidth = maxWidth;
-					imgHeight = maxWidth / aspectRatio;
-				}
-			}
-		}
+	function calculateImageDimensions(
+		originalWidth: number,
+		originalHeight: number,
+		maxWidth = CANVAS.MAX_WIDTH,
+		maxHeight = CANVAS.MAX_HEIGHT
+	) {
+		const scale = Math.min(maxWidth / originalWidth, maxHeight / originalHeight, 1);
+		const width = originalWidth * scale;
+		const height = originalHeight * scale;
 
 		return {
-			width: imgWidth,
-			height: imgHeight,
-			scaleX: originalWidth / imgWidth,
-			scaleY: originalHeight / imgHeight
+			width,
+			height,
+			scaleX: originalWidth / width,
+			scaleY: originalHeight / height
 		};
 	}
 
@@ -122,6 +110,21 @@ function createAppStore() {
 			x: (event.clientX - rect.left) * scaleX,
 			y: (event.clientY - rect.top) * scaleY
 		};
+	}
+
+	function isValidSelection(selection: { x: number; y: number; w: number; h: number }): boolean {
+		return (
+			selection.w > SELECTION.MIN_WIDTH &&
+			selection.h > SELECTION.MIN_HEIGHT &&
+			!isNaN(selection.x) &&
+			!isNaN(selection.y) &&
+			isFinite(selection.x) &&
+			isFinite(selection.y)
+		);
+	}
+
+	function isValidHexColor(hex: string): boolean {
+		return /^#[0-9A-F]{6}$/i.test(hex);
 	}
 
 	function drawImageAndBoxes() {
@@ -143,22 +146,22 @@ function createAppStore() {
 
 			state.canvasContext.save();
 			state.canvasContext.strokeStyle = 'rgba(255, 255, 255, 0.95)';
-			state.canvasContext.lineWidth = 4;
+			state.canvasContext.lineWidth = SELECTION.STROKE_WIDTH.OUTER;
 			state.canvasContext.strokeRect(clampedX - 2, clampedY - 2, clampedW + 4, clampedH + 4);
 
 			state.canvasContext.strokeStyle = 'rgba(0, 0, 0, 0.8)';
-			state.canvasContext.lineWidth = 2;
+			state.canvasContext.lineWidth = SELECTION.STROKE_WIDTH.MIDDLE;
 			state.canvasContext.strokeRect(clampedX - 1, clampedY - 1, clampedW + 2, clampedH + 2);
 
 			state.canvasContext.strokeStyle = selector.color;
-			state.canvasContext.lineWidth = 3;
+			state.canvasContext.lineWidth = SELECTION.STROKE_WIDTH.INNER;
 			state.canvasContext.strokeRect(clampedX, clampedY, clampedW, clampedH);
 
 			if (selector.selected) {
 				state.canvasContext.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-				state.canvasContext.lineWidth = 1;
-				state.canvasContext.setLineDash([5, 5]);
-				state.canvasContext.lineDashOffset = -(Date.now() / 150) % 10;
+				state.canvasContext.lineWidth = SELECTION.STROKE_WIDTH.ANIMATED;
+				state.canvasContext.setLineDash(SELECTION.DASH_PATTERN);
+				state.canvasContext.lineDashOffset = -(Date.now() / SELECTION.ANIMATION_SPEED) % 10;
 				state.canvasContext.strokeRect(clampedX + 2, clampedY + 2, clampedW - 4, clampedH - 4);
 			}
 			state.canvasContext.restore();
@@ -200,32 +203,49 @@ function createAppStore() {
 		},
 
 		async drawBlobToCanvas(blob: Blob) {
-			return new Promise<void>((resolve) => {
+			return new Promise<void>((resolve, reject) => {
 				const url = URL.createObjectURL(blob);
 				const newImage = new Image();
+
 				newImage.onload = () => {
-					state.canvasContext = state.canvas?.getContext('2d')!;
-					state.originalImageWidth = newImage.width;
-					state.originalImageHeight = newImage.height;
+					try {
+						const context = state.canvas?.getContext('2d');
+						if (!context) throw new Error('Could not get canvas context');
+						state.canvasContext = context;
+						state.originalImageWidth = newImage.width;
+						state.originalImageHeight = newImage.height;
 
-					const dimensions = calculateImageDimensions(state.originalImageWidth, state.originalImageHeight);
+						const dimensions = calculateImageDimensions(state.originalImageWidth, state.originalImageHeight);
+						if (!state.canvas || !state.canvasContext) {
+							URL.revokeObjectURL(url);
+							reject(new Error('Canvas context not available'));
+							return;
+						}
 
-					if (!state.canvas || !state.canvasContext) return;
+						state.canvasScaleX = dimensions.scaleX;
+						state.canvasScaleY = dimensions.scaleY;
+						state.canvas.width = dimensions.width;
+						state.canvas.height = dimensions.height;
+						state.canvas.style.width = dimensions.width + 'px';
+						state.canvas.style.height = dimensions.height + 'px';
 
-					state.canvasScaleX = dimensions.scaleX;
-					state.canvasScaleY = dimensions.scaleY;
-					state.canvas.width = dimensions.width;
-					state.canvas.height = dimensions.height;
-					state.canvas.style.width = dimensions.width + 'px';
-					state.canvas.style.height = dimensions.height + 'px';
-
-					state.canvasContext.drawImage(newImage, 0, 0, dimensions.width, dimensions.height);
-					state.image = newImage;
-					state.imageLoaded = true;
-					drawImageAndBoxes();
-					URL.revokeObjectURL(url);
-					resolve();
+						state.canvasContext.drawImage(newImage, 0, 0, dimensions.width, dimensions.height);
+						state.image = newImage;
+						state.imageLoaded = true;
+						drawImageAndBoxes();
+						URL.revokeObjectURL(url);
+						resolve();
+					} catch (error) {
+						URL.revokeObjectURL(url);
+						reject(error);
+					}
 				};
+
+				newImage.onerror = () => {
+					URL.revokeObjectURL(url);
+					reject(new Error('Failed to load image'));
+				};
+
 				newImage.src = url;
 			});
 		},
@@ -265,11 +285,15 @@ function createAppStore() {
 		},
 
 		async handleMouseUp() {
+			if (state.isExtracting) {
+				state.isDragging = false;
+				state.dragRect = null;
+				return;
+			}
+
 			state.isDragging = false;
 			state.dragRect = null;
-			if (!state.isExtracting) {
-				await appStore.extractPaletteFromSelection();
-			}
+			await appStore.extractPaletteFromSelection();
 		},
 
 		async onFileChange(event: Event) {
@@ -300,17 +324,21 @@ function createAppStore() {
 		},
 
 		async extractPaletteFromSelection() {
+			if (state.isExtracting) {
+				return;
+			}
+
 			state.isExtracting = true;
 			const toastId = toast.loading('Extracting palette...');
 			await tick();
 
 			if (!state.canvasContext || !state.canvas || !state.image) {
-				toast.error('No canvas/image context', { id: toastId });
+				toast.error('Canvas not ready', { id: toastId });
 				state.isExtracting = false;
 				return;
 			}
 
-			const validSelections = state.selectors.filter((s) => s.selection);
+			const validSelections = state.selectors.filter((s) => s.selection && isValidSelection(s.selection));
 
 			if (validSelections.length === 0) {
 				toast.error('No valid selections to extract colors from', { id: toastId });
@@ -370,7 +398,9 @@ function createAppStore() {
 							}
 						}
 
-						const blob = await new Promise<Blob>((resolve) => mergedCanvas.toBlob((b) => resolve(b!), 'image/png'));
+						const blob = await new Promise<Blob>((resolve) =>
+							mergedCanvas.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
+						);
 						files.push(blob);
 					}
 				}
@@ -391,7 +421,9 @@ function createAppStore() {
 
 					if (scaledX >= 0 && scaledY >= 0 && scaledW > 0 && scaledH > 0) {
 						cropCtx.drawImage(state.image, scaledX, scaledY, scaledW, scaledH, 0, 0, scaledW, scaledH);
-						const blob = await new Promise<Blob>((resolve) => cropCanvas.toBlob((b) => resolve(b!), 'image/png'));
+						const blob = await new Promise<Blob>((resolve) =>
+							cropCanvas.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
+						);
 						files.push(blob);
 					}
 				}
@@ -407,8 +439,23 @@ function createAppStore() {
 
 		async extractPalette(files: (Blob | File)[], existingToastId?: string) {
 			if (files.length === 0) {
-				toast.error('No files found');
+				toast.error('No files provided');
 				return;
+			}
+
+			for (const file of files) {
+				if (file.size > IMAGE.MAX_FILE_SIZE) {
+					toast.error(`File too large. Maximum size is ${IMAGE.MAX_FILE_SIZE / 1024 / 1024}MB`);
+					return;
+				}
+			}
+
+			if (state.filteredColors.length > 0) {
+				const invalidColors = state.filteredColors.filter((color) => !isValidHexColor(color));
+				if (invalidColors.length > 0) {
+					toast.error(`Invalid hex colors in filter: ${invalidColors.join(', ')}`);
+					return;
+				}
 			}
 
 			state.isExtracting = true;
@@ -481,16 +528,26 @@ function createAppStore() {
 				toast.error('Load an image first');
 				return;
 			}
+
 			if (!state.colors || state.colors.length === 0) {
-				toast.error('No palette to apply!');
+				toast.error('No palette to apply');
 				return;
 			}
+
+			const invalidColors = state.colors.filter((color) => !isValidHexColor(color.hex));
+			if (invalidColors.length > 0) {
+				toast.error(`Invalid colors in palette: ${invalidColors.map((c) => c.hex).join(', ')}`);
+				return;
+			}
+
 			const toastId = toast.loading('Applying palette...');
 
 			try {
 				if (!state.canvas) return;
 
-				const srcBlob = await new Promise<Blob>((resolve) => state.canvas!.toBlob((b) => resolve(b!), 'image/png'));
+				const srcBlob = await new Promise<Blob>((resolve) =>
+					state.canvas!.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
+				);
 
 				const outBlob = await api.applyPaletteBlob(srcBlob, state.colors, {
 					luminosity: state.luminosity,
@@ -501,11 +558,10 @@ function createAppStore() {
 				await appStore.drawBlobToCanvas(outBlob);
 
 				toast.success('Applied palette', { id: toastId });
-			} catch (e) {
+			} catch (_e) {
 				toast.error('Error applying palette', { id: toastId });
 			}
 		},
-
 		async loadSavedPalettes() {
 			if (!browser) return;
 
@@ -542,7 +598,6 @@ function createAppStore() {
 
 		async deletePalette(paletteId: string) {
 			try {
-				const palette = state.savedPalettes.find((p) => p.id === paletteId);
 				const isLocalPalette = paletteId.startsWith('local_');
 
 				if (authStore.state.isAuthenticated && !authStore.isDemoUser() && !isLocalPalette) {
@@ -589,11 +644,11 @@ function createAppStore() {
 							);
 							localStorage.removeItem('savedPalettes');
 							toast.success('Palettes synced successfully', { id: toastId });
-						} catch (err) {
+						} catch (_err) {
 							toast.error('Failed to sync some palettes', { id: toastId });
 						}
-					} catch (err) {
-						console.error('Failed to parse local palettes:', err);
+					} catch (_err) {
+						console.error('Failed to parse local palettes:', _err);
 					}
 				}
 				await appStore.loadSavedPalettes();
@@ -619,7 +674,7 @@ function createAppStore() {
 					state.canvas!.toBlob((b) => {
 						if (b) resolve(b);
 						else reject(new Error('Failed to create blob'));
-					}, 'image/png');
+					}, IMAGE.OUTPUT_FORMAT);
 				});
 
 				const url = URL.createObjectURL(blob);
@@ -633,7 +688,7 @@ function createAppStore() {
 
 				URL.revokeObjectURL(url);
 				toast.success('Image downloaded', { id: toastId });
-			} catch (error) {
+			} catch (_err) {
 				toast.error('Failed to download image', { id: toastId });
 			}
 		}

@@ -62,14 +62,14 @@ export function getAuthHeaders(): Record<string, string> {
 	return headers;
 }
 
-async function handleAuthResponse(response: Response): Promise<any> {
+async function handleAuthResponse<T>(response: Response): Promise<T> {
 	const data = await response.json();
 
 	if (!response.ok) {
 		throw new Error(data.error || `HTTP ${response.status}`);
 	}
 
-	return data;
+	return data as T;
 }
 
 export async function register(userData: RegisterRequest): Promise<AuthResponse> {
@@ -79,7 +79,7 @@ export async function register(userData: RegisterRequest): Promise<AuthResponse>
 		body: JSON.stringify(userData)
 	});
 
-	const data = await handleAuthResponse(response);
+	const data = await handleAuthResponse<AuthResponse>(response);
 
 	if (data.token) {
 		setAuthToken(data.token);
@@ -95,7 +95,7 @@ export async function login(credentials: LoginRequest): Promise<AuthResponse> {
 		body: JSON.stringify(credentials)
 	});
 
-	const data = await handleAuthResponse(response);
+	const data = await handleAuthResponse<AuthResponse>(response);
 
 	if (data.token) {
 		setAuthToken(data.token);
@@ -114,7 +114,7 @@ export async function getCurrentUser(): Promise<{ user: User }> {
 		headers: getAuthHeaders()
 	});
 
-	return handleAuthResponse(response);
+	return handleAuthResponse<{ user: User }>(response);
 }
 
 export async function changePassword(passwordData: ChangePasswordRequest): Promise<{ message: string }> {
@@ -124,7 +124,7 @@ export async function changePassword(passwordData: ChangePasswordRequest): Promi
 		body: JSON.stringify(passwordData)
 	});
 
-	return handleAuthResponse(response);
+	return handleAuthResponse<{ message: string }>(response);
 }
 
 export async function demoLogin(): Promise<AuthResponse> {
@@ -133,7 +133,7 @@ export async function demoLogin(): Promise<AuthResponse> {
 		headers: { 'Content-Type': 'application/json' }
 	});
 
-	const data = await handleAuthResponse(response);
+	const data = await handleAuthResponse<AuthResponse>(response);
 
 	if (data.token) {
 		setAuthToken(data.token);

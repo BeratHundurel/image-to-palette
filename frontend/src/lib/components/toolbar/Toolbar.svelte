@@ -93,7 +93,7 @@
 				{#if appStore.state.selectors.length > 0}
 					<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 						<div class="mb-2 flex items-center gap-2">
-							<h3 class="text-brand text-xs font-medium uppercase tracking-wide">Selection Tools</h3>
+							<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Selection Tools</h3>
 							<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 						</div>
 						<div class="flex flex-wrap justify-center gap-2">
@@ -107,7 +107,7 @@
 				<!-- Processing Section -->
 				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium uppercase tracking-wide">Processing</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Processing</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
@@ -119,7 +119,7 @@
 				<!-- Extraction Section -->
 				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium uppercase tracking-wide">Extraction</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Extraction</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<PaletteOptions />
@@ -128,7 +128,7 @@
 				<!-- Copy Section -->
 				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium uppercase tracking-wide">Copy</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Copy</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
@@ -139,7 +139,7 @@
 				<!-- Export Section -->
 				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium uppercase tracking-wide">Export</h3>
+						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Export</h3>
 						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">

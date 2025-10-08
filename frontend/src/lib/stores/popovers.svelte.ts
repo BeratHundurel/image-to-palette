@@ -7,7 +7,7 @@ interface PopoverState {
 }
 
 function createPopoverStore() {
-	let state = $state<PopoverState>({
+	const state = $state<PopoverState>({
 		current: null,
 		direction: 'right'
 	});

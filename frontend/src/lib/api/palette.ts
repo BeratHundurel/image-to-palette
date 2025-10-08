@@ -9,7 +9,7 @@ import type {
 import { getAuthHeaders } from './auth';
 
 export const API_BASE: string =
-	(typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_API_BASE_URL) || 'http://localhost:8088';
+	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:8088';
 
 function buildURL(path: string, params?: Record<string, string | number | boolean | undefined>): string {
 	const url = new URL(path, API_BASE);

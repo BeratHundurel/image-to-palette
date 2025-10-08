@@ -113,7 +113,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 function createTutorialStore() {
-	let state = $state<TutorialState>({
+	const state = $state<TutorialState>({
 		isActive: false,
 		currentStepIndex: 0,
 		steps: TUTORIAL_STEPS,
