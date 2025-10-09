@@ -133,7 +133,6 @@ function createTutorialStore() {
 	let hasCurrentPaletteSaved = $state(false);
 	let hasSavedPalettesPopoverOpen = $state(false);
 	let hasSavedPaletteApplied = $state(false);
-	let isNavigatingBack = $state(false);
 
 	function resetToUploadState(store: typeof appStore) {
 		if (store.state.canvas && store.state.canvasContext) {
@@ -165,8 +164,7 @@ function createTutorialStore() {
 		store.state.selectors.forEach((selector) => {
 			if (selector.id === 'green') {
 				selector.selected = true;
-			}
-			else {
+			} else {
 				selector.selected = false;
 			}
 		});
@@ -191,8 +189,7 @@ function createTutorialStore() {
 				hasColorCopied,
 				hasCurrentPaletteSaved,
 				hasSavedPalettesPopoverOpen,
-				hasSavedPaletteApplied,
-				isNavigatingBack
+				hasSavedPaletteApplied
 			};
 		},
 
@@ -232,7 +229,6 @@ function createTutorialStore() {
 
 		previous() {
 			if (state.currentStepIndex > 0) {
-				isNavigatingBack = true;
 				state.currentStepIndex--;
 
 				const targetStep = this.getCurrentStep();
@@ -273,10 +269,6 @@ function createTutorialStore() {
 							break;
 					}
 				}
-
-				setTimeout(() => {
-					isNavigatingBack = false;
-				}, 300);
 			}
 		},
 
