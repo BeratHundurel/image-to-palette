@@ -135,38 +135,19 @@ function createTutorialStore() {
 	let hasSavedPaletteApplied = $state(false);
 
 	function resetToUploadState(store: typeof appStore) {
-		if (store.state.canvas && store.state.canvasContext) {
-			store.state.canvasContext.clearRect(0, 0, store.state.canvas.width, store.state.canvas.height);
-			store.state.canvas.width = 0;
-			store.state.canvas.height = 0;
-			store.state.canvas.style.width = '0px';
-			store.state.canvas.style.height = '0px';
-		}
-
 		store.state.image = null;
-		store.state.canvasContext = null;
 		store.state.imageLoaded = false;
-		store.state.originalImageWidth = 0;
-		store.state.originalImageHeight = 0;
-		store.state.canvasScaleX = 1;
-		store.state.canvasScaleY = 1;
 		store.state.colors = [];
-		store.state.selectors.forEach((selector) => {
-			selector.selection = undefined;
-		});
 	}
 
 	function clearAllSelections(store: typeof appStore) {
+		const targetId = 'green';
+
+		store.state.activeSelectorId = targetId;
+
 		store.state.selectors.forEach((selector) => {
 			selector.selection = undefined;
-		});
-		store.state.activeSelectorId = 'green';
-		store.state.selectors.forEach((selector) => {
-			if (selector.id === 'green') {
-				selector.selected = true;
-			} else {
-				selector.selected = false;
-			}
+			selector.selected = selector.id === targetId;
 		});
 	}
 
