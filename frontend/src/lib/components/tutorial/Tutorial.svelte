@@ -14,7 +14,11 @@
 	$effect(() => {
 		const currentStep = tutorialStore.getCurrentStep();
 
-		if (appStore.state.imageLoaded && appStore.state.canvas) {
+		if (tutorialStore.state.isNavigatingBack) {
+			return;
+		}
+
+		if (currentStep?.id === 'upload-image' && appStore.state.imageLoaded && appStore.state.canvas) {
 			tutorialStore.setImageUploaded(true);
 		}
 
@@ -86,6 +90,11 @@
 
 	$effect(() => {
 		const currentStep = tutorialStore.getCurrentStep();
+
+		if (tutorialStore.state.isNavigatingBack) {
+			return;
+		}
+
 		if (currentStep && currentStep.condition && tutorialStore.checkStepCondition()) {
 			tutorialStore.next();
 		}

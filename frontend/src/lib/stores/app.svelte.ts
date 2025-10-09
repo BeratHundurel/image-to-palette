@@ -691,6 +691,10 @@ function createAppStore() {
 			} catch (_err) {
 				toast.error('Failed to download image', { id: toastId });
 			}
+		},
+
+		redrawCanvas() {
+			drawImageAndBoxes();
 		}
 	};
 }

@@ -1,3 +1,6 @@
+import { appStore } from './app.svelte';
+import { popoverStore } from './popovers.svelte';
+
 export interface TutorialStep {
 	id: string;
 	title: string;
@@ -130,6 +133,52 @@ function createTutorialStore() {
 	let hasCurrentPaletteSaved = $state(false);
 	let hasSavedPalettesPopoverOpen = $state(false);
 	let hasSavedPaletteApplied = $state(false);
+	let isNavigatingBack = $state(false);
+
+	function resetToUploadState(store: typeof appStore) {
+		if (store.state.canvas && store.state.canvasContext) {
+			store.state.canvasContext.clearRect(0, 0, store.state.canvas.width, store.state.canvas.height);
+			store.state.canvas.width = 0;
+			store.state.canvas.height = 0;
+			store.state.canvas.style.width = '0px';
+			store.state.canvas.style.height = '0px';
+		}
+
+		store.state.image = null;
+		store.state.canvasContext = null;
+		store.state.imageLoaded = false;
+		store.state.originalImageWidth = 0;
+		store.state.originalImageHeight = 0;
+		store.state.canvasScaleX = 1;
+		store.state.canvasScaleY = 1;
+		store.state.colors = [];
+		store.state.selectors.forEach((selector) => {
+			selector.selection = undefined;
+		});
+	}
+
+	function clearAllSelections(store: typeof appStore) {
+		store.state.selectors.forEach((selector) => {
+			selector.selection = undefined;
+		});
+		store.state.activeSelectorId = 'green';
+		store.state.selectors.forEach((selector) => {
+			if (selector.id === 'green') {
+				selector.selected = true;
+			}
+			else {
+				selector.selected = false;
+			}
+		});
+	}
+
+	function clearNonGreenSelections(store: typeof appStore) {
+		store.state.selectors.forEach((selector) => {
+			if (selector.id !== 'green') {
+				selector.selection = undefined;
+			}
+		});
+	}
 
 	return {
 		get state() {
@@ -142,7 +191,8 @@ function createTutorialStore() {
 				hasColorCopied,
 				hasCurrentPaletteSaved,
 				hasSavedPalettesPopoverOpen,
-				hasSavedPaletteApplied
+				hasSavedPaletteApplied,
+				isNavigatingBack
 			};
 		},
 
@@ -182,7 +232,51 @@ function createTutorialStore() {
 
 		previous() {
 			if (state.currentStepIndex > 0) {
+				isNavigatingBack = true;
 				state.currentStepIndex--;
+
+				const targetStep = this.getCurrentStep();
+				if (targetStep) {
+					switch (targetStep.id) {
+						case 'upload-image':
+							hasImageUploaded = false;
+							resetToUploadState(appStore);
+							break;
+
+						case 'canvas-interaction':
+							hasSelection = false;
+							clearAllSelections(appStore);
+							appStore.redrawCanvas();
+							break;
+
+						case 'selection-tools':
+							hasSelectorClicked = false;
+							clearNonGreenSelections(appStore);
+							appStore.redrawCanvas();
+							break;
+
+						case 'extract-colors':
+							hasColorCopied = false;
+							break;
+
+						case 'save-palette':
+							hasCurrentPaletteSaved = false;
+							break;
+
+						case 'toolbar-features':
+							hasSavedPalettesPopoverOpen = false;
+							popoverStore.close();
+							break;
+
+						case 'apply-palette':
+							hasSavedPaletteApplied = false;
+							break;
+					}
+				}
+
+				setTimeout(() => {
+					isNavigatingBack = false;
+				}, 300);
 			}
 		},
 
