@@ -82,11 +82,14 @@ const { state, actions } = getToolbarContext();
 npm run dev          # Development server (port 5173)
 npm run build        # Production build
 npm run check        # TypeScript + Svelte checks
+npm run lint         # ESLint + Prettier checks
 
 # Backend (from /api)
 go run .             # Development server (port 8088)
 go test ./...        # Run tests
 ```
+
+**Code Quality Rule**: After making changes to Svelte or TypeScript files, ALWAYS run `npm run lint` from the `frontend/` directory to ensure code quality and catch potential issues before committing.
 
 ### Testing Workflow
 
