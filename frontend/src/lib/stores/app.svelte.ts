@@ -4,7 +4,7 @@ import * as api from '$lib/api/palette';
 import { authStore } from './auth.svelte';
 import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
-import { CANVAS, SELECTION, IMAGE } from '$lib/constants';
+import { CANVAS, SELECTION, IMAGE, UI } from '$lib/constants';
 
 export type SavedPaletteItem = PaletteData;
 
@@ -64,12 +64,12 @@ function createAppStore() {
 
 		colors: [],
 		selectors: [
-			{ id: 'green', color: 'oklch(79.2% 0.209 151.711)', selected: true },
+			{ id: UI.DEFAULT_SELECTOR_ID, color: 'oklch(79.2% 0.209 151.711)', selected: true },
 			{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false },
 			{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false }
 		],
 		drawSelectionValue: 'separate',
-		activeSelectorId: 'green',
+		activeSelectorId: UI.DEFAULT_SELECTOR_ID,
 		newFilterColor: '',
 		filteredColors: [],
 		savedPalettes: [],

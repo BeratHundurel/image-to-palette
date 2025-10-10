@@ -1,5 +1,6 @@
 import { appStore } from './app.svelte';
 import { popoverStore } from './popovers.svelte';
+import { UI } from '$lib/constants';
 
 export interface TutorialStep {
 	id: string;
@@ -141,19 +142,17 @@ function createTutorialStore() {
 	}
 
 	function clearAllSelections(store: typeof appStore) {
-		const targetId = 'green';
-
-		store.state.activeSelectorId = targetId;
+		store.state.activeSelectorId = UI.DEFAULT_SELECTOR_ID;
 
 		store.state.selectors.forEach((selector) => {
 			selector.selection = undefined;
-			selector.selected = selector.id === targetId;
+			selector.selected = selector.id === UI.DEFAULT_SELECTOR_ID;
 		});
 	}
 
 	function clearNonGreenSelections(store: typeof appStore) {
 		store.state.selectors.forEach((selector) => {
-			if (selector.id !== 'green') {
+			if (selector.id !== UI.DEFAULT_SELECTOR_ID) {
 				selector.selection = undefined;
 			}
 		});

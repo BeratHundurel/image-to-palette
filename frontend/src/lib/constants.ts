@@ -22,3 +22,8 @@ export const IMAGE = {
 	MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
 	MAX_DIMENSION: 8192
 } as const;
+
+export const UI = {
+	SORT_BUTTON_PADDING: 5,
+	DEFAULT_SELECTOR_ID: 'green'
+} as const;
