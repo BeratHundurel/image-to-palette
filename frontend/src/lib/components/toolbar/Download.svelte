@@ -12,7 +12,7 @@
 	onclick={handleDownload}
 	class={cn(
 		'palette-button-base',
-		'relative flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-zinc-700 bg-zinc-800/60 text-zinc-300 outline-0 transition-all duration-200 ease-out',
+		'relative flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-zinc-700 bg-zinc-800/60 text-zinc-300 outline-0 transition-all duration-300 ease-out',
 		'hover:border-brand/50 hover:bg-brand/10 hover:text-brand',
 		'active:scale-95'
 	)}

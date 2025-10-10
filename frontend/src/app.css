@@ -12,7 +12,7 @@
 	@apply border-brand/40 border bg-zinc-800 backdrop-blur-sm;
 	@apply relative overflow-hidden shadow-lg;
 	@apply focus:ring-brand focus:ring-1 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none;
-	@apply transition-all duration-200;
+	@apply transition-all duration-300;
 }
 
 .palette-dropdown-base {

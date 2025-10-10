@@ -15,7 +15,7 @@
 	import { popoverStore } from '$lib/stores/popovers.svelte';
 
 	// === Drag State ===
-	let right = $state(75);
+	let right = $state(50);
 	let top = $state(75);
 	let moving = $state(false);
 	let dragHandle = $state<HTMLElement | undefined>(undefined);
@@ -69,19 +69,19 @@
 			class={cn(
 				'flex cursor-move items-center justify-center border-b border-zinc-700/50 px-5 py-4',
 				'hover:border-brand/40 hover:bg-zinc-800/50',
-				'transition-all duration-200 ease-out'
+				'transition-all duration-300 ease-out'
 			)}
 		>
 			<div class="flex flex-col items-center gap-1.5">
 				<div
 					class={cn(
-						'h-0.5 w-8 rounded-full transition-all duration-200 ease-out',
+						'h-0.5 w-8 rounded-full transition-all duration-300 ease-out',
 						moving ? 'bg-brand/80 shadow-brand' : 'bg-zinc-400/80'
 					)}
 				></div>
 				<div
 					class={cn(
-						'h-0.5 w-6 rounded-full transition-all duration-200 ease-out',
+						'h-0.5 w-6 rounded-full transition-all duration-300 ease-out',
 						moving ? 'bg-brand/50 shadow-brand' : 'bg-zinc-400/50'
 					)}
 				></div>

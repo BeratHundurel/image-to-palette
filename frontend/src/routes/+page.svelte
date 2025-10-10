@@ -46,7 +46,7 @@
 				<button
 					onclick={openAuthModal}
 					class={cn(
-						'flex h-10 w-28 cursor-pointer items-center justify-center gap-2 rounded-md bg-white/10 text-zinc-300 outline-0 transition-all duration-200',
+						'flex h-10 w-28 cursor-pointer items-center justify-center gap-2 rounded-md bg-white/10 text-zinc-300 outline-0 transition-all duration-300',
 						'hover:bg-brand/10 hover:border-brand/30 hover:text-brand hover:-translate-y-px active:translate-y-0'
 					)}
 				>

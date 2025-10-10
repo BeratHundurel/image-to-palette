@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { UI } from '$lib/constants';
 	import { tutorialStore, type TutorialStep } from '$lib/stores/tutorial.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
@@ -27,10 +28,10 @@
 		if (
 			currentStep?.id === 'selection-tools' &&
 			appStore.state.activeSelectorId &&
-			appStore.state.activeSelectorId !== 'green'
+			appStore.state.activeSelectorId !== UI.DEFAULT_SELECTOR_ID
 		) {
 			const nonGreenSelector = appStore.state.selectors.find(
-				(s) => s.id === appStore.state.activeSelectorId && s.id !== 'green'
+				(s) => s.id === appStore.state.activeSelectorId && s.id !== UI.DEFAULT_SELECTOR_ID
 			);
 
 			if (nonGreenSelector?.selection && !appStore.state.isDragging && !appStore.state.isExtracting) {
@@ -200,8 +201,8 @@
 			<div
 				bind:this={tooltipElement}
 				class={cn(
-					'pointer-events-auto absolute z-[10002] max-w-[360px] min-w-[300px]',
-					'max-md:!right-[5vw] max-md:!left-[5vw] max-md:max-w-[90vw] max-md:min-w-[280px]'
+					'pointer-events-auto absolute z-[10002] min-w-[300px] max-w-[360px]',
+					'max-md:!left-[5vw] max-md:!right-[5vw] max-md:min-w-[280px] max-md:max-w-[90vw]'
 				)}
 				style={Object.entries(tooltipStyles)
 					.map(([key, value]) => `${key}: ${value}`)
@@ -253,7 +254,7 @@
 							{#if !isFirstStep}
 								<button
 									class={cn(
-										'cursor-pointer rounded-md border-0 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 outline-0 transition-all duration-200 hover:bg-zinc-700'
+										'cursor-pointer rounded-md border-0 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 outline-0 transition-all duration-300 hover:bg-zinc-700'
 									)}
 									onclick={handlePrevious}
 								>
@@ -273,7 +274,7 @@
 							{:else if !isLastStep}
 								<button
 									class={cn(
-										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-200 hover:-translate-y-px'
+										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-300 hover:-translate-y-px'
 									)}
 									onclick={handleNext}
 								>
@@ -282,7 +283,7 @@
 							{:else}
 								<button
 									class={cn(
-										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-200 hover:-translate-y-px'
+										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-300 hover:-translate-y-px'
 									)}
 									onclick={handleNext}
 								>
@@ -295,7 +296,7 @@
 							{#if currentStep.skipable}
 								<button
 									class={cn(
-										'cursor-pointer rounded-md border-0 bg-transparent px-4 py-2 text-xs font-medium text-zinc-400 outline-0 transition-all duration-200 hover:text-zinc-300'
+										'cursor-pointer rounded-md border-0 bg-transparent px-4 py-2 text-xs font-medium text-zinc-400 outline-0 transition-all duration-300 hover:text-zinc-300'
 									)}
 									onclick={handleSkip}
 								>
@@ -305,7 +306,7 @@
 
 							<button
 								class={cn(
-									'cursor-pointer rounded-md border-0 bg-transparent px-4 py-2 text-xs font-medium text-zinc-400 outline-0 transition-all duration-200 hover:text-zinc-300'
+									'cursor-pointer rounded-md border-0 bg-transparent px-4 py-2 text-xs font-medium text-zinc-400 outline-0 transition-all duration-300 hover:text-zinc-300'
 								)}
 								onclick={handleExit}
 							>

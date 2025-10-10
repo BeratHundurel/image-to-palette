@@ -19,7 +19,7 @@
 
 <button
 	class={cn(
-		'group relative transition-all duration-200 ease-out',
+		'group relative transition-all duration-300 ease-out',
 		'h-11 w-11 overflow-hidden rounded-lg border-2',
 		'hover:scale-105 active:scale-95',
 		'focus-visible:ring-brand/50 focus-visible:ring-2 focus-visible:outline-none',
@@ -32,9 +32,9 @@
 	type="button"
 >
 	<!-- Color Background -->
-	<div class="absolute inset-0 transition-all duration-200" style="background-color: {selector.color}">
+	<div class="absolute inset-0 transition-all duration-300" style="background-color: {selector.color}">
 		<!-- Overlay for better contrast -->
-		<div class="absolute inset-0 bg-black/10 transition-colors duration-200 group-hover:bg-black/5"></div>
+		<div class="absolute inset-0 bg-black/10 transition-colors duration-300 group-hover:bg-black/5"></div>
 	</div>
 
 	<!-- Selection Indicator -->
@@ -59,6 +59,6 @@
 
 	<!-- Hover Effect -->
 	<div
-		class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+		class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
 	></div>
 </button>

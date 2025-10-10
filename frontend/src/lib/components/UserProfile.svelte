@@ -52,7 +52,7 @@
 				{/if}
 			</div>
 			<svg
-				class="h-4 w-4 transition-transform duration-200"
+				class="h-4 w-4 transition-transform duration-300"
 				class:rotate-180={showDropdown}
 				fill="none"
 				stroke="currentColor"
