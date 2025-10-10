@@ -26,7 +26,8 @@ import { writable } from "svelte/store";
 
 - `src/lib/stores/app.svelte.ts` - Main application state store
 - `src/lib/stores/auth.svelte.ts` - Authentication state
-- `src/lib/utils/popovers.svelte.ts` - UI popover management (moved from stores)
+- `src/lib/stores/tutorial.svelte.ts` - Tutorial state
+- `src/lib/stores/popovers.svelte.ts` - UI popover management
 
 ### Canvas-Based Image Processing
 
@@ -60,6 +61,7 @@ src/lib/
 ├── api/           # API client functions
 ├── components/    # Reusable UI components
 │   └── toolbar/   # Palette manipulation tools
+│   └── tutorial/  # Tutorial components
 ├── stores/        # Global state (Svelte 5 runes)
 ├── types/         # TypeScript definitions
 └── utils.ts       # Utility functions
@@ -89,7 +91,7 @@ go run .             # Development server (port 8088)
 go test ./...        # Run tests
 ```
 
-**Code Quality Rule**: After making changes to Svelte or TypeScript files, ALWAYS run `npm run lint` from the `frontend/` directory to ensure code quality and catch potential issues before committing.
+**Code Quality Rule**: After making changes to Svelte or TypeScript files, ALWAYS run `npm run format` and `npm run lint` from the `frontend/` directory to ensure code quality and catch potential issues before committing.
 
 ### Testing Workflow
 
