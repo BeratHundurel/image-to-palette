@@ -1,10 +1,41 @@
 <script lang="ts">
+	import { UI } from '$lib/constants';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { tutorialStore } from '$lib/stores/tutorial.svelte';
-	import { copyToClipboard } from '$lib/utils';
+	import { cn, copyToClipboard, sortColorsByMethod, type SortMethod } from '$lib/utils';
 	import { tick } from 'svelte';
 	import toast from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
+
+	let sortMethod = $state<SortMethod>('none');
+	let hoverX = $state(0);
+	let buttonWidth = $state(0);
+	let showHover = $state(false);
+	let sortButtonGroup: HTMLDivElement | null = $state(null);
+
+	const sortedColors = $derived(sortColorsByMethod(appStore.state.colors, sortMethod));
+
+	function handleButtonHover(e: MouseEvent) {
+		if (!sortButtonGroup) return;
+		const button = e.currentTarget as HTMLButtonElement;
+		const groupRect = sortButtonGroup.getBoundingClientRect();
+		const buttonRect = button.getBoundingClientRect();
+		hoverX = buttonRect.left - groupRect.left;
+		buttonWidth = buttonRect.width - UI.SORT_BUTTON_PADDING;
+		showHover = true;
+	}
+
+	function handleGroupLeave() {
+		showHover = false;
+	}
+
+	const sortOptions: Array<{ value: SortMethod; label: string }> = [
+		{ value: 'none', label: 'Original' },
+		{ value: 'hue', label: 'Hue' },
+		{ value: 'saturation', label: 'Saturation' },
+		{ value: 'lightness', label: 'Lightness' },
+		{ value: 'luminance', label: 'Luminance' }
+	];
 
 	async function handleCopy(hex: string) {
 		try {
@@ -17,22 +48,52 @@
 
 	async function returnToUpload() {
 		await tick();
+		appStore.state.image = null;
 		appStore.state.imageLoaded = false;
-		if (appStore.state.fileInput) {
-			appStore.state.fileInput.value = '';
-		}
 		appStore.state.colors = [];
-		appStore.state.activeSelectorId = 'green';
+		appStore.state.activeSelectorId = UI.DEFAULT_SELECTOR_ID;
 		appStore.state.selectors.forEach((s) => {
 			s.selection = undefined;
-			s.selected = s.id === 'green';
+			s.selected = s.id === UI.DEFAULT_SELECTOR_ID;
 		});
+		sortMethod = 'none';
 	}
 </script>
 
 <section class="w-full max-w-5xl">
+	{#if appStore.state.colors.length > 0}
+		<div class="mb-4 flex items-center gap-2">
+			<span class="text-sm font-medium text-zinc-300">Sort:</span>
+			<div
+				bind:this={sortButtonGroup}
+				onmouseleave={handleGroupLeave}
+				role="group"
+				aria-label="Sort options"
+				class="relative flex gap-1 rounded-lg bg-zinc-900 p-1"
+			>
+				<div
+					class="absolute inset-y-1 left-1 rounded bg-zinc-700 transition-all duration-300 ease-out"
+					style="transform: translateX({hoverX}px); width: {buttonWidth}px; opacity: {showHover ? 1 : 0};"
+				></div>
+				{#each sortOptions as option (option.value)}
+					<button
+						type="button"
+						onclick={() => (sortMethod = option.value)}
+						onmouseenter={handleButtonHover}
+						class={cn(
+							'relative z-10 rounded px-3 py-1.5 text-xs font-medium transition-colors duration-300',
+							sortMethod === option.value ? 'bg-brand text-zinc-900' : 'text-zinc-300 hover:text-white'
+						)}
+					>
+						{option.label}
+					</button>
+				{/each}
+			</div>
+		</div>
+	{/if}
+
 	<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
-		{#each appStore.state.colors as color, i}
+		{#each sortedColors as color, i (color.hex)}
 			<div
 				role="button"
 				tabindex="0"
