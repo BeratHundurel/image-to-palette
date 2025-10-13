@@ -31,9 +31,9 @@
 </script>
 
 {#if showPrompt}
-	<div class="fixed inset-0 z-[9998] flex items-center justify-center p-5" transition:fade={{ duration: 300 }}>
+	<div class="fixed inset-0 z-[9998] flex items-center justify-center p-6" transition:fade={{ duration: 300 }}>
 		<div
-			class="absolute inset-0 cursor-pointer bg-zinc-800/50"
+			class="absolute inset-0 cursor-pointer bg-black/70 backdrop-blur-sm"
 			onclick={dismissPrompt}
 			onkeydown={(e) => e.key === 'Escape' && dismissPrompt()}
 			role="button"
@@ -41,11 +41,11 @@
 			aria-label="Close tutorial prompt"
 		></div>
 		<div class="custom-scrollbar-lg relative w-full max-w-[480px]" transition:fly={{ y: 30, duration: 400 }}>
-			<div class="border-brand/50 rounded-2xl border bg-zinc-900 p-5">
+			<div class="border-brand/50 rounded-xl border bg-zinc-900 p-6">
 				<div class="max-h-[90vh] px-4">
 					<div class="mb-8 text-center">
 						<div class="mb-4 text-5xl max-sm:text-4xl">🎨</div>
-						<h2 class="text-brand mb-2 text-2xl leading-tight font-bold max-sm:text-xl">
+						<h2 class="text-brand mb-2 text-2xl font-bold leading-tight max-sm:text-xl">
 							Welcome to Image to Palette!
 						</h2>
 						<p class="m-0 text-base leading-relaxed text-zinc-400">Extract beautiful color palettes from any image</p>
@@ -117,7 +117,7 @@
 			</div>
 
 			<button
-				class="absolute top-4 right-[46px] flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-zinc-600 bg-zinc-800 text-zinc-400 outline-0 transition-all duration-300 hover:bg-white/20 hover:text-zinc-300"
+				class="absolute right-[46px] top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-zinc-600 bg-zinc-800 text-zinc-400 outline-0 transition-all duration-300 hover:bg-white/20 hover:text-zinc-300"
 				onclick={dismissPrompt}
 				aria-label="Close tutorial prompt"
 			>
