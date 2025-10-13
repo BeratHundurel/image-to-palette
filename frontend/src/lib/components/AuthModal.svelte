@@ -165,7 +165,7 @@
 			<div class="border-brand/50 rounded-xl border bg-zinc-900 p-6 text-zinc-300">
 				<button
 					type="button"
-					class="absolute right-4 top-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-300"
+					class="absolute top-4 right-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-300"
 					onclick={handleClose}
 					aria-label="Close modal"
 				>
@@ -191,7 +191,7 @@
 								type="text"
 								id="name"
 								bind:value={formData.name}
-								class="focus:ring-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
+								class="focus:border-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 focus:outline-none"
 								class:border-red-500={touched.name && errors.name}
 								placeholder="Enter your name"
 								disabled={loading}
@@ -210,7 +210,7 @@
 							type="email"
 							id="email"
 							bind:value={formData.email}
-							class="focus:ring-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
+							class="focus:border-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 focus:outline-none"
 							class:border-red-500={touched.email && errors.email}
 							placeholder="Enter your email"
 							disabled={loading}
@@ -228,7 +228,7 @@
 							type="password"
 							id="password"
 							bind:value={formData.password}
-							class="focus:ring-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
+							class="focus:border-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 focus:outline-none"
 							class:border-red-500={touched.password && errors.password}
 							placeholder="Enter your password"
 							disabled={loading}
@@ -249,7 +249,7 @@
 								type="password"
 								id="confirmPassword"
 								bind:value={formData.confirmPassword}
-								class="focus:ring-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 autofill:shadow-[inset_0_0_0px_1000px_rgb(39,39,42)] autofill:[-webkit-text-fill-color:white] focus:outline-none focus:ring-2"
+								class="focus:border-brand w-full rounded-md border border-zinc-600 bg-zinc-800 px-3 py-2 text-zinc-300 placeholder:text-zinc-400 focus:outline-none"
 								class:border-red-500={touched.confirmPassword && errors.confirmPassword}
 								placeholder="Confirm your password"
 								disabled={loading}
@@ -265,12 +265,12 @@
 					<button
 						type="submit"
 						disabled={loading}
-						class="from-brand to-brand-hover hover:shadow-brand w-full cursor-pointer rounded-md bg-gradient-to-br py-2 font-medium text-zinc-900 transition-all focus:outline-none focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
+						class="hover:shadow-brand-lg hover:bg-brand-hover bg-brand w-full cursor-pointer rounded-md py-2 font-medium text-zinc-900 transition-all focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{#if loading}
 							<div class="flex items-center justify-center">
 								<svg
-									class="-ml-1 mr-3 h-5 w-5 animate-spin text-zinc-300"
+									class="mr-3 -ml-1 h-5 w-5 animate-spin text-zinc-300"
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
 									viewBox="0 0 24 24"
@@ -320,12 +320,12 @@
 								type="button"
 								onclick={handleDemoLogin}
 								disabled={loading}
-								class="focus:ring-brand w-full cursor-pointer rounded-md bg-zinc-900 py-3 font-medium text-zinc-300 transition-all hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
+								class="transition- hover:shadow-brand hover:border-brand/50 w-full cursor-pointer rounded-md bg-zinc-900 py-3 font-medium text-zinc-300 hover:border focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{#if loading}
 									<div class="flex items-center justify-center">
 										<svg
-											class="-ml-1 mr-3 h-5 w-5 animate-spin text-zinc-300"
+											class="mr-3 -ml-1 h-5 w-5 animate-spin text-zinc-300"
 											xmlns="http://www.w3.org/2000/svg"
 											fill="none"
 											viewBox="0 0 24 24"
@@ -367,3 +367,14 @@
 		</div>
 	</div>
 {/if}
+
+<style>
+	input:-webkit-autofill,
+	input:-webkit-autofill:hover,
+	input:-webkit-autofill:focus,
+	input:-webkit-autofill:active {
+		-webkit-box-shadow: 0 0 0 1000px rgb(39, 39, 42) inset !important;
+		-webkit-text-fill-color: rgb(212, 212, 216) !important;
+		box-shadow: 0 0 0 1000px rgb(39, 39, 42) inset !important;
+	}
+</style>

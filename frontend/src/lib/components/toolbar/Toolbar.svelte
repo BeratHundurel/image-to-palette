@@ -59,7 +59,7 @@
 	<div
 		class={cn(
 			'border-brand/50 rounded-md border bg-zinc-900',
-			'hover:shadow-brand hover:border-zinc-600',
+			'hover:shadow-brand hover:border-brand',
 			'transition-all duration-300 ease-out'
 		)}
 	>
@@ -67,7 +67,7 @@
 		<div
 			bind:this={dragHandle}
 			class={cn(
-				'flex cursor-move items-center justify-center border-b border-zinc-700/50 px-5 py-4',
+				'flex cursor-move items-center justify-center rounded-md border-b border-zinc-700 px-5 py-4',
 				'hover:border-brand/50 hover:bg-zinc-800/50',
 				'transition-all duration-300 ease-out'
 			)}

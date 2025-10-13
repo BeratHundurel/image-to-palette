@@ -21,7 +21,6 @@
 	class={cn(
 		'group relative transition-all duration-300 ease-out',
 		'h-11 w-11 overflow-hidden rounded-md',
-		'focus-visible:ring-brand focus-visible:outline-none focus-visible:ring-2',
 		selector.selected
 			? 'border-brand/50 shadow-brand/20 -translate-y-1 scale-105 border-2 shadow-lg'
 			: 'border border-zinc-700/50  hover:border-zinc-600 hover:shadow-md active:scale-95'
@@ -55,7 +54,7 @@
 	<!-- Selector Number Badge -->
 	<div
 		class={cn(
-			'absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full',
+			'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full',
 			'border bg-zinc-900 text-xs font-semibold shadow-md transition-all duration-300',
 			selector.selected
 				? 'border-brand/50 text-brand'

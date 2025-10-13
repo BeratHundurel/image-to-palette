@@ -100,7 +100,7 @@
 	<div class="mt-3 flex items-center justify-between">
 		<button
 			type="button"
-			class="cursor-pointer rounded border border-zinc-600 p-2 transition hover:bg-zinc-800 focus:outline-none"
+			class="cursor-pointer rounded border border-zinc-600 p-2 transition hover:bg-zinc-800"
 			onclick={() => handleSampleRateChange(-1)}
 			aria-label="Decrease sample size"
 			tabindex="0"
@@ -141,12 +141,11 @@
 			value={newFilterColor}
 			oninput={(e) => (appStore.state.newFilterColor = e.currentTarget.value)}
 			placeholder="#fff"
-			class="focus:border-brand/50 rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-zinc-300 focus:outline-none"
+			class="focus:border-brand/50 w-20 rounded border border-zinc-600 px-2 py-1 text-xs text-zinc-300 focus:outline-none"
 			maxlength="7"
-			style="width: 80px;"
 		/>
 		<button
-			class="cursor-pointer rounded border border-zinc-600 px-2 py-1 text-xs text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-300 focus:outline-none"
+			class="cursor-pointer rounded border border-zinc-600 px-2 py-1 text-xs text-zinc-300 transition-colors hover:bg-zinc-800"
 			onclick={handleFilterColorAdd}
 			title="Add filter color"
 			type="button"
