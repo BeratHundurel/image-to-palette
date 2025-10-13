@@ -40,9 +40,9 @@
 	<div class="user-profile relative">
 		<button
 			onclick={toggleDropdown}
-			class="flex cursor-pointer items-center space-x-2 rounded-full bg-white/20 px-3 py-2 text-white backdrop-blur-sm transition-all hover:bg-white/30"
+			class="flex cursor-pointer items-center space-x-2 rounded-full bg-white/20 px-3 py-2 text-zinc-300 backdrop-blur-sm transition-all hover:bg-white/30"
 		>
-			<div class="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white">
+			<div class="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-zinc-300">
 				{authStore.state.user.name.charAt(0).toUpperCase()}
 			</div>
 			<div class="hidden sm:block">
@@ -64,16 +64,16 @@
 
 		{#if showDropdown}
 			<div
-				class="border-brand/40 absolute top-full right-0 z-50 mt-2 w-64 rounded-lg border bg-zinc-900 shadow-lg backdrop-blur-sm"
+				class="border-brand/50 absolute top-full right-0 z-50 mt-2 w-64 rounded-md border bg-zinc-900 shadow-lg backdrop-blur-sm"
 			>
 				<div class="border-b border-zinc-700 p-4">
 					<div class="flex items-center space-x-3">
-						<div class="bg-brand flex h-10 w-10 items-center justify-center rounded-full text-white">
+						<div class="bg-brand flex h-10 w-10 items-center justify-center rounded-full text-zinc-300">
 							{authStore.state.user.name.charAt(0).toUpperCase()}
 						</div>
 						<div class="min-w-0 flex-1">
 							<div class="flex items-center space-x-2">
-								<p class="truncate text-sm font-semibold text-white">{authStore.state.user.name}</p>
+								<p class="truncate text-sm font-semibold text-zinc-300">{authStore.state.user.name}</p>
 								{#if authStore.state.user.email === 'demo@imagepalette.com'}
 									<span class="rounded bg-orange-500/20 px-2 py-0.5 text-xs font-medium text-orange-300"> Demo </span>
 								{/if}
@@ -90,7 +90,7 @@
 					<button
 						type="button"
 						onclick={handleLogout}
-						class="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+						class="flex w-full cursor-pointer items-center px-4 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
 					>
 						<svg class="mr-3 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path

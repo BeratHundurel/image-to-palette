@@ -41,7 +41,7 @@
 			aria-label="Close tutorial prompt"
 		></div>
 		<div class="custom-scrollbar-lg relative w-full max-w-[480px]" transition:fly={{ y: 30, duration: 400 }}>
-			<div class="border-brand rounded-2xl border bg-zinc-900 p-5">
+			<div class="border-brand/50 rounded-2xl border bg-zinc-900 p-5">
 				<div class="max-h-[90vh] px-4">
 					<div class="mb-8 text-center">
 						<div class="mb-4 text-5xl max-sm:text-4xl">🎨</div>
@@ -95,7 +95,7 @@
 
 					<div class="mb-6 flex flex-col gap-3">
 						<button
-							class="from-brand to-brand-hover flex cursor-pointer items-center justify-center gap-2 rounded-lg border-0 bg-gradient-to-br px-6 py-3.5 text-[15px] font-semibold text-zinc-800 shadow-[0_4px_12px_rgba(238,179,143,0.3)] outline-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(238,179,143,0.4)]"
+							class="from-brand to-brand-hover flex cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-gradient-to-br px-6 py-3.5 text-[15px] font-semibold text-zinc-800 shadow-[0_4px_12px_rgba(238,179,143,0.3)] outline-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(238,179,143,0.4)]"
 							onclick={startTutorial}
 						>
 							<span>Take the Tour</span>
@@ -103,7 +103,7 @@
 						</button>
 
 						<button
-							class="cursor-pointer rounded-lg border border-zinc-600 bg-transparent px-6 py-3.5 text-[15px] font-semibold text-zinc-400 outline-0 transition-all duration-300 hover:border-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+							class="cursor-pointer rounded-md border border-zinc-600 bg-transparent px-6 py-3.5 text-[15px] font-semibold text-zinc-400 outline-0 transition-all duration-300 hover:border-zinc-500 hover:bg-white/5 hover:text-zinc-300"
 							onclick={dismissPrompt}
 						>
 							Skip for now

@@ -3,7 +3,7 @@
 </script>
 
 <button
-	class="palette-button-base"
+	class="toolbar-button-base"
 	aria-label="select palette option"
 	onclick={(e) => popoverStore.toggle('palette', e)}
 	type="button"

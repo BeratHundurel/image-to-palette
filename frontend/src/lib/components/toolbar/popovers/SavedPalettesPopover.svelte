@@ -29,7 +29,7 @@
 	aria-labelledby="saved-palettes-title"
 	tabindex="-1"
 >
-	<h3 id="saved-palettes-title" class="text-brand mb-3 text-sm font-medium">Saved Palettes</h3>
+	<h3 id="saved-palettes-title" class="text-brand mb-3 text-xs font-medium">Saved Palettes</h3>
 	<div class="scrollable-content custom-scrollbar max-h-72 overflow-y-auto">
 		{#if appStore.state.savedPalettes.length === 0}
 			<div class="py-8 text-center text-zinc-300">No saved palettes yet.</div>
@@ -43,7 +43,7 @@
 							</span>
 							<div class="flex items-center gap-3">
 								<button
-									class="text-brand hover:text-brand/75 cursor-pointer rounded text-xs font-medium"
+									class="text-brand hover:text-brand-hover cursor-pointer rounded text-xs font-medium"
 									onclick={() => handlePaletteLoad(item.palette)}
 									type="button"
 								>

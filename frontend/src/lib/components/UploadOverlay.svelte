@@ -18,7 +18,7 @@
 		ondragenter={preventDefault}
 		ondragleave={preventDefault}
 		onclick={appStore.triggerFileSelect}
-		class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 text-white transition duration-300 outline-none hover:border-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/70"
+		class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 transition-all duration-300 hover:border-white hover:bg-white/20"
 		aria-label="Upload an image or drag and drop it here"
 	>
 		<svg
@@ -34,7 +34,7 @@
 				d="M19 7v3h-2V7h-3V5h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5a2 2 0 00-2 2v12c0 1.1.9 2 2 2h12a2 2 0 002-2v-8h-3zM5 19l3-4 2 3 3-4 4 5H5z"
 			/>
 		</svg>
-		<span class="text-sm text-white/80 group-hover:text-white"> Upload an image or drag and drop it here </span>
+		<span class="text-sm text-zinc-300 group-hover:text-white"> Upload an image or drag and drop it here </span>
 		<input
 			type="file"
 			name="file"

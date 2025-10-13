@@ -65,12 +65,12 @@
 	)}
 	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
-	<h3 class="text-brand mb-2 text-sm font-medium">Application Settings</h3>
+	<h3 class="text-brand mb-1 text-xs font-medium">Application Settings</h3>
 
 	{#each settings as setting}
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center justify-between">
-				<label for={setting.id} class="text-xs font-medium text-white">
+				<label for={setting.id} class="text-xs font-medium text-zinc-300">
 					{setting.label}
 				</label>
 				<span
@@ -86,7 +86,7 @@
 					</svg>
 					{#if showTooltip === setting.id}
 						<div
-							class="absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs whitespace-normal text-white shadow-lg"
+							class="absolute bottom-full left-1/2 z-10 mb-2 w-64 -translate-x-1/2 rounded border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs whitespace-normal text-zinc-300 shadow-lg"
 						>
 							{setting.tooltip}
 						</div>
@@ -112,7 +112,7 @@
 					step={setting.step}
 					value={setting.value}
 					onchange={(e) => handleSliderChange(parseFloat(e.currentTarget.value), setting.action)}
-					class="focus:border-brand w-16 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-center text-xs text-white focus:outline-none"
+					class="focus:border-brand/50 w-16 rounded border border-zinc-700 bg-zinc-800 px-2 py-1 text-center text-xs text-zinc-300 focus:outline-none"
 				/>
 			</div>
 		</div>

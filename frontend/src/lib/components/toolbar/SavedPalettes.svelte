@@ -3,7 +3,7 @@
 </script>
 
 <button
-	class="palette-button-base border-zinc-700"
+	class="toolbar-button-base border-zinc-700"
 	onclick={(e) => popoverStore.toggle('saved', e)}
 	aria-label="Show saved palettes"
 	type="button"

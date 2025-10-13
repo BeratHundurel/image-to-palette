@@ -69,7 +69,7 @@
 				onmouseleave={handleGroupLeave}
 				role="group"
 				aria-label="Sort options"
-				class="relative flex gap-1 rounded-lg bg-zinc-900 p-1"
+				class="border-brand/50 relative flex gap-1 rounded-md border bg-zinc-900 p-1"
 			>
 				<div
 					class="absolute inset-y-1 left-1 rounded bg-zinc-700 transition-all duration-300 ease-out"
@@ -82,7 +82,7 @@
 						onmouseenter={handleButtonHover}
 						class={cn(
 							'relative z-10 rounded px-3 py-1.5 text-xs font-medium transition-colors duration-300',
-							sortMethod === option.value ? 'bg-brand text-zinc-900' : 'text-zinc-300 hover:text-white'
+							sortMethod === option.value ? 'bg-brand text-zinc-900' : 'text-zinc-300 hover:text-zinc-300'
 						)}
 					>
 						{option.label}
@@ -100,7 +100,7 @@
 				onkeyup={(e) => (e.key === 'Enter' || e.key === ' ') && handleCopy(color.hex)}
 				onclick={() => handleCopy(color.hex)}
 				in:scale={{ delay: i * 80, duration: 300, start: 0.7 }}
-				class="flex h-9 cursor-pointer items-center justify-center rounded-lg p-2 shadow-md"
+				class="flex h-9 cursor-pointer items-center justify-center rounded-md p-2 shadow-md"
 				style="background-color: {color.hex}"
 			>
 				<span class="rounded bg-black/50 px-2 py-1 font-mono text-xs">{color.hex}</span>
@@ -111,13 +111,13 @@
 	{#if appStore.state.imageLoaded}
 		<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
 			<button
-				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded border bg-zinc-900 py-2 text-sm font-medium tracking-tight shadow-2xl transition-all hover:-translate-y-1"
+				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-1"
 				onclick={returnToUpload}>Back</button
 			>
 
 			<button
 				id="save-palette"
-				class="border-brand/50 hover:shadow-brand ml-4 flex w-36 cursor-pointer items-center justify-center gap-2 rounded border bg-zinc-900 py-2 text-center text-sm font-medium transition-all hover:-translate-y-1"
+				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-1"
 				onclick={appStore.savePalette}
 			>
 				Save Palette

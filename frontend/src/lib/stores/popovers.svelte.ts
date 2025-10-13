@@ -35,7 +35,7 @@ function createPopoverStore() {
 		clickHandler = (e: Event) => {
 			const target = e.target as HTMLElement;
 			const isInsidePopover = target.closest('.palette-dropdown-base');
-			const isInsideButton = target.closest('.palette-button-base');
+			const isInsideButton = target.closest('.toolbar-button-base');
 
 			if (!isInsidePopover && !isInsideButton) {
 				state.current = null;

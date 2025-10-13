@@ -15,7 +15,7 @@
 	import { popoverStore } from '$lib/stores/popovers.svelte';
 
 	// === Drag State ===
-	let right = $state(50);
+	let right = $state(25);
 	let top = $state(75);
 	let moving = $state(false);
 	let dragHandle = $state<HTMLElement | undefined>(undefined);
@@ -58,7 +58,7 @@
 >
 	<div
 		class={cn(
-			'border-brand/50 rounded-lg border bg-zinc-900 shadow-2xl ',
+			'border-brand/50 rounded-md border bg-zinc-900',
 			'hover:shadow-brand hover:border-zinc-600',
 			'transition-all duration-300 ease-out'
 		)}
@@ -68,7 +68,7 @@
 			bind:this={dragHandle}
 			class={cn(
 				'flex cursor-move items-center justify-center border-b border-zinc-700/50 px-5 py-4',
-				'hover:border-brand/40 hover:bg-zinc-800/50',
+				'hover:border-brand/50 hover:bg-zinc-800/50',
 				'transition-all duration-300 ease-out'
 			)}
 		>
@@ -91,10 +91,10 @@
 		<div class="relative p-5">
 			<ul class="flex flex-col gap-3">
 				{#if appStore.state.selectors.length > 0}
-					<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
-						<div class="mb-2 flex items-center gap-2">
-							<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Selection Tools</h3>
-							<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+					<li class="relative mb-4">
+						<div class="mb-3 flex items-center gap-2">
+							<h3 class="text-brand text-xs font-medium uppercase">Selection Tools</h3>
+							<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 						</div>
 						<div class="flex flex-wrap justify-center gap-2">
 							{#each appStore.state.selectors as selector, i}
@@ -105,10 +105,10 @@
 				{/if}
 
 				<!-- Processing Section -->
-				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
+				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Processing</h3>
-						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+						<h3 class="text-brand text-xs font-medium uppercase">Processing</h3>
+						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
 						<SavedPalettes />
@@ -117,19 +117,19 @@
 				</li>
 
 				<!-- Extraction Section -->
-				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
+				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Extraction</h3>
-						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+						<h3 class="text-brand text-xs font-medium uppercase">Extraction</h3>
+						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<PaletteOptions />
 				</li>
 
 				<!-- Copy Section -->
-				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
+				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Copy</h3>
-						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+						<h3 class="text-brand text-xs font-medium uppercase">Copy</h3>
+						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
 						<CopyOptions />
@@ -137,10 +137,10 @@
 				</li>
 
 				<!-- Export Section -->
-				<li class="relative border-b border-zinc-600/50 pb-4 last:border-b-0">
+				<li class="relative">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium tracking-wide uppercase">Export</h3>
-						<div class="from-brand/40 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+						<h3 class="text-brand text-xs font-medium uppercase">Export</h3>
+						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
 						<Download />
@@ -168,8 +168,7 @@
 </section>
 
 <style>
-	/* Popover Container */
-	:global(.palette-button-base::before) {
+	:global(.toolbar-button-base::before) {
 		content: '';
 		position: absolute;
 		inset: 0;
@@ -178,7 +177,7 @@
 		transition: transform 0.6s;
 	}
 
-	:global(.palette-button-base:hover) {
+	:global(.toolbar-button-base:hover) {
 		border-color: rgba(161, 161, 170, 0.6);
 		background-color: rgba(39, 39, 42, 0.9);
 		box-shadow:
@@ -187,11 +186,11 @@
 		transform: translateY(-1px);
 	}
 
-	:global(.palette-button-base:hover::before) {
+	:global(.toolbar-button-base:hover::before) {
 		transform: translateX(100%);
 	}
 
-	:global(.palette-button-base:active) {
+	:global(.toolbar-button-base:active) {
 		transform: scale(0.95) translateY(0px);
 		transition: transform 0.1s;
 		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -209,7 +208,7 @@
 	}
 
 	/* Enhanced visual feedback for sections */
-	li:hover .from-brand\/40 {
-		background: linear-gradient(to right, rgba(238, 179, 143, 0.6), transparent);
+	li:hover .from-brand\/50 {
+		background: linear-gradient(to right, rgba(255, 175, 120, 0.785), transparent);
 	}
 </style>

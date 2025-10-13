@@ -58,7 +58,7 @@
 	)}
 	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
-	<h3 class="text-brand mb-1 text-sm font-medium">Palette Options</h3>
+	<h3 class="text-brand mb-1 text-xs font-medium">Palette Options</h3>
 	{#each draw_options as option, i}
 		<button
 			class="w-full cursor-pointer rounded-sm p-2 text-left transition hover:bg-zinc-700"
@@ -70,12 +70,12 @@
 		</button>
 
 		{#if i < draw_options.length - 1}
-			<hr class="border-brand" />
+			<hr class="border-brand/50" />
 		{/if}
 	{/each}
 
 	<div class="mt-3 flex items-center justify-between">
-		<h3 class="text-brand mb-1 text-sm font-medium">Sample Options</h3>
+		<h3 class="text-brand mb-1 text-xs font-medium">Sample Options</h3>
 		<span
 			class="relative"
 			onmouseenter={() => (showTooltip = true)}
@@ -89,7 +89,7 @@
 			>
 			{#if showTooltip}
 				<span
-					class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-white shadow-lg"
+					class="absolute bottom-full left-1/2 z-10 mb-2 w-56 -translate-x-1/2 rounded bg-zinc-800 px-3 py-2 text-sm whitespace-normal text-zinc-300 shadow-lg"
 				>
 					If sample size is decreased, colors will be more accurate but the extraction will take longer.
 				</span>
@@ -105,14 +105,14 @@
 			aria-label="Decrease sample size"
 			tabindex="0"
 		>
-			<svg class="h-3 w-3 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+			<svg class="h-3 w-3 text-zinc-300/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
 				<line x1="4" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 			</svg>
 		</button>
 		<input
 			id="sample-size"
 			type="number"
-			class="w-10 bg-transparent text-center text-xs text-white focus:outline-none"
+			class="w-10 bg-transparent text-center text-xs text-zinc-300 focus:outline-none"
 			value={sampleRate}
 			onchange={(e) => (appStore.state.sampleRate = parseInt(e.currentTarget.value) || 30)}
 			min="1"
@@ -126,7 +126,7 @@
 			aria-label="Increase sample size"
 			tabindex="0"
 		>
-			<svg class="h-3 w-3 text-white/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+			<svg class="h-3 w-3 text-zinc-300/70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
 				<line x1="8" y1="4" x2="8" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
 
 				<line x1="4" y1="8" x2="12" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -135,18 +135,18 @@
 	</div>
 
 	<div class="my-3 flex items-center gap-3">
-		<h3 class="text-brand mb-1 text-sm font-medium">Color Filters</h3>
+		<h3 class="text-brand mb-1 text-xs font-medium">Color Filters</h3>
 		<input
 			type="text"
 			value={newFilterColor}
 			oninput={(e) => (appStore.state.newFilterColor = e.currentTarget.value)}
 			placeholder="#fff"
-			class="focus:border-brand rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-white focus:outline-none"
+			class="focus:border-brand/50 rounded border border-zinc-700 bg-black/30 px-2 py-1 text-xs text-zinc-300 focus:outline-none"
 			maxlength="7"
 			style="width: 80px;"
 		/>
 		<button
-			class="cursor-pointer rounded border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs text-white transition-colors hover:bg-zinc-700 hover:text-white focus:outline-none"
+			class="cursor-pointer rounded border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-zinc-300 focus:outline-none"
 			onclick={handleFilterColorAdd}
 			title="Add filter color"
 			type="button"

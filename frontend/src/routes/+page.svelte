@@ -12,7 +12,6 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import TutorialButton from '$lib/components/tutorial/TutorialButton.svelte';
-	import { cn } from '$lib/utils';
 
 	let showAuthModal = $state(false);
 
@@ -28,7 +27,7 @@
 
 <Toaster />
 
-<div class="relative h-[100svh] bg-black text-white">
+<div class="relative h-[100svh] bg-black text-zinc-300">
 	<enhanced:img
 		src="../lib/assets/palette.jpg"
 		alt="Palette"
@@ -45,10 +44,7 @@
 			{:else if !authStore.state.isLoading}
 				<button
 					onclick={openAuthModal}
-					class={cn(
-						'flex h-10 w-28 cursor-pointer items-center justify-center gap-2 rounded-md bg-white/10 text-zinc-300 outline-0 transition-all duration-300',
-						'hover:bg-brand/10 hover:border-brand/30 hover:text-brand hover:-translate-y-px active:translate-y-0'
-					)}
+					class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-1"
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
@@ -58,7 +54,7 @@
 							d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
 						/>
 					</svg>
-					<span class="text-xs font-medium">Sign In</span>
+					<span>Sign In</span>
 				</button>
 			{/if}
 		</div>

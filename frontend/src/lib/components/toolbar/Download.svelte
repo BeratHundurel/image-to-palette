@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { cn } from '$lib/utils';
 	import { appStore } from '$lib/stores/app.svelte';
 
 	async function handleDownload() {
@@ -10,12 +9,7 @@
 <button
 	id="download-button"
 	onclick={handleDownload}
-	class={cn(
-		'palette-button-base',
-		'relative flex h-10 w-10 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-zinc-700 bg-zinc-800/60 text-zinc-300 outline-0 transition-all duration-300 ease-out',
-		'hover:border-brand/50 hover:bg-brand/10 hover:text-brand',
-		'active:scale-95'
-	)}
+	class="toolbar-button-base"
 	disabled={appStore.state.isExtracting}
 	aria-label="Download image"
 >

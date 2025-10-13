@@ -84,11 +84,11 @@
 	)}
 	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
-	<p class="text-brand mb-2 text-sm font-bold">Copy Palette</p>
+	<p class="text-brand mb-2 text-xs font-medium">Copy Palette</p>
 
 	{#each copy_options as option}
 		<button
-			class="text-brand hover:bg-brand focus:bg-brand mb-2 w-full cursor-pointer rounded bg-zinc-800 px-2 py-1 text-xs font-medium hover:text-black focus:text-black"
+			class="text-brand hover:bg-brand mb-2 w-full cursor-pointer rounded bg-zinc-800 px-2 py-1 text-xs font-medium hover:text-zinc-900"
 			onclick={() => handleCopyFormatChange(option.value)}
 			type="button"
 		>

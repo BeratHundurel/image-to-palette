@@ -7,14 +7,13 @@
 	--color-brand-hover: #e6a875;
 }
 
-.palette-button-base {
-	@apply flex h-11 w-11 cursor-pointer items-center justify-center rounded-lg text-sm font-semibold text-white;
-	@apply border-brand/40 border bg-zinc-800 backdrop-blur-sm;
-	@apply relative overflow-hidden shadow-lg;
+.toolbar-button-base {
+	@apply relative flex h-11 w-11 cursor-pointer items-center justify-center overflow-hidden rounded-md text-sm font-semibold text-zinc-300;
+	@apply border-brand/50 border bg-zinc-800;
 	@apply focus:ring-brand focus:ring-1 focus:ring-offset-1 focus:ring-offset-zinc-900 focus:outline-none;
 	@apply transition-all duration-300;
 }
 
 .palette-dropdown-base {
-	@apply border-brand/40 absolute top-0 z-50 rounded-lg border bg-zinc-900 p-3 text-sm text-white shadow-2xl;
+	@apply border-brand/50 absolute top-0 z-50 rounded-md border bg-zinc-900 p-3 text-sm text-zinc-300 shadow-2xl;
 }

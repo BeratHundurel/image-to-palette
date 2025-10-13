@@ -3,7 +3,7 @@
 </script>
 
 <button
-	class="palette-button-base"
+	class="toolbar-button-base"
 	aria-label="application settings"
 	onclick={(e) => popoverStore.toggle('application', e)}
 	type="button"

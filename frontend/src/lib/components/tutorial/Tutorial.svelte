@@ -186,7 +186,7 @@
 		{#if highlightElement && currentStep?.element}
 			{@const rect = highlightElement.getBoundingClientRect()}
 			<div
-				class="border-brand pointer-events-none absolute z-[10001] rounded-lg border-[3px] shadow-[0_0_0_9999px_rgba(0,0,0,0.7),0_0_20px_rgba(238,179,143,0.5),inset_0_0_20px_rgba(238,179,143,0.2)]"
+				class="border-brand pointer-events-none absolute z-[10001] rounded-md border-[3px] shadow-[0_0_0_9999px_rgba(0,0,0,0.7),0_0_20px_rgba(238,179,143,0.5),inset_0_0_20px_rgba(238,179,143,0.2)]"
 				style={`
 					top: ${rect.top - 8}px;
 					left: ${rect.left - 8}px;
@@ -201,15 +201,15 @@
 			<div
 				bind:this={tooltipElement}
 				class={cn(
-					'pointer-events-auto absolute z-[10002] min-w-[300px] max-w-[360px]',
-					'max-md:!left-[5vw] max-md:!right-[5vw] max-md:min-w-[280px] max-md:max-w-[90vw]'
+					'pointer-events-auto absolute z-[10002] max-w-[360px] min-w-[300px]',
+					'max-md:!right-[5vw] max-md:!left-[5vw] max-md:max-w-[90vw] max-md:min-w-[280px]'
 				)}
 				style={Object.entries(tooltipStyles)
 					.map(([key, value]) => `${key}: ${value}`)
 					.join('; ')}
 				transition:fly={{ y: 20, duration: 300 }}
 			>
-				<div class="border-brand rounded-xl border bg-zinc-900 p-6 max-md:p-5">
+				<div class="border-brand/50 rounded-xl border bg-zinc-900 p-6 max-md:p-5">
 					<div class="mb-4 flex items-center justify-between border-b border-zinc-600 pb-4">
 						<div class="flex gap-2">
 							{#each tutorialStore.state.steps as step, index}
