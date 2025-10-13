@@ -213,6 +213,9 @@ function createTutorialStore() {
 
 				const targetStep = this.getCurrentStep();
 				if (targetStep) {
+					state.completedSteps.delete(targetStep.id);
+				}
+				if (targetStep) {
 					switch (targetStep.id) {
 						case 'upload-image':
 							hasImageUploaded = false;
