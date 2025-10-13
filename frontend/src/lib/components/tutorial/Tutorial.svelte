@@ -201,8 +201,8 @@
 			<div
 				bind:this={tooltipElement}
 				class={cn(
-					'pointer-events-auto absolute z-[10002] max-w-[360px] min-w-[300px]',
-					'max-md:!right-[5vw] max-md:!left-[5vw] max-md:max-w-[90vw] max-md:min-w-[280px]'
+					'pointer-events-auto absolute z-[10002] min-w-[300px] max-w-[360px]',
+					'max-md:!left-[5vw] max-md:!right-[5vw] max-md:min-w-[280px] max-md:max-w-[90vw]'
 				)}
 				style={Object.entries(tooltipStyles)
 					.map(([key, value]) => `${key}: ${value}`)
@@ -274,7 +274,7 @@
 							{:else if !isLastStep}
 								<button
 									class={cn(
-										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-300 hover:-translate-y-px'
+										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-300 '
 									)}
 									onclick={handleNext}
 								>
@@ -283,7 +283,7 @@
 							{:else}
 								<button
 									class={cn(
-										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-300 hover:-translate-y-px'
+										'bg-brand hover:bg-brand-hover cursor-pointer rounded-md border-0 px-4 py-2 text-sm font-medium text-zinc-800 outline-0 transition-all duration-300 '
 									)}
 									onclick={handleNext}
 								>

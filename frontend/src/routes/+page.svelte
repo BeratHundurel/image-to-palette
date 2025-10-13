@@ -31,12 +31,12 @@
 	<enhanced:img
 		src="../lib/assets/palette.jpg"
 		alt="Palette"
-		class="absolute top-0 left-0 h-full w-full object-cover"
+		class="absolute left-0 top-0 h-full w-full object-cover"
 	/>
 
-	<div class="absolute top-0 left-0 z-10 h-full w-full bg-black/60"></div>
+	<div class="absolute left-0 top-0 z-10 h-full w-full bg-black/60"></div>
 
-	<div class="absolute top-4 right-4 left-4 z-30">
+	<div class="absolute left-4 right-4 top-4 z-30">
 		<div class="flex flex-row items-center justify-between">
 			<TutorialButton />
 			{#if authStore.state.isAuthenticated}
@@ -44,7 +44,7 @@
 			{:else if !authStore.state.isLoading}
 				<button
 					onclick={openAuthModal}
-					class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-px"
+					class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300"
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path

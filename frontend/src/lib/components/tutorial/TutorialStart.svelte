@@ -45,7 +45,7 @@
 				<div class="max-h-[90vh] px-4">
 					<div class="mb-8 text-center">
 						<div class="mb-4 text-5xl max-sm:text-4xl">🎨</div>
-						<h2 class="text-brand mb-2 text-2xl leading-tight font-bold max-sm:text-xl">
+						<h2 class="text-brand mb-2 text-2xl font-bold leading-tight max-sm:text-xl">
 							Welcome to Image to Palette!
 						</h2>
 						<p class="m-0 text-base leading-relaxed text-zinc-400">Extract beautiful color palettes from any image</p>
@@ -53,7 +53,7 @@
 
 					<div class="mb-8 flex flex-col gap-4">
 						<div
-							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">📸</div>
 							<div class="flex flex-col gap-0.5">
@@ -63,7 +63,7 @@
 						</div>
 
 						<div
-							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">🎯</div>
 							<div class="flex flex-col gap-0.5">
@@ -73,7 +73,7 @@
 						</div>
 
 						<div
-							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">🎨</div>
 							<div class="flex flex-col gap-0.5">
@@ -83,7 +83,7 @@
 						</div>
 
 						<div
-							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:-translate-y-px hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
+							class="feature-item hover:border-brand/50 flex items-center gap-4 rounded-md border border-zinc-600 bg-zinc-800/50 p-4 transition-all duration-300 hover:bg-white/5 max-sm:gap-3 max-sm:p-3"
 						>
 							<div class="flex-shrink-0 text-2xl max-sm:text-xl">💾</div>
 							<div class="flex flex-col gap-0.5">
@@ -95,7 +95,7 @@
 
 					<div class="mb-6 flex flex-col gap-3">
 						<button
-							class="from-brand to-brand-hover hover:shadow-brand flex cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-gradient-to-br px-6 py-3.5 font-semibold text-zinc-800 transition-all duration-300 hover:-translate-y-px focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none"
+							class="from-brand to-brand-hover hover:shadow-brand flex cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-gradient-to-br px-6 py-3.5 font-semibold text-zinc-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900"
 							onclick={startTutorial}
 						>
 							<span>Take the Tour</span>
@@ -117,7 +117,7 @@
 			</div>
 
 			<button
-				class="absolute top-4 right-[46px] flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-zinc-600 text-zinc-400 outline-0 transition-all duration-300 hover:border-zinc-500 hover:bg-white/5 hover:text-zinc-300"
+				class="absolute right-[46px] top-4 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-zinc-600 text-zinc-400 outline-0 transition-all duration-300 hover:border-zinc-500 hover:bg-white/5 hover:text-zinc-300"
 				onclick={dismissPrompt}
 				aria-label="Close tutorial prompt"
 			>
