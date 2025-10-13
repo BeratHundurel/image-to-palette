@@ -95,7 +95,7 @@
 
 					<div class="mb-6 flex flex-col gap-3">
 						<button
-							class="from-brand to-brand-hover hover:shadow-brand flex cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-gradient-to-br px-6 py-3.5 font-semibold text-zinc-800 outline-0 transition-all duration-300 hover:-translate-y-0.5"
+							class="from-brand to-brand-hover hover:shadow-brand flex cursor-pointer items-center justify-center gap-2 rounded-md border-0 bg-gradient-to-br px-6 py-3.5 font-semibold text-zinc-800 transition-all duration-300 hover:-translate-y-px focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none"
 							onclick={startTutorial}
 						>
 							<span>Take the Tour</span>

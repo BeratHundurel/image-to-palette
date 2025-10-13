@@ -254,7 +254,7 @@
 							{#if !isFirstStep}
 								<button
 									class={cn(
-										'cursor-pointer rounded-md border-0 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 outline-0 transition-all duration-300 hover:bg-zinc-700'
+										'cursor-pointer rounded-md border border-zinc-600 px-4 py-2 text-sm font-medium text-zinc-300 outline-0 transition-all duration-300 hover:bg-zinc-800'
 									)}
 									onclick={handlePrevious}
 								>

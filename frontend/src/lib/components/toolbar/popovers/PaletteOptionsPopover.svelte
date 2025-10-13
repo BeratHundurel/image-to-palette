@@ -100,7 +100,7 @@
 	<div class="mt-3 flex items-center justify-between">
 		<button
 			type="button"
-			class="cursor-pointer rounded p-2 transition hover:bg-zinc-700 focus:outline-none"
+			class="cursor-pointer rounded border border-zinc-600 p-2 transition hover:bg-zinc-800 focus:outline-none"
 			onclick={() => handleSampleRateChange(-1)}
 			aria-label="Decrease sample size"
 			tabindex="0"
@@ -121,7 +121,7 @@
 		/>
 		<button
 			type="button"
-			class="cursor-pointer rounded p-2 transition hover:bg-zinc-700 focus:outline-none"
+			class="cursor-pointer rounded border border-zinc-600 p-2 transition hover:bg-zinc-800"
 			onclick={() => handleSampleRateChange(1)}
 			aria-label="Increase sample size"
 			tabindex="0"
@@ -146,7 +146,7 @@
 			style="width: 80px;"
 		/>
 		<button
-			class="cursor-pointer rounded border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs text-zinc-300 transition-colors hover:bg-zinc-700 hover:text-zinc-300 focus:outline-none"
+			class="cursor-pointer rounded border border-zinc-600 px-2 py-1 text-xs text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-300 focus:outline-none"
 			onclick={handleFilterColorAdd}
 			title="Add filter color"
 			type="button"

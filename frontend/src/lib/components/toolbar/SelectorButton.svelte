@@ -24,7 +24,7 @@
 		'focus-visible:ring-brand focus-visible:ring-2 focus-visible:outline-none',
 		selector.selected
 			? 'border-brand/50 shadow-brand/20 -translate-y-1 scale-105 border-2 shadow-lg'
-			: 'border border-zinc-700/50 hover:-translate-y-0.5 hover:border-zinc-600 hover:shadow-md active:scale-95'
+			: 'border border-zinc-700/50 hover:-translate-y-px hover:border-zinc-600 hover:shadow-md active:scale-95'
 	)}
 	onclick={handleClick}
 	aria-label="Selector {index + 1}"

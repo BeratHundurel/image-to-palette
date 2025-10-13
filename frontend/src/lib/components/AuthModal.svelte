@@ -265,7 +265,7 @@
 					<button
 						type="submit"
 						disabled={loading}
-						class="bg-brand hover:bg-brand-hover w-full cursor-pointer rounded-md px-4 py-2 font-medium text-zinc-900 transition-colors focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+						class="from-brand to-brand-hover hover:shadow-brand w-full cursor-pointer rounded-md bg-gradient-to-br py-2 font-medium text-zinc-900 transition-all hover:-translate-y-px focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
 					>
 						{#if loading}
 							<div class="flex items-center justify-center">
