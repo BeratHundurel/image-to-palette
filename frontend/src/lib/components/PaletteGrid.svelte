@@ -60,7 +60,7 @@
 	}
 </script>
 
-<section class="w-full max-w-5xl">
+<section class="w-full max-w-5xl min-h-[160px]">
 	{#if appStore.state.colors.length > 0}
 		<div class="mb-4 flex items-center gap-2">
 			<span class="text-sm font-medium text-zinc-300">Sort:</span>
@@ -111,13 +111,13 @@
 	{#if appStore.state.imageLoaded}
 		<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
 			<button
-				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-1"
+				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-px"
 				onclick={returnToUpload}>Back</button
 			>
 
 			<button
 				id="save-palette"
-				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-1"
+				class="border-brand/50 hover:shadow-brand w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 hover:-translate-y-px"
 				onclick={appStore.savePalette}
 			>
 				Save Palette

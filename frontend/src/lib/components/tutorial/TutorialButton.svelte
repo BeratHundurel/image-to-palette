@@ -10,7 +10,7 @@
 </script>
 
 <button
-	class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-1"
+	class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-px"
 	onclick={restartTutorial}
 	title="Restart the interactive tutorial"
 	type="button"

@@ -44,7 +44,7 @@
 			{:else if !authStore.state.isLoading}
 				<button
 					onclick={openAuthModal}
-					class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-1"
+					class="border-brand/50 hover:shadow-brand flex w-32 cursor-pointer items-center justify-center gap-2 rounded-md border bg-zinc-900 py-2 text-sm font-medium transition-all duration-300 hover:-translate-y-px"
 				>
 					<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path
