@@ -5,6 +5,7 @@
 <button
 	class="toolbar-button-base"
 	aria-label="Copy Palette"
+	title="Copy palette in various formats"
 	onclick={(e) => popoverStore.toggle('copy', e)}
 	type="button"
 >

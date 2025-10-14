@@ -4,7 +4,8 @@
 
 <button
 	class="toolbar-button-base"
-	aria-label="select palette option"
+	aria-label="Palette extraction settings"
+	title="Configure palette extraction settings"
 	onclick={(e) => popoverStore.toggle('palette', e)}
 	type="button"
 >

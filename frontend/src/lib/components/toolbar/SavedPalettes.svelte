@@ -6,6 +6,7 @@
 	class="toolbar-button-base"
 	onclick={(e) => popoverStore.toggle('saved', e)}
 	aria-label="Show saved palettes"
+	title="View and load saved palettes"
 	type="button"
 >
 	<span>🎨</span>

@@ -12,6 +12,7 @@
 	class="toolbar-button-base"
 	disabled={appStore.state.isExtracting}
 	aria-label="Download image"
+	title="Download the current image"
 >
 	<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 		<path

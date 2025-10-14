@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 	import CopyOptions from './CopyOptions.svelte';
+	import OpenInCoolors from './OpenInCoolors.svelte';
 	import SelectorButton from './SelectorButton.svelte';
 	import PaletteOptions from './PaletteOptions.svelte';
 	import SavedPalettes from './SavedPalettes.svelte';
@@ -117,15 +118,6 @@
 					</div>
 				</li>
 
-				<!-- Extraction Section -->
-				<li class="relative mb-4">
-					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium uppercase">Extraction</h3>
-						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
-					</div>
-					<PaletteOptions />
-				</li>
-
 				<!-- Copy Section -->
 				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
@@ -134,7 +126,17 @@
 					</div>
 					<div class="flex justify-start gap-2">
 						<CopyOptions />
+						<OpenInCoolors />
 					</div>
+				</li>
+
+				<!-- Extraction Section -->
+				<li class="relative mb-4">
+					<div class="mb-2 flex items-center gap-2">
+						<h3 class="text-brand text-xs font-medium uppercase">Extraction</h3>
+						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+					</div>
+					<PaletteOptions />
 				</li>
 
 				<!-- Export Section -->

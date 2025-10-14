@@ -4,7 +4,8 @@
 
 <button
 	class="toolbar-button-base"
-	aria-label="application settings"
+	aria-label="Application settings"
+	title="Adjust application settings"
 	onclick={(e) => popoverStore.toggle('application', e)}
 	type="button"
 >

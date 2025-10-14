@@ -8,6 +8,8 @@
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },
 		{ label: 'CSS Variables', value: 'css_variables' },
+		{ label: 'SCSS Variables', value: 'scss_variables' },
+		{ label: 'Less Variables', value: 'less_variables' },
 		{ label: 'Tailwind Config', value: 'tailwind_config' },
 		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' }
 	];
@@ -31,6 +33,12 @@
 				break;
 			case 'css_variables':
 				output = namedPalette.map((c) => `--color-${c.name}: ${c.hex};`).join('\n');
+				break;
+			case 'scss_variables':
+				output = generateScssVariables(namedPalette);
+				break;
+			case 'less_variables':
+				output = generateLessVariables(namedPalette);
 				break;
 			case 'tailwind_config':
 				output = generateTailwindThemeBlock(namedPalette);
@@ -67,6 +75,16 @@
 
 	function generateBootstrapVariables(colors: NamedColor[]) {
 		return `:root {\n${colors.map((c) => `  --bs-${c.name}: ${c.hex};`).join('\n')}\n}`;
+	}
+
+	function generateScssVariables(colors: NamedColor[]) {
+		const variables = colors.map((c) => `$color-${c.name}: ${c.hex};`).join('\n');
+		return `// SCSS Variables\n${variables}`;
+	}
+
+	function generateLessVariables(colors: NamedColor[]) {
+		const variables = colors.map((c) => `@color-${c.name}: ${c.hex};`).join('\n');
+		return `// Less Variables\n${variables}`;
 	}
 
 	function slugifyName(name: string): string {
