@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -36,20 +38,21 @@ type Selection struct {
 }
 
 type WorkspaceData struct {
-	ID                 string     `json:"id"`
-	Name               string     `json:"name"`
-	ImageData          string     `json:"imageData"`
-	Colors             []Color    `json:"colors"`
+	ID                 string  `json:"id"`
+	Name               string  `json:"name"`
+	ImageData          string  `json:"imageData"`
+	Colors             []Color `json:"colors"`
 	Selectors          []Selector `json:"selectors"`
-	DrawSelectionValue string     `json:"drawSelectionValue"`
-	ActiveSelectorId   string     `json:"activeSelectorId"`
-	FilteredColors     []string   `json:"filteredColors"`
-	SampleRate         int        `json:"sampleRate"`
-	Luminosity         float64    `json:"luminosity"`
-	Nearest            int        `json:"nearest"`
-	Power              int        `json:"power"`
-	MaxDistance        float64    `json:"maxDistance"`
-	CreatedAt          string     `json:"createdAt"`
+	DrawSelectionValue string  `json:"drawSelectionValue"`
+	ActiveSelectorId   string  `json:"activeSelectorId"`
+	FilteredColors     []string `json:"filteredColors"`
+	SampleRate         int     `json:"sampleRate"`
+	Luminosity         float64 `json:"luminosity"`
+	Nearest            int     `json:"nearest"`
+	Power              int     `json:"power"`
+	MaxDistance        float64 `json:"maxDistance"`
+	ShareToken         *string `json:"shareToken,omitempty"`
+	CreatedAt          string  `json:"createdAt"`
 }
 
 type SaveWorkspaceRequest struct {
@@ -204,6 +207,7 @@ func getUserWorkspaces(userID uint) ([]WorkspaceData, error) {
 			Nearest:            state.Nearest,
 			Power:              state.Power,
 			MaxDistance:        state.MaxDistance,
+			ShareToken:         dbWorkspace.ShareToken,
 			CreatedAt:          dbWorkspace.CreatedAt.Format("2006-01-02T15:04:05.000Z"),
 		}
 	}
@@ -224,6 +228,158 @@ func deleteUserWorkspace(userID uint, workspaceID string) error {
 	result := DB.Delete(&workspace)
 	if result.Error != nil {
 		return result.Error
+	}
+
+	return nil
+}
+
+func generateShareToken() (string, error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
+func shareWorkspaceHandler(c *gin.Context) {
+	workspaceID := c.Param("id")
+	if workspaceID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workspace ID is required"})
+		return
+	}
+
+	authenticated, userID := isAuthenticated(c)
+	if !authenticated {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required to share workspaces"})
+		return
+	}
+
+	shareToken, err := createWorkspaceShareToken(userID, workspaceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"shareToken": shareToken,
+		"shareUrl":   fmt.Sprintf("http://localhost:5173/shared/%s", shareToken),
+	})
+}
+
+func getSharedWorkspaceHandler(c *gin.Context) {
+	shareToken := c.Param("token")
+	if shareToken == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Share token is required"})
+		return
+	}
+
+	workspace, err := getWorkspaceByShareToken(shareToken)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Shared workspace not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, workspace)
+}
+
+func removeWorkspaceShareHandler(c *gin.Context) {
+	workspaceID := c.Param("id")
+	if workspaceID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Workspace ID is required"})
+		return
+	}
+
+	authenticated, userID := isAuthenticated(c)
+	if !authenticated {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+		return
+	}
+
+	err := removeWorkspaceShareToken(userID, workspaceID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Share link removed successfully"})
+}
+
+func createWorkspaceShareToken(userID uint, workspaceID string) (string, error) {
+	if DB == nil {
+		return "", fmt.Errorf("database not available")
+	}
+
+	var workspace Workspace
+	if err := DB.Where("id = ? AND user_id = ?", workspaceID, userID).First(&workspace).Error; err != nil {
+		return "", fmt.Errorf("workspace not found or unauthorized")
+	}
+
+	if workspace.ShareToken != nil {
+		return *workspace.ShareToken, nil
+	}
+
+	shareToken, err := generateShareToken()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate share token")
+	}
+
+	workspace.ShareToken = &shareToken
+	if err := DB.Save(&workspace).Error; err != nil {
+		return "", fmt.Errorf("failed to save share token")
+	}
+
+	return shareToken, nil
+}
+
+func getWorkspaceByShareToken(shareToken string) (*WorkspaceData, error) {
+	if DB == nil {
+		return nil, fmt.Errorf("database not available")
+	}
+
+	var dbWorkspace Workspace
+	if err := DB.Where("share_token = ?", shareToken).First(&dbWorkspace).Error; err != nil {
+		return nil, fmt.Errorf("workspace not found")
+	}
+
+	var state WorkspaceStateData
+	if err := json.Unmarshal([]byte(dbWorkspace.JsonData), &state); err != nil {
+		return nil, fmt.Errorf("failed to parse workspace data")
+	}
+
+	workspace := &WorkspaceData{
+		ID:                 fmt.Sprintf("%d", dbWorkspace.ID),
+		Name:               dbWorkspace.Name,
+		ImageData:          dbWorkspace.ImageData,
+		Colors:             state.Colors,
+		Selectors:          state.Selectors,
+		DrawSelectionValue: state.DrawSelectionValue,
+		ActiveSelectorId:   state.ActiveSelectorId,
+		FilteredColors:     state.FilteredColors,
+		SampleRate:         state.SampleRate,
+		Luminosity:         state.Luminosity,
+		Nearest:            state.Nearest,
+		Power:              state.Power,
+		MaxDistance:        state.MaxDistance,
+		ShareToken:         dbWorkspace.ShareToken,
+		CreatedAt:          dbWorkspace.CreatedAt.Format("2006-01-02T15:04:05.000Z"),
+	}
+
+	return workspace, nil
+}
+
+func removeWorkspaceShareToken(userID uint, workspaceID string) error {
+	if DB == nil {
+		return fmt.Errorf("database not available")
+	}
+
+	var workspace Workspace
+	if err := DB.Where("id = ? AND user_id = ?", workspaceID, userID).First(&workspace).Error; err != nil {
+		return fmt.Errorf("workspace not found or unauthorized")
+	}
+
+	workspace.ShareToken = nil
+	if err := DB.Save(&workspace).Error; err != nil {
+		return fmt.Errorf("failed to remove share token")
 	}
 
 	return nil

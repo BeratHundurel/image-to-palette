@@ -12,6 +12,11 @@
 	import { authStore } from '$lib/stores/auth.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import TutorialButton from '$lib/components/tutorial/TutorialButton.svelte';
+	import { getSharedWorkspace } from '$lib/api/workspace';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import toast from 'svelte-french-toast';
+	import { tick } from 'svelte';
 
 	let showAuthModal = $state(false);
 
@@ -19,6 +24,29 @@
 		await authStore.init();
 		await appStore.loadSavedPalettes();
 		await appStore.loadSavedWorkspaces();
+
+		// Check for share token in URL query parameter
+		const shareToken = $page.url.searchParams.get('share');
+		if (shareToken) {
+			const toastId = toast.loading('Loading shared workspace...');
+
+			// Wait for canvas to be ready
+			await tick();
+			await new Promise((resolve) => setTimeout(resolve, 100));
+
+			try {
+				const workspace = await getSharedWorkspace(shareToken);
+				await appStore.loadWorkspace(workspace);
+				toast.success(`Loaded: ${workspace.name}`, { id: toastId });
+
+				// Clean up URL by removing the share parameter
+				await goto('/', { replaceState: true });
+			} catch (err) {
+				toast.error(err instanceof Error ? err.message : 'Failed to load shared workspace', {
+					id: toastId
+				});
+			}
+		}
 	});
 
 	function openAuthModal() {

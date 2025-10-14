@@ -22,7 +22,6 @@
 	let moving = $state(false);
 	let dragHandle = $state<HTMLElement | undefined>(undefined);
 
-	// === Functions ===
 	function handleMouseDown(e: MouseEvent) {
 		if (dragHandle && dragHandle.contains(e.target as Node)) {
 			moving = true;
@@ -64,7 +63,6 @@
 			'transition-all duration-300 ease-out'
 		)}
 	>
-		<!-- Drag Handle -->
 		<div
 			bind:this={dragHandle}
 			class={cn(
@@ -105,7 +103,6 @@
 					</li>
 				{/if}
 
-				<!-- Processing Section -->
 				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
 						<h3 class="text-brand text-xs font-medium uppercase">Processing</h3>
@@ -118,7 +115,6 @@
 					</div>
 				</li>
 
-				<!-- Copy Section -->
 				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
 						<h3 class="text-brand text-xs font-medium uppercase">Copy</h3>
@@ -130,7 +126,6 @@
 					</div>
 				</li>
 
-				<!-- Extraction Section -->
 				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
 						<h3 class="text-brand text-xs font-medium uppercase">Extraction</h3>
@@ -139,7 +134,6 @@
 					<PaletteOptions />
 				</li>
 
-				<!-- Export Section -->
 				<li class="relative">
 					<div class="mb-2 flex items-center gap-2">
 						<h3 class="text-brand text-xs font-medium uppercase">Export</h3>

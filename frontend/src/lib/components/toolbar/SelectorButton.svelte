@@ -38,7 +38,6 @@
 		<div class="absolute inset-0 bg-black/10 transition-all duration-300 group-hover:bg-black/5"></div>
 	</div>
 
-	<!-- Selection Indicator -->
 	{#if selector.selected}
 		<div class="relative z-10 flex h-full w-full items-center justify-center">
 			<div class="rounded-full bg-zinc-900/60 p-1.5 shadow-lg ring-1 ring-white/20 backdrop-blur-sm">
@@ -51,7 +50,6 @@
 		</div>
 	{/if}
 
-	<!-- Selector Number Badge -->
 	<div
 		class={cn(
 			'absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full',

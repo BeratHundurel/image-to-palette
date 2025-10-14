@@ -58,6 +58,7 @@ export type WorkspaceData = {
 	nearest?: number;
 	power?: number;
 	maxDistance?: number;
+	shareToken?: string | null;
 	createdAt: string;
 };
 
@@ -83,4 +84,9 @@ export type GetWorkspacesResponse = {
 export type SaveWorkspaceResult = {
 	message: string;
 	name: string;
+};
+
+export type ShareWorkspaceResult = {
+	shareToken: string;
+	shareUrl: string;
 };

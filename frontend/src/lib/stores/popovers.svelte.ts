@@ -36,8 +36,9 @@ function createPopoverStore() {
 			const target = e.target as HTMLElement;
 			const isInsidePopover = target.closest('.palette-dropdown-base');
 			const isInsideButton = target.closest('.toolbar-button-base');
+			const isInsideModal = target.closest('.share-modal-content') || target.closest('.share-modal-backdrop');
 
-			if (!isInsidePopover && !isInsideButton) {
+			if (!isInsidePopover && !isInsideButton && !isInsideModal) {
 				state.current = null;
 			}
 		};

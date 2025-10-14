@@ -54,6 +54,9 @@ func main() {
 	router.GET("/workspaces", getWorkspacesHandler)
 	router.POST("/workspaces", saveWorkspaceHandler)
 	router.DELETE("/workspaces/:id", deleteWorkspaceHandler)
+	router.POST("/workspaces/:id/share", shareWorkspaceHandler)
+	router.DELETE("/workspaces/:id/share", removeWorkspaceShareHandler)
+	router.GET("/shared", getSharedWorkspaceHandler)
 
 	router.POST("/extract-palette", extractPaletteHandler)
 	router.POST("/apply-palette", applyPaletteHandler)
