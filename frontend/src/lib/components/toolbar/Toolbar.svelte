@@ -59,7 +59,7 @@
 	<div
 		class={cn(
 			'border-brand/50 rounded-md border bg-zinc-900',
-			'hover:shadow-brand hover:border-brand',
+			'hover:shadow-brand hover:border-brand hover:has-[.palette-dropdown-base]:border-brand/50 hover:has-[.palette-dropdown-base]:shadow-none',
 			'transition-all duration-300 ease-out'
 		)}
 	>

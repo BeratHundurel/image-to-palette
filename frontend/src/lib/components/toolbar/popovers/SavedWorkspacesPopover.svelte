@@ -122,7 +122,7 @@
 			<ul class="flex flex-col gap-3">
 				{#each appStore.state.savedWorkspaces as item}
 					<li
-						class="group relative overflow-hidden rounded-lg border border-zinc-700/50 bg-zinc-800/30 transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800/50 hover:shadow-lg"
+						class="hover:border-brand/50 group relative overflow-hidden rounded-lg border border-zinc-600 bg-zinc-800/50 transition-all duration-300 hover:bg-white/5"
 					>
 						<div class="flex gap-3 p-3">
 							<!-- Thumbnail -->
@@ -130,7 +130,7 @@
 								<img
 									src={item.imageData}
 									alt={item.name}
-									class="h-20 w-20 rounded-md border border-zinc-700/50 object-cover shadow-md transition-transform duration-200 group-hover:scale-105"
+									class="h-20 w-20 rounded-md border border-zinc-700/50 object-cover shadow-md transition-transform duration-300 group-hover:scale-105"
 								/>
 								{#if item.shareToken}
 									<div class="absolute -top-1 -right-1 rounded-full bg-blue-500 p-1 shadow-lg" title="Shared">
@@ -179,7 +179,7 @@
 								<!-- Actions -->
 								<div class="flex items-center gap-2">
 									<button
-										class="text-brand hover:bg-brand/10 flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105"
+										class="text-brand hover:bg-brand/10 flex items-center gap-1.5 rounded-md py-1.5 ps-0 pe-2.5 text-xs font-medium transition-all hover:scale-105"
 										onclick={() => handleWorkspaceLoad(item.id)}
 										type="button"
 										title="Load workspace"
@@ -237,7 +237,7 @@
 						</div>
 
 						<!-- Footer - Creation Date -->
-						<div class="border-t border-zinc-700/30 bg-zinc-900/30 px-3 py-1.5">
+						<div class="group-hover:border-brand/50 group border-t border-zinc-600 bg-zinc-900/50 px-3 py-1.5">
 							<span class="flex items-center gap-1.5 text-xs text-zinc-500">
 								<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path

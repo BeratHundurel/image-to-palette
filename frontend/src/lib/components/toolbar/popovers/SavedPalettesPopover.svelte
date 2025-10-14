@@ -48,7 +48,7 @@
 			<ul class="flex flex-col gap-3">
 				{#each appStore.state.savedPalettes as item}
 					<li
-						class="group relative overflow-hidden rounded-lg border border-zinc-700/50 bg-zinc-800/30 transition-all duration-200 hover:border-zinc-600 hover:bg-zinc-800/50 hover:shadow-lg"
+						class="hover:border-brand/50 group relative overflow-hidden rounded-lg border border-zinc-600 bg-zinc-800/50 transition-all duration-300 hover:bg-white/5"
 					>
 						<div class="p-3">
 							<!-- Header -->
@@ -82,7 +82,7 @@
 								<!-- Actions -->
 								<div class="flex items-center gap-1.5">
 									<button
-										class="text-brand hover:bg-brand/10 flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-all hover:scale-105"
+										class="text-brand hover:bg-brand/10 flex items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-all hover:scale-105"
 										onclick={() => handlePaletteLoad(item.palette)}
 										type="button"
 										title="Apply palette"
@@ -120,7 +120,7 @@
 										{#if index < 12}
 											<div class="group/swatch relative">
 												<span
-													class="inline-block h-8 w-8 cursor-pointer rounded-md border border-zinc-700/50 shadow-md transition-all duration-200 hover:scale-110 hover:shadow-lg hover:ring-2 hover:ring-white/20"
+													class="inline-block h-8 w-8 cursor-pointer rounded-md border border-zinc-700/50 shadow-md transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-white/50"
 													style="background-color: {color.hex}"
 													title={color.hex}
 												></span>
@@ -129,7 +129,7 @@
 									{/each}
 									{#if item.palette.length > 12}
 										<div
-											class="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-700/50 bg-zinc-900/50 text-xs font-medium text-zinc-400"
+											class="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-600 bg-zinc-900/50 text-xs font-medium text-zinc-400"
 										>
 											+{item.palette.length - 12}
 										</div>
@@ -138,7 +138,7 @@
 							</div>
 						</div>
 
-						<div class="border-t border-zinc-700/30 bg-zinc-900/30 px-3 py-1.5">
+						<div class="group-hover:border-brand/50 group border-t border-zinc-600 bg-zinc-900/50 px-3 py-1.5">
 							<span class="flex items-center gap-1.5 text-xs text-zinc-500">
 								<svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
