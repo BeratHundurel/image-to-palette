@@ -115,15 +115,27 @@
 				onclick={returnToUpload}>Back</button
 			>
 
-			<button
-				id="save-palette"
-				class="border-brand/50 hover:shadow-brand-lg w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300"
-				onclick={appStore.savePalette}
-			>
-				Save Palette
+			<div class="flex items-center gap-4">
+				<button
+					id="save-palette"
+					class="border-brand/50 hover:shadow-brand-lg w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300"
+					onclick={appStore.savePalette}
+				>
+					Save Palette
 
-				<span> 💾 </span>
-			</button>
+					<span>🎨</span>
+				</button>
+
+				<button
+					onclick={() => appStore.saveWorkspace()}
+					disabled={!appStore.state.imageLoaded}
+					class="border-brand/50 hover:shadow-brand-lg w-40 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
+					type="button"
+				>
+					Save Workspace
+					<span> 💾 </span>
+				</button>
+			</div>
 		</div>
 	{/if}
 </section>

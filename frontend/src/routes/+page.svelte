@@ -18,6 +18,7 @@
 	onMount(async () => {
 		await authStore.init();
 		await appStore.loadSavedPalettes();
+		await appStore.loadSavedWorkspaces();
 	});
 
 	function openAuthModal() {
@@ -65,9 +66,7 @@
 
 		<Canvas />
 
-		{#if appStore.state.imageLoaded}
-			<Toolbar />
-		{/if}
+		<Toolbar />
 
 		<PaletteGrid />
 	</div>

@@ -4,13 +4,14 @@
 	import SelectorButton from './SelectorButton.svelte';
 	import PaletteOptions from './PaletteOptions.svelte';
 	import SavedPalettes from './SavedPalettes.svelte';
+	import SavedWorkspaces from './SavedWorkspaces.svelte';
 	import ApplicationSettings from './ApplicationSettings.svelte';
 	import PaletteOptionsPopover from './popovers/PaletteOptionsPopover.svelte';
 	import ApplicationSettingsPopover from './popovers/ApplicationSettingsPopover.svelte';
 	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
 	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
+	import SavedWorkspacesPopover from './popovers/SavedWorkspacesPopover.svelte';
 	import Download from './Download.svelte';
-	import { fly } from 'svelte/transition';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
 
@@ -54,7 +55,6 @@
 	onmousedown={handleMouseDown}
 	style="right: {right}px; top: {top}px;"
 	class={cn('fixed z-50 select-none', moving ? 'z-[51] cursor-move [&_*]:pointer-events-none' : '')}
-	transition:fly={{ y: -300, duration: 500 }}
 >
 	<div
 		class={cn(
@@ -111,6 +111,7 @@
 						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
 					<div class="flex justify-start gap-2">
+						<SavedWorkspaces />
 						<SavedPalettes />
 						<ApplicationSettings />
 					</div>
@@ -163,6 +164,10 @@
 
 		{#if popoverStore.state.current === 'saved'}
 			<SavedPalettesPopover />
+		{/if}
+
+		{#if popoverStore.state.current === 'workspaces'}
+			<SavedWorkspacesPopover />
 		{/if}
 	</div>
 </section>

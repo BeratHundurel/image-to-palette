@@ -43,3 +43,44 @@ export type Selector = {
 	selected: boolean;
 	selection?: { x: number; y: number; w: number; h: number };
 };
+
+export type WorkspaceData = {
+	id: string;
+	name: string;
+	imageData: string;
+	colors?: Color[];
+	selectors?: Selector[];
+	drawSelectionValue?: string;
+	activeSelectorId?: string;
+	filteredColors?: string[];
+	sampleRate?: number;
+	luminosity?: number;
+	nearest?: number;
+	power?: number;
+	maxDistance?: number;
+	createdAt: string;
+};
+
+export type SaveWorkspaceRequest = {
+	name: string;
+	imageData: string;
+	colors: Color[];
+	selectors: Selector[];
+	drawSelectionValue: string;
+	activeSelectorId: string;
+	filteredColors: string[];
+	sampleRate: number;
+	luminosity: number;
+	nearest: number;
+	power: number;
+	maxDistance: number;
+};
+
+export type GetWorkspacesResponse = {
+	workspaces: WorkspaceData[];
+};
+
+export type SaveWorkspaceResult = {
+	message: string;
+	name: string;
+};

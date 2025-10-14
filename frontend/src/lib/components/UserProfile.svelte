@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { appStore } from '$lib/stores/app.svelte';
 	import toast from 'svelte-french-toast';
 
 	let showDropdown = $state(false);
@@ -8,8 +9,8 @@
 		try {
 			await authStore.logout();
 
-			const { appStore } = await import('$lib/stores/app.svelte');
 			await appStore.loadSavedPalettes();
+			await appStore.loadSavedWorkspaces();
 
 			showDropdown = false;
 			toast.success('Logged out successfully');

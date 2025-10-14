@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { authStore } from '$lib/stores/auth.svelte';
+	import { appStore } from '$lib/stores/app.svelte';
 	import toast from 'svelte-french-toast';
 
 	let { isOpen = $bindable(false) } = $props();
@@ -71,8 +72,8 @@
 				toast.success('Account created successfully!');
 			}
 
-			const { appStore } = await import('$lib/stores/app.svelte');
 			await appStore.syncPalettesOnAuth();
+			await appStore.syncWorkspacesOnAuth();
 
 			resetForm();
 			isOpen = false;
@@ -91,8 +92,8 @@
 			await authStore.demoLogin();
 			toast.success('Welcome to the demo!');
 
-			const { appStore } = await import('$lib/stores/app.svelte');
 			await appStore.syncPalettesOnAuth();
+			await appStore.syncWorkspacesOnAuth();
 
 			resetForm();
 			isOpen = false;
