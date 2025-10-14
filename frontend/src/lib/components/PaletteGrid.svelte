@@ -2,7 +2,8 @@
 	import { UI } from '$lib/constants';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { tutorialStore } from '$lib/stores/tutorial.svelte';
-	import { cn, copyToClipboard, sortColorsByMethod, type SortMethod } from '$lib/utils';
+	import { cn, copyToClipboard } from '$lib/utils';
+	import { sortColorsByMethod, type SortMethod } from '$lib/colorUtils';
 	import { tick } from 'svelte';
 	import toast from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
@@ -93,7 +94,7 @@
 	{/if}
 
 	<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
-		{#each sortedColors as color, i (color.hex)}
+		{#each sortedColors as color, i (`${color.hex}-${i}-${color.count ?? 0}`)}
 			<div
 				role="button"
 				tabindex="0"
