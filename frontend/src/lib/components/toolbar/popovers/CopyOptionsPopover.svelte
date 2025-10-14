@@ -4,6 +4,7 @@
 	import toast from 'svelte-french-toast';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
+	import { generateVSCodeTheme } from '$lib/vscodeTheme';
 
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },
@@ -11,7 +12,8 @@
 		{ label: 'SCSS Variables', value: 'scss_variables' },
 		{ label: 'Less Variables', value: 'less_variables' },
 		{ label: 'Tailwind Config', value: 'tailwind_config' },
-		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' }
+		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' },
+		{ label: 'VS Code Theme', value: 'vscode_theme' }
 	];
 
 	function handleCopyFormatChange(format: string) {
@@ -45,6 +47,9 @@
 				break;
 			case 'bootstrap_variables':
 				output = generateBootstrapVariables(namedPalette);
+				break;
+			case 'vscode_theme':
+				output = generateVSCodeTheme(hexValues);
 				break;
 		}
 		navigator.clipboard.writeText(output);
@@ -104,7 +109,7 @@
 >
 	<p class="text-brand mb-2 text-xs font-medium">Copy Palette</p>
 
-	{#each copy_options as option}
+	{#each copy_options as option (option.value)}
 		<button
 			class="text-brand hover:bg-brand mb-2 w-full cursor-pointer rounded bg-zinc-800 px-2 py-1 text-xs font-medium hover:text-zinc-900"
 			onclick={() => handleCopyFormatChange(option.value)}
