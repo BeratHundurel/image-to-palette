@@ -262,6 +262,18 @@ export function generateVSCodeTheme(colors: string[]) {
 				settings: { foreground: c5 }
 			},
 			{
+				scope: ['support.variable', 'support.other.variable'],
+				settings: { foreground: c1 }
+			},
+			{
+				scope: ['support.type.property-name', 'support.type.property-name.css'],
+				settings: { foreground: c1 }
+			},
+			{
+				scope: ['support.constant.property-value', 'support.constant.property-value.css'],
+				settings: { foreground: c3 }
+			},
+			{
 				scope: ['entity.name.tag', 'meta.tag'],
 				settings: { foreground: darkBase ? lighten(c4, 0.05) : darken(c4, 0.05) }
 			},
