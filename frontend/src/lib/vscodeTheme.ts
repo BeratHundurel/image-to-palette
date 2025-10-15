@@ -2,7 +2,7 @@ import {
 	darken,
 	lighten,
 	addAlpha,
-	isDarkColor,
+	getLuminance,
 	rgbDistance,
 	adjustForContrast,
 	ensureReadableContrast,
@@ -17,10 +17,15 @@ export function generateVSCodeTheme(colors: string[]) {
 	}
 
 	const [c0, c1Raw, c2Raw, c3Raw, c4Raw, c5Raw, c6Raw, c7Raw] = improvedColors;
-	const darkBase = isDarkColor(c0);
-	const background = darkBase ? darken(c0, 0.85) : lighten(c0, 0.9);
 
-	const proposedForeground = darkBase ? lighten(c0, 0.8) : darken(c0, 0.8);
+	const averageLuminance = improvedColors.slice(0, 8).reduce((sum, color) => sum + getLuminance(color), 0) / 8;
+	const darkBase = averageLuminance < 0.5;
+
+	const darkenAmount = darkBase ? 0.825 + averageLuminance * 0.2 : 0;
+	const lightenAmount = darkBase ? 0 : 0.7 + (1 - averageLuminance) * 0.25;
+	const background = darkBase ? darken(c0, darkenAmount) : lighten(c0, lightenAmount);
+
+	const proposedForeground = darkBase ? lighten(c0, 0.7) : darken(c0, 0.8);
 	const foreground = ensureReadableContrast(proposedForeground, background, 7.0);
 
 	let c1 = adjustForContrast(c1Raw, background, 4.5);
@@ -50,24 +55,38 @@ export function generateVSCodeTheme(colors: string[]) {
 		colors: {
 			'editor.background': background,
 			'editor.foreground': foreground,
+			foreground: foreground,
+			disabledForeground: addAlpha(foreground, '60'),
 			focusBorder: addAlpha(c2, '60'),
+			descriptionForeground: addAlpha(foreground, '70'),
+			errorForeground: c4,
+			'icon.foreground': c1,
+
+			'widget.border': addAlpha(c1, '40'),
+			'selection.background': addAlpha(c2, '50'),
+			'sash.hoverBorder': c2,
+
 			'activityBar.background': darkBase ? darken(c0, 0.95) : lighten(c0, 0.95),
 			'activityBar.foreground': c1,
 			'activityBar.activeBorder': c2,
 			'activityBarBadge.background': c2,
 			'activityBarBadge.foreground': background,
+
 			'sideBar.background': darkBase ? darken(c0, 0.92) : lighten(c0, 0.92),
 			'sideBar.foreground': foreground,
 			'sideBar.border': addAlpha(c1, '20'),
 			'sideBarTitle.foreground': c1,
+
 			'statusBar.background': darkBase ? darken(c0, 0.95) : lighten(c0, 0.95),
 			'statusBar.foreground': foreground,
 			'statusBar.noFolderBackground': darkBase ? darken(c3, 0.8) : lighten(c3, 0.8),
 			'statusBar.debuggingBackground': c4,
+
 			'titleBar.activeBackground': darkBase ? darken(c0, 0.95) : lighten(c0, 0.95),
 			'titleBar.activeForeground': foreground,
 			'titleBar.inactiveBackground': darkBase ? darken(c0, 0.97) : lighten(c0, 0.97),
 			'titleBar.inactiveForeground': addAlpha(foreground, '99'),
+
 			'tab.activeBackground': background,
 			'tab.activeForeground': foreground,
 			'tab.inactiveBackground': darkBase ? darken(c0, 0.95) : lighten(c0, 0.95),
@@ -75,9 +94,11 @@ export function generateVSCodeTheme(colors: string[]) {
 			'tab.activeBorder': c2,
 			'tab.border': addAlpha(c1, '20'),
 			'editorGroupHeader.tabsBackground': darkBase ? darken(c0, 0.95) : lighten(c0, 0.95),
+
 			'panel.background': background,
 			'panel.border': addAlpha(c1, '40'),
 			'panelTitle.activeBorder': c2,
+
 			'terminal.foreground': foreground,
 			'terminal.ansiBlack': darkBase ? darken(c0, 0.9) : darken(c0, 0.2),
 			'terminal.ansiRed': c4,
@@ -88,13 +109,14 @@ export function generateVSCodeTheme(colors: string[]) {
 			'terminal.ansiCyan': c7,
 			'terminal.ansiWhite': foreground,
 			'terminal.ansiBrightBlack': darkBase ? darken(foreground, 0.3) : lighten(foreground, 0.3),
-			'terminal.ansiBrightRed': lighten(c4, 0.2),
-			'terminal.ansiBrightGreen': lighten(c3, 0.2),
-			'terminal.ansiBrightYellow': lighten(c5, 0.2),
-			'terminal.ansiBrightBlue': lighten(c2, 0.2),
-			'terminal.ansiBrightMagenta': lighten(c6, 0.2),
-			'terminal.ansiBrightCyan': lighten(c7, 0.2),
-			'terminal.ansiBrightWhite': lighten(foreground, 0.2),
+			'terminal.ansiBrightRed': darkBase ? lighten(c4, 0.2) : darken(c4, 0.2),
+			'terminal.ansiBrightGreen': darkBase ? lighten(c3, 0.2) : darken(c3, 0.2),
+			'terminal.ansiBrightYellow': darkBase ? lighten(c5, 0.2) : darken(c5, 0.2),
+			'terminal.ansiBrightBlue': darkBase ? lighten(c2, 0.2) : darken(c2, 0.2),
+			'terminal.ansiBrightMagenta': darkBase ? lighten(c6, 0.2) : darken(c6, 0.2),
+			'terminal.ansiBrightCyan': darkBase ? lighten(c7, 0.2) : darken(c7, 0.2),
+			'terminal.ansiBrightWhite': darkBase ? lighten(foreground, 0.2) : darken(foreground, 0.2),
+
 			'input.background': darkBase ? darken(c0, 0.85) : lighten(c0, 0.85),
 			'input.border': addAlpha(c1, '40'),
 			'input.foreground': foreground,
@@ -111,29 +133,45 @@ export function generateVSCodeTheme(colors: string[]) {
 			'inputValidation.infoBackground': darkBase ? darken(c2, 0.8) : lighten(c2, 0.8),
 			'inputValidation.infoBorder': c2,
 			'inputValidation.infoForeground': foreground,
+
 			'dropdown.background': darkBase ? darken(c0, 0.88) : lighten(c0, 0.88),
 			'dropdown.foreground': foreground,
 			'dropdown.border': addAlpha(c1, '40'),
 			'dropdown.listBackground': darkBase ? darken(c0, 0.85) : lighten(c0, 0.85),
+
 			'quickInput.background': darkBase ? darken(c0, 0.88) : lighten(c0, 0.88),
 			'quickInput.foreground': foreground,
 			'quickInputList.focusBackground': addAlpha(c2, '40'),
 			'quickInputList.focusForeground': foreground,
 			'quickInputList.focusIconForeground': c2,
 			'quickInputTitle.background': darkBase ? darken(c0, 0.92) : lighten(c0, 0.92),
+
 			'list.activeSelectionBackground': addAlpha(c2, '40'),
 			'list.activeSelectionForeground': foreground,
 			'list.inactiveSelectionBackground': addAlpha(c1, '30'),
 			'list.hoverBackground': addAlpha(c1, '20'),
 			'list.focusBackground': addAlpha(c2, '30'),
+
 			'button.background': c2,
-			'button.foreground': background,
-			'button.hoverBackground': lighten(c2, 0.1),
+			'button.foreground': darkBase ? background : darken(c0, 0.9),
+			'button.hoverBackground': darkBase ? lighten(c2, 0.1) : darken(c2, 0.1),
+			'button.hoverForeground': darkBase ? background : darken(c0, 0.9),
+			'button.secondaryBackground': darkBase ? darken(c0, 0.88) : lighten(c0, 0.88),
+			'button.secondaryForeground': foreground,
+			'button.secondaryHoverBackground': darkBase ? darken(c0, 0.85) : lighten(c0, 0.85),
+
 			'badge.background': c2,
-			'badge.foreground': background,
+			'badge.foreground': darkBase ? background : darken(c0, 0.9),
+
+			'breadcrumb.foreground': addAlpha(foreground, '70'),
+			'breadcrumb.focusForeground': foreground,
+			'breadcrumb.activeSelectionForeground': c2,
+			'breadcrumb.background': background,
+
 			'scrollbarSlider.background': addAlpha(c1, '40'),
 			'scrollbarSlider.hoverBackground': addAlpha(c1, '60'),
 			'scrollbarSlider.activeBackground': addAlpha(c2, '60'),
+
 			'editorLineNumber.foreground': addAlpha(foreground, '50'),
 			'editorLineNumber.activeForeground': c2,
 			'editorCursor.foreground': c2,
@@ -185,20 +223,42 @@ export function generateVSCodeTheme(colors: string[]) {
 			'editorGutter.addedBackground': c3,
 			'editorGutter.modifiedBackground': c5,
 			'editorGutter.deletedBackground': c4,
+
 			'gitDecoration.addedResourceForeground': c3,
 			'gitDecoration.modifiedResourceForeground': c5,
 			'gitDecoration.deletedResourceForeground': c4,
 			'gitDecoration.untrackedResourceForeground': c7,
 			'gitDecoration.ignoredResourceForeground': addAlpha(foreground, '60'),
+
 			'peekView.border': c2,
 			'peekViewEditor.background': darkBase ? darken(c0, 0.88) : lighten(c0, 0.88),
 			'peekViewResult.background': darkBase ? darken(c0, 0.92) : lighten(c0, 0.92),
 			'peekViewTitle.background': darkBase ? darken(c0, 0.95) : lighten(c0, 0.95),
+
 			'notificationCenter.border': addAlpha(c1, '40'),
 			'notificationCenterHeader.background': darkBase ? darken(c0, 0.92) : lighten(c0, 0.92),
 			'notifications.background': darkBase ? darken(c0, 0.88) : lighten(c0, 0.88),
 			'notifications.border': addAlpha(c1, '40'),
-			'notificationLink.foreground': c2
+			'notificationLink.foreground': c2,
+
+			'settings.headerForeground': foreground,
+			'settings.modifiedItemIndicator': c2,
+			'settings.focusedRowBackground': darkBase ? darken(c0, 0.9) : lighten(c0, 0.9),
+			'settings.rowHoverBackground': darkBase ? darken(c0, 0.92) : lighten(c0, 0.92),
+			'settings.focusedRowBorder': addAlpha(c2, '60'),
+			'settings.numberInputBackground': background,
+			'settings.numberInputForeground': c6,
+			'settings.numberInputBorder': addAlpha(c1, '40'),
+			'settings.textInputBackground': background,
+			'settings.textInputForeground': c2,
+			'settings.textInputBorder': addAlpha(c1, '40'),
+			'settings.checkboxBackground': background,
+			'settings.checkboxForeground': c5,
+			'settings.checkboxBorder': addAlpha(c1, '40'),
+			'settings.dropdownBackground': background,
+			'settings.dropdownForeground': c1,
+			'settings.dropdownBorder': addAlpha(c1, '40'),
+			'settings.dropdownListBorder': addAlpha(c1, '40')
 		},
 		tokenColors: [
 			{
@@ -214,35 +274,69 @@ export function generateVSCodeTheme(colors: string[]) {
 				settings: { foreground: c6 }
 			},
 			{
-				scope: ['string', 'string.quoted', 'string.template', 'string.regexp'],
+				scope: [
+					'string',
+					'string.quoted',
+					'string.template',
+					'string.regexp',
+					'punctuation.definition.string',
+					'support.constant.property-value',
+					'support.constant.property-value.css',
+					'markup.inline.raw',
+					'markup.fenced_code',
+					'markup.inserted'
+				],
 				settings: { foreground: c3 }
 			},
 			{
-				scope: ['punctuation.definition.string'],
-				settings: { foreground: c3 }
-			},
-			{
-				scope: ['constant.numeric', 'constant.character', 'number'],
+				scope: [
+					'constant.numeric',
+					'constant.character',
+					'number',
+					'constant.other',
+					'variable.other.constant',
+					'support.constant',
+					'entity.other.inherited-class',
+					'support.class',
+					'support.type'
+				],
 				settings: { foreground: c5 }
 			},
 			{
-				scope: ['constant.language', 'constant.language.boolean', 'constant.language.null'],
+				scope: [
+					'constant.language',
+					'constant.language.boolean',
+					'constant.language.null',
+					'entity.name.class',
+					'entity.name.type'
+				],
 				settings: { foreground: c5, fontStyle: 'bold' }
-			},
-			{
-				scope: ['constant.other', 'variable.other.constant', 'support.constant'],
-				settings: { foreground: c5 }
 			},
 			{
 				scope: ['variable', 'identifier', 'variable.other.readwrite', 'meta.definition.variable'],
 				settings: { foreground: foreground }
 			},
 			{
-				scope: ['variable.parameter', 'meta.parameter'],
+				scope: [
+					'variable.parameter',
+					'meta.parameter',
+					'entity.other.attribute-name',
+					'entity.name.module',
+					'support.module',
+					'support.node'
+				],
 				settings: { foreground: c7 }
 			},
 			{
-				scope: ['variable.other.property', 'variable.other.object.property', 'meta.object-literal.key'],
+				scope: [
+					'variable.other.property',
+					'variable.other.object.property',
+					'meta.object-literal.key',
+					'support.variable',
+					'support.other.variable',
+					'support.type.property-name',
+					'support.type.property-name.css'
+				],
 				settings: { foreground: c1 }
 			},
 			{
@@ -250,36 +344,8 @@ export function generateVSCodeTheme(colors: string[]) {
 				settings: { foreground: c2 }
 			},
 			{
-				scope: ['entity.name.class', 'entity.name.type'],
-				settings: { foreground: c5, fontStyle: 'bold' }
-			},
-			{
-				scope: ['entity.other.inherited-class'],
-				settings: { foreground: c5 }
-			},
-			{
-				scope: ['support.class', 'support.type'],
-				settings: { foreground: c5 }
-			},
-			{
-				scope: ['support.variable', 'support.other.variable'],
-				settings: { foreground: c1 }
-			},
-			{
-				scope: ['support.type.property-name', 'support.type.property-name.css'],
-				settings: { foreground: c1 }
-			},
-			{
-				scope: ['support.constant.property-value', 'support.constant.property-value.css'],
-				settings: { foreground: c3 }
-			},
-			{
 				scope: ['entity.name.tag', 'meta.tag'],
 				settings: { foreground: darkBase ? lighten(c4, 0.05) : darken(c4, 0.05) }
-			},
-			{
-				scope: ['entity.other.attribute-name'],
-				settings: { foreground: c7 }
 			},
 			{
 				scope: [
@@ -313,10 +379,6 @@ export function generateVSCodeTheme(colors: string[]) {
 				settings: { foreground: darkBase ? lighten(c6, 0.05) : darken(c6, 0.05) }
 			},
 			{
-				scope: ['entity.name.module', 'support.module', 'support.node'],
-				settings: { foreground: c7 }
-			},
-			{
 				scope: ['markup.heading', 'entity.name.section'],
 				settings: { foreground: c2, fontStyle: 'bold' }
 			},
@@ -331,14 +393,6 @@ export function generateVSCodeTheme(colors: string[]) {
 			{
 				scope: ['markup.underline.link', 'string.other.link'],
 				settings: { foreground: c2, fontStyle: 'underline' }
-			},
-			{
-				scope: ['markup.inline.raw', 'markup.fenced_code'],
-				settings: { foreground: c3 }
-			},
-			{
-				scope: ['markup.inserted'],
-				settings: { foreground: c3 }
 			},
 			{
 				scope: ['markup.deleted'],
