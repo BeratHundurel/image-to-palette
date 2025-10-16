@@ -19,18 +19,14 @@
 		}
 	}
 
-	function toggleDropdown() {
-		showDropdown = !showDropdown;
-	}
-
-	function handleClickOutside(event: MouseEvent) {
-		if (event.target instanceof Element && !event.target.closest('.user-profile')) {
-			showDropdown = false;
-		}
-	}
-
 	$effect(() => {
 		if (showDropdown) {
+			const handleClickOutside = (event: MouseEvent) => {
+				if (event.target instanceof Element && !event.target.closest('.user-profile')) {
+					showDropdown = false;
+				}
+			};
+
 			document.addEventListener('click', handleClickOutside);
 			return () => document.removeEventListener('click', handleClickOutside);
 		}
@@ -40,7 +36,7 @@
 {#if authStore.state.user}
 	<div class="user-profile relative">
 		<button
-			onclick={toggleDropdown}
+			onclick={() => (showDropdown = !showDropdown)}
 			class="flex cursor-pointer items-center space-x-2 rounded-full bg-white/20 px-3 py-2 text-zinc-300 backdrop-blur-sm transition-all hover:bg-white/30"
 		>
 			<div class="bg-brand flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-zinc-300">

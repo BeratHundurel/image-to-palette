@@ -1,14 +1,10 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/app.svelte';
-
-	async function handleDownload() {
-		await appStore.downloadImage();
-	}
 </script>
 
 <button
 	id="download-button"
-	onclick={handleDownload}
+	onclick={() => appStore.downloadImage()}
 	class="toolbar-button-base"
 	disabled={appStore.state.isExtracting}
 	aria-label="Download image"

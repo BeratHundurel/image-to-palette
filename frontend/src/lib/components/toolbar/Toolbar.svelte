@@ -36,10 +36,6 @@
 		}
 	}
 
-	function handleMouseUp() {
-		moving = false;
-	}
-
 	$effect(() => {
 		if (moving) {
 			popoverStore.close();
@@ -47,7 +43,7 @@
 	});
 </script>
 
-<svelte:window on:mouseup={handleMouseUp} on:mousemove={handleMouseMove} />
+<svelte:window on:mouseup={() => (moving = false)} on:mousemove={handleMouseMove} />
 
 <section
 	role="toolbar"
