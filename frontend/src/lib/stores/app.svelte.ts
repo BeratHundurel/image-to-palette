@@ -6,6 +6,7 @@ import { authStore } from './auth.svelte';
 import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
 import { CANVAS, SELECTION, IMAGE, UI } from '$lib/constants';
+import type { SortMethod } from '$lib/colorUtils';
 
 export type SavedPaletteItem = PaletteData;
 
@@ -36,6 +37,7 @@ interface AppState {
 	filteredColors: string[];
 	savedPalettes: PaletteData[];
 	savedWorkspaces: WorkspaceData[];
+	sortMethod: SortMethod;
 
 	sampleRate: number;
 	luminosity: number;
@@ -76,6 +78,7 @@ function createAppStore() {
 		filteredColors: [],
 		savedPalettes: [],
 		savedWorkspaces: [],
+		sortMethod: 'none',
 
 		sampleRate: 4,
 		luminosity: 1,

@@ -8,13 +8,10 @@
 	import toast from 'svelte-french-toast';
 	import { fly, scale } from 'svelte/transition';
 
-	let sortMethod = $state<SortMethod>('none');
 	let hoverX = $state(0);
 	let buttonWidth = $state(0);
 	let showHover = $state(false);
 	let sortButtonGroup: HTMLDivElement | null = $state(null);
-
-	const sortedColors = $derived(sortColorsByMethod(appStore.state.colors, sortMethod));
 
 	function handleButtonHover(e: MouseEvent) {
 		if (!sortButtonGroup) return;
@@ -26,12 +23,13 @@
 		showHover = true;
 	}
 
-	function handleGroupLeave() {
-		showHover = false;
+	function sortColors(method: SortMethod) {
+		if (appStore.state.sortMethod === method) return;
+		appStore.state.sortMethod = method;
+		appStore.state.colors = sortColorsByMethod(appStore.state.colors, method);
 	}
 
 	const sortOptions: Array<{ value: SortMethod; label: string }> = [
-		{ value: 'none', label: 'Original' },
 		{ value: 'hue', label: 'Hue' },
 		{ value: 'saturation', label: 'Saturation' },
 		{ value: 'lightness', label: 'Lightness' },
@@ -57,7 +55,7 @@
 			s.selection = undefined;
 			s.selected = s.id === UI.DEFAULT_SELECTOR_ID;
 		});
-		sortMethod = 'none';
+		appStore.state.sortMethod = 'none';
 	}
 </script>
 
@@ -67,7 +65,7 @@
 			<span class="text-sm font-medium text-zinc-300">Sort:</span>
 			<div
 				bind:this={sortButtonGroup}
-				onmouseleave={handleGroupLeave}
+				onmouseleave={() => (showHover = false)}
 				role="group"
 				aria-label="Sort options"
 				class="border-brand/50 relative flex gap-1 rounded-md border bg-zinc-900 p-1"
@@ -79,11 +77,13 @@
 				{#each sortOptions as option (option.value)}
 					<button
 						type="button"
-						onclick={() => (sortMethod = option.value)}
+						onclick={() => sortColors(option.value)}
 						onmouseenter={handleButtonHover}
 						class={cn(
 							'relative z-10 rounded px-3 py-1.5 text-xs font-medium transition-colors duration-300',
-							sortMethod === option.value ? 'bg-brand text-zinc-900' : 'text-zinc-300 hover:text-zinc-300'
+							appStore.state.sortMethod === option.value
+								? 'bg-brand text-zinc-900'
+								: 'text-zinc-300 hover:text-zinc-300'
 						)}
 					>
 						{option.label}
@@ -94,7 +94,7 @@
 	{/if}
 
 	<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
-		{#each sortedColors as color, i (`${color.hex}-${i}-${color.count ?? 0}`)}
+		{#each appStore.state.colors as color, i (`${color.hex}-${i}`)}
 			<div
 				role="button"
 				tabindex="0"

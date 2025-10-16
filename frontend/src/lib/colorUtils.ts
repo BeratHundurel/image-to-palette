@@ -1,4 +1,5 @@
 import toast from 'svelte-french-toast';
+import type { Color } from './types/palette';
 
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {
 	if (!hex || typeof hex !== 'string') {
@@ -386,10 +387,10 @@ export function improvePaletteQuality(colors: string[], targetCount = 12): strin
 
 export type SortMethod = 'hue' | 'saturation' | 'lightness' | 'luminance' | 'none';
 
-export function sortColorsByMethod(colors: Array<{ hex: string; count?: number }>, method: SortMethod) {
+export function sortColorsByMethod(colors: Array<Color>, method: SortMethod) {
 	if (method === 'none') return colors;
 
-	return [...colors].sort((a, b) => {
+	const sorted = [...colors].sort((a, b) => {
 		switch (method) {
 			case 'hue': {
 				const hslA = hexToHsl(a.hex);
@@ -415,4 +416,6 @@ export function sortColorsByMethod(colors: Array<{ hex: string; count?: number }
 				return 0;
 		}
 	});
+
+	return sorted;
 }
