@@ -3,6 +3,7 @@ import type { Color, Selector, PaletteData, WorkspaceData } from '$lib/types/pal
 import * as api from '$lib/api/palette';
 import * as workspaceApi from '$lib/api/workspace';
 import { authStore } from './auth.svelte';
+import { tutorialStore } from './tutorial.svelte';
 import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
 import { CANVAS, SELECTION, IMAGE, UI } from '$lib/constants';
@@ -139,6 +140,8 @@ function createAppStore() {
 		state.canvasContext.clearRect(0, 0, state.canvas.width, state.canvas.height);
 		state.canvasContext.drawImage(state.image, 0, 0, state.canvas.width, state.canvas.height);
 
+		const animationOffset = -(Date.now() / SELECTION.ANIMATION_SPEED) % 10;
+
 		state.selectors.forEach((selector) => {
 			if (!selector.selection || !state.canvasContext || !state.canvas) return;
 
@@ -167,7 +170,7 @@ function createAppStore() {
 				state.canvasContext.strokeStyle = 'rgba(255, 255, 255, 0.9)';
 				state.canvasContext.lineWidth = SELECTION.STROKE_WIDTH.ANIMATED;
 				state.canvasContext.setLineDash(SELECTION.DASH_PATTERN);
-				state.canvasContext.lineDashOffset = -(Date.now() / SELECTION.ANIMATION_SPEED) % 10;
+				state.canvasContext.lineDashOffset = animationOffset;
 				state.canvasContext.strokeRect(clampedX + 2, clampedY + 2, clampedW - 4, clampedH - 4);
 			}
 			state.canvasContext.restore();
@@ -288,16 +291,13 @@ function createAppStore() {
 			}
 			if (!state.isDragging || !state.activeSelectorId) return;
 			const pos = getMousePos(e);
-			const idx = state.selectors.findIndex((s) => s.id === state.activeSelectorId);
-			if (idx !== -1) {
-				state.selectors[idx] = {
-					...state.selectors[idx],
-					selection: {
-						x: Math.min(state.startX, pos.x),
-						y: Math.min(state.startY, pos.y),
-						w: Math.abs(pos.x - state.startX),
-						h: Math.abs(pos.y - state.startY)
-					}
+			const activeSelector = state.selectors.find((s) => s.id === state.activeSelectorId);
+			if (activeSelector) {
+				activeSelector.selection = {
+					x: Math.min(state.startX, pos.x),
+					y: Math.min(state.startY, pos.y),
+					w: Math.abs(pos.x - state.startX),
+					h: Math.abs(pos.y - state.startY)
 				};
 			}
 			drawImageAndBoxes();
@@ -535,13 +535,11 @@ function createAppStore() {
 					}
 				}
 
-				const { tutorialStore } = await import('./tutorial.svelte');
 				tutorialStore.setCurrentPaletteSaved(true);
 			} catch (err) {
 				toast.error(err instanceof Error ? err.message : 'Failed to save palette.');
 			}
 		},
-
 		async applyPalette() {
 			if (!state.imageLoaded) {
 				toast.error('Load an image first');
