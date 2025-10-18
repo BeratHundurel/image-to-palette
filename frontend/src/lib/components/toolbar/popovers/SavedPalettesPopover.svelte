@@ -46,7 +46,7 @@
 			</div>
 		{:else}
 			<ul class="flex flex-col gap-3">
-				{#each appStore.state.savedPalettes as item}
+				{#each appStore.state.savedPalettes as item (item.id)}
 					<li
 						class="hover:border-brand/50 group relative overflow-hidden rounded-lg border border-zinc-600 bg-zinc-800/50 transition-all duration-300 hover:bg-white/5"
 					>
@@ -116,7 +116,7 @@
 							<!-- Color Swatches -->
 							<div class="relative mb-2">
 								<div class="flex flex-wrap gap-1.5">
-									{#each item.palette as color, index}
+									{#each item.palette as color, index (color.hex)}
 										{#if index < 12}
 											<div class="group/swatch relative">
 												<span

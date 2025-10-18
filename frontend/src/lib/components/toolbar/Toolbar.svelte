@@ -94,7 +94,7 @@
 							<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 						</div>
 						<div class="flex flex-wrap justify-center gap-2">
-							{#each appStore.state.selectors as selector, i}
+							{#each appStore.state.selectors as selector, i (selector.id)}
 								<SelectorButton {selector} index={i} />
 							{/each}
 						</div>
@@ -132,15 +132,20 @@
 					<PaletteOptions />
 				</li>
 
+				<li class="relative mb-4">
+					<div class="mb-2 flex items-center gap-2">
+						<h3 class="text-brand text-xs font-medium uppercase">Theme Generation</h3>
+						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+					</div>
+					<ThemeExport />
+				</li>
+
 				<li class="relative">
 					<div class="mb-2 flex items-center gap-2">
 						<h3 class="text-brand text-xs font-medium uppercase">Export</h3>
 						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
-					<div class="flex justify-start gap-2">
-						<Download />
-						<ThemeExport />
-					</div>
+					<Download />
 				</li>
 			</ul>
 		</div>

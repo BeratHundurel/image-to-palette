@@ -67,7 +67,7 @@
 >
 	<h3 class="text-brand mb-1 text-xs font-medium">Application Settings</h3>
 
-	{#each settings as setting}
+	{#each settings as setting (setting.id)}
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center justify-between">
 				<label for={setting.id} class="text-xs font-medium text-zinc-300">

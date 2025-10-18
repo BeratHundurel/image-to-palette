@@ -575,7 +575,7 @@ function createAppStore() {
 				await appStore.drawBlobToCanvas(outBlob);
 
 				toast.success('Applied palette', { id: toastId });
-			} catch (_e) {
+			} catch {
 				toast.error('Error applying palette', { id: toastId });
 			}
 		},
@@ -661,11 +661,11 @@ function createAppStore() {
 							);
 							localStorage.removeItem('savedPalettes');
 							toast.success('Palettes synced successfully', { id: toastId });
-						} catch (_err) {
+						} catch {
 							toast.error('Failed to sync some palettes', { id: toastId });
 						}
-					} catch (_err) {
-						console.error('Failed to parse local palettes:', _err);
+					} catch {
+						console.error('Failed to parse local palettes');
 					}
 				}
 				await appStore.loadSavedPalettes();
@@ -706,7 +706,7 @@ function createAppStore() {
 
 				URL.revokeObjectURL(url);
 				toast.success('Image downloaded', { id: toastId });
-			} catch (_err) {
+			} catch {
 				toast.error('Failed to download image', { id: toastId });
 			}
 		},
@@ -951,11 +951,11 @@ function createAppStore() {
 							);
 							localStorage.removeItem('savedWorkspaces');
 							toast.success('Workspaces synced successfully', { id: toastId });
-						} catch (_err) {
+						} catch {
 							toast.error('Failed to sync some workspaces', { id: toastId });
 						}
-					} catch (_err) {
-						console.error('Failed to parse local workspaces:', _err);
+					} catch {
+						console.error('Failed to parse local workspaces');
 					}
 				}
 				await appStore.loadSavedWorkspaces();

@@ -120,7 +120,7 @@
 			</div>
 		{:else}
 			<ul class="flex flex-col gap-3">
-				{#each appStore.state.savedWorkspaces as item}
+				{#each appStore.state.savedWorkspaces as item (item.id)}
 					<li
 						class="hover:border-brand/50 group relative overflow-hidden rounded-lg border border-zinc-600 bg-zinc-800/50 transition-all duration-300 hover:bg-white/5"
 					>

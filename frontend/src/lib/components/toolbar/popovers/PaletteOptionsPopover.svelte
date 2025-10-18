@@ -59,7 +59,7 @@
 	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
 	<h3 class="text-brand mb-1 text-xs font-medium">Palette Options</h3>
-	{#each draw_options as option, i}
+	{#each draw_options as option, i (option.value)}
 		<button
 			class="w-full cursor-pointer rounded-sm p-2 text-left transition hover:bg-zinc-700"
 			class:bg-zinc-800={drawSelectionValue === option.value}
@@ -155,7 +155,7 @@
 	</div>
 
 	<ul class="mb-3 flex flex-wrap gap-3">
-		{#each filteredColors as color, i}
+		{#each filteredColors as color, i (i)}
 			<li class="flex items-center gap-1 rounded bg-black/40 px-2 py-1 text-xs">
 				<span>{color}</span>
 				<button

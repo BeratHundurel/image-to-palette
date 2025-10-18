@@ -15,6 +15,7 @@
 	import { getSharedWorkspace } from '$lib/api/workspace';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import toast from 'svelte-french-toast';
 	import { tick } from 'svelte';
 
@@ -40,7 +41,7 @@
 				toast.success(`Loaded: ${workspace.name}`, { id: toastId });
 
 				// Clean up URL by removing the share parameter
-				await goto('/', { replaceState: true });
+				await goto(resolve('/'), { replaceState: true });
 			} catch (err) {
 				toast.error(err instanceof Error ? err.message : 'Failed to load shared workspace', {
 					id: toastId

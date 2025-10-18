@@ -48,7 +48,7 @@
 		try {
 			await copyToClipboard(hex, (message) => toast.success(message));
 			tutorialStore.setColorCopied(true);
-		} catch (error) {
+		} catch {
 			toast.error('Failed to copy to clipboard');
 		}
 	}

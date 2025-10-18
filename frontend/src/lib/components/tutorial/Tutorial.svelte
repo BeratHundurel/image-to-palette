@@ -196,7 +196,7 @@
 				<div class="border-brand/50 rounded-xl border bg-zinc-900 p-6 max-md:p-5">
 					<div class="mb-4 flex items-center justify-between border-b border-zinc-600 pb-4">
 						<div class="flex gap-2">
-							{#each tutorialStore.state.steps as step, index}
+							{#each tutorialStore.state.steps as step, index (step.id)}
 								<div
 									class={cn(
 										'h-2 w-2 rounded-full transition-all duration-300',
