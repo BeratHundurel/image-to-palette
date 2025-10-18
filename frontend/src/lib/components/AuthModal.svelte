@@ -154,7 +154,7 @@
 			<div class="border-brand/50 rounded-xl border bg-zinc-900 p-6 text-zinc-300">
 				<button
 					type="button"
-					class="absolute right-4 top-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-300"
+					class="absolute top-4 right-4 cursor-pointer text-zinc-400 transition-colors hover:text-zinc-300"
 					onclick={handleClose}
 					aria-label="Close modal"
 				>
@@ -259,7 +259,7 @@
 						{#if loading}
 							<div class="flex items-center justify-center">
 								<svg
-									class="-ml-1 mr-3 h-5 w-5 animate-spin text-zinc-300"
+									class="mr-3 -ml-1 h-5 w-5 animate-spin text-zinc-300"
 									xmlns="http://www.w3.org/2000/svg"
 									fill="none"
 									viewBox="0 0 24 24"
@@ -314,7 +314,7 @@
 								{#if loading}
 									<div class="flex items-center justify-center">
 										<svg
-											class="-ml-1 mr-3 h-5 w-5 animate-spin text-zinc-300"
+											class="mr-3 -ml-1 h-5 w-5 animate-spin text-zinc-300"
 											xmlns="http://www.w3.org/2000/svg"
 											fill="none"
 											viewBox="0 0 24 24"

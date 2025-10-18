@@ -26,7 +26,15 @@
 	function sortColors(method: SortMethod) {
 		if (appStore.state.sortMethod === method) return;
 		appStore.state.sortMethod = method;
-		appStore.state.colors = sortColorsByMethod(appStore.state.colors, method);
+		const result = sortColorsByMethod(appStore.state.colors, method);
+		appStore.state.colors = result.colors;
+
+		if (result.hadNoChange) {
+			toast('Colors have same order for this sorting method', {
+				icon: '⚠️',
+				duration: 3000
+			});
+		}
 	}
 
 	const sortOptions: Array<{ value: SortMethod; label: string }> = [

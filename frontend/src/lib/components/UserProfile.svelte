@@ -19,14 +19,14 @@
 		}
 	}
 
+	function handleClickOutside(event: MouseEvent) {
+		if (event.target instanceof Element && !event.target.closest('.user-profile')) {
+			showDropdown = false;
+		}
+	}
+
 	$effect(() => {
 		if (showDropdown) {
-			const handleClickOutside = (event: MouseEvent) => {
-				if (event.target instanceof Element && !event.target.closest('.user-profile')) {
-					showDropdown = false;
-				}
-			};
-
 			document.addEventListener('click', handleClickOutside);
 			return () => document.removeEventListener('click', handleClickOutside);
 		}
