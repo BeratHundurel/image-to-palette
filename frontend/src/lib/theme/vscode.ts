@@ -10,7 +10,219 @@ import {
 	type HarmonyScheme
 } from '$lib/colorUtils';
 
-export function generateVSCodeTheme(colors: string[], useStrictMode = false, harmonyScheme: HarmonyScheme = 'triadic') {
+export interface VSCodeTokenSettings {
+	foreground?: string;
+	background?: string;
+	fontStyle?: string;
+}
+
+export interface VSCodeTokenColor {
+	name?: string;
+	scope: string | string[];
+	settings: VSCodeTokenSettings;
+}
+
+export interface VSCodeThemeColors {
+	'editor.background': string;
+	'editor.foreground': string;
+	foreground: string;
+	disabledForeground: string;
+	focusBorder: string;
+	descriptionForeground: string;
+	errorForeground: string;
+	'icon.foreground': string;
+	'widget.border': string;
+	'selection.background': string;
+	'sash.hoverBorder': string;
+	'activityBar.background': string;
+	'activityBar.foreground': string;
+	'activityBar.activeBorder': string;
+	'activityBarBadge.background': string;
+	'activityBarBadge.foreground': string;
+	'sideBar.background': string;
+	'sideBar.foreground': string;
+	'sideBar.border': string;
+	'sideBarTitle.foreground': string;
+	'statusBar.background': string;
+	'statusBar.foreground': string;
+	'statusBar.noFolderBackground': string;
+	'statusBar.debuggingBackground': string;
+	'titleBar.activeBackground': string;
+	'titleBar.activeForeground': string;
+	'titleBar.inactiveBackground': string;
+	'titleBar.inactiveForeground': string;
+	'tab.activeBackground': string;
+	'tab.activeForeground': string;
+	'tab.inactiveBackground': string;
+	'tab.inactiveForeground': string;
+	'tab.activeBorder': string;
+	'tab.border': string;
+	'editorGroupHeader.tabsBackground': string;
+	'panel.background': string;
+	'panel.border': string;
+	'panelTitle.activeBorder': string;
+	'terminal.foreground': string;
+	'terminal.ansiBlack': string;
+	'terminal.ansiRed': string;
+	'terminal.ansiGreen': string;
+	'terminal.ansiYellow': string;
+	'terminal.ansiBlue': string;
+	'terminal.ansiMagenta': string;
+	'terminal.ansiCyan': string;
+	'terminal.ansiWhite': string;
+	'terminal.ansiBrightBlack': string;
+	'terminal.ansiBrightRed': string;
+	'terminal.ansiBrightGreen': string;
+	'terminal.ansiBrightYellow': string;
+	'terminal.ansiBrightBlue': string;
+	'terminal.ansiBrightMagenta': string;
+	'terminal.ansiBrightCyan': string;
+	'terminal.ansiBrightWhite': string;
+	'input.background': string;
+	'input.border': string;
+	'input.foreground': string;
+	'input.placeholderForeground': string;
+	'inputOption.activeBorder': string;
+	'inputOption.activeBackground': string;
+	'inputOption.activeForeground': string;
+	'inputValidation.errorBackground': string;
+	'inputValidation.errorBorder': string;
+	'inputValidation.errorForeground': string;
+	'inputValidation.warningBackground': string;
+	'inputValidation.warningBorder': string;
+	'inputValidation.warningForeground': string;
+	'inputValidation.infoBackground': string;
+	'inputValidation.infoBorder': string;
+	'inputValidation.infoForeground': string;
+	'dropdown.background': string;
+	'dropdown.foreground': string;
+	'dropdown.border': string;
+	'dropdown.listBackground': string;
+	'quickInput.background': string;
+	'quickInput.foreground': string;
+	'quickInputList.focusBackground': string;
+	'quickInputList.focusForeground': string;
+	'quickInputList.focusIconForeground': string;
+	'quickInputTitle.background': string;
+	'list.activeSelectionBackground': string;
+	'list.activeSelectionForeground': string;
+	'list.inactiveSelectionBackground': string;
+	'list.hoverBackground': string;
+	'list.focusBackground': string;
+	'button.background': string;
+	'button.foreground': string;
+	'button.hoverBackground': string;
+	'button.hoverForeground': string;
+	'button.secondaryBackground': string;
+	'button.secondaryForeground': string;
+	'button.secondaryHoverBackground': string;
+	'badge.background': string;
+	'badge.foreground': string;
+	'breadcrumb.foreground': string;
+	'breadcrumb.focusForeground': string;
+	'breadcrumb.activeSelectionForeground': string;
+	'breadcrumb.background': string;
+	'scrollbarSlider.background': string;
+	'scrollbarSlider.hoverBackground': string;
+	'scrollbarSlider.activeBackground': string;
+	'editorLineNumber.foreground': string;
+	'editorLineNumber.activeForeground': string;
+	'editorCursor.foreground': string;
+	'editor.selectionBackground': string;
+	'editor.inactiveSelectionBackground': string;
+	'editor.findMatchBackground': string;
+	'editor.findMatchHighlightBackground': string;
+	'editorBracketMatch.background': string;
+	'editorBracketMatch.border': string;
+	'editorBracketHighlight.foreground1': string;
+	'editorBracketHighlight.foreground2': string;
+	'editorBracketHighlight.foreground3': string;
+	'editorBracketHighlight.foreground4': string;
+	'editorBracketHighlight.foreground5': string;
+	'editorBracketHighlight.foreground6': string;
+	'editorBracketPairGuide.activeBackground1': string;
+	'editorBracketPairGuide.activeBackground2': string;
+	'editorBracketPairGuide.activeBackground3': string;
+	'editorBracketPairGuide.activeBackground4': string;
+	'editorBracketPairGuide.activeBackground5': string;
+	'editorBracketPairGuide.activeBackground6': string;
+	'editorBracketPairGuide.background1': string;
+	'editorBracketPairGuide.background2': string;
+	'editorBracketPairGuide.background3': string;
+	'editorBracketPairGuide.background4': string;
+	'editorBracketPairGuide.background5': string;
+	'editorBracketPairGuide.background6': string;
+	'editorWhitespace.foreground': string;
+	'editorWidget.background': string;
+	'editorWidget.foreground': string;
+	'editorWidget.border': string;
+	'editorWidget.resizeBorder': string;
+	'editorSuggestWidget.background': string;
+	'editorSuggestWidget.foreground': string;
+	'editorSuggestWidget.border': string;
+	'editorSuggestWidget.highlightForeground': string;
+	'editorSuggestWidget.focusHighlightForeground': string;
+	'editorSuggestWidget.selectedBackground': string;
+	'editorSuggestWidget.selectedForeground': string;
+	'editorSuggestWidget.selectedIconForeground': string;
+	'editorHoverWidget.background': string;
+	'editorHoverWidget.foreground': string;
+	'editorHoverWidget.border': string;
+	'editorHoverWidget.highlightForeground': string;
+	'editorHoverWidget.statusBarBackground': string;
+	'editorError.foreground': string;
+	'editorWarning.foreground': string;
+	'editorInfo.foreground': string;
+	'editorGutter.addedBackground': string;
+	'editorGutter.modifiedBackground': string;
+	'editorGutter.deletedBackground': string;
+	'gitDecoration.addedResourceForeground': string;
+	'gitDecoration.modifiedResourceForeground': string;
+	'gitDecoration.deletedResourceForeground': string;
+	'gitDecoration.untrackedResourceForeground': string;
+	'gitDecoration.ignoredResourceForeground': string;
+	'peekView.border': string;
+	'peekViewEditor.background': string;
+	'peekViewResult.background': string;
+	'peekViewTitle.background': string;
+	'notificationCenter.border': string;
+	'notificationCenterHeader.background': string;
+	'notifications.background': string;
+	'notifications.border': string;
+	'notificationLink.foreground': string;
+	'settings.headerForeground': string;
+	'settings.modifiedItemIndicator': string;
+	'settings.focusedRowBackground': string;
+	'settings.rowHoverBackground': string;
+	'settings.focusedRowBorder': string;
+	'settings.numberInputBackground': string;
+	'settings.numberInputForeground': string;
+	'settings.numberInputBorder': string;
+	'settings.textInputBackground': string;
+	'settings.textInputForeground': string;
+	'settings.textInputBorder': string;
+	'settings.checkboxBackground': string;
+	'settings.checkboxForeground': string;
+	'settings.checkboxBorder': string;
+	'settings.dropdownBackground': string;
+	'settings.dropdownForeground': string;
+	'settings.dropdownBorder': string;
+	'settings.dropdownListBorder': string;
+}
+
+export interface VSCodeTheme {
+	$schema: string;
+	name: string;
+	type: 'dark' | 'light';
+	colors: VSCodeThemeColors;
+	tokenColors: VSCodeTokenColor[];
+}
+
+export function generateVSCodeTheme(
+	colors: string[],
+	useStrictMode = false,
+	harmonyScheme: HarmonyScheme = 'triadic'
+): VSCodeTheme {
 	const improvedColors = useStrictMode ? colors : improvePaletteQuality(colors, 12, harmonyScheme);
 
 	if (improvedColors.length < 8) {
@@ -65,13 +277,32 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 	const fg60 = addAlpha(foreground, '60');
 	const fg70 = addAlpha(foreground, '70');
 	const fg50 = addAlpha(foreground, '50');
+	const fg30 = addAlpha(foreground, '30');
+	const fg99 = addAlpha(foreground, '99');
 	const c1_40 = addAlpha(c1, '40');
 	const c1_20 = addAlpha(c1, '20');
-	const c2_40 = addAlpha(c2, '40');
+	const c1_30 = addAlpha(c1, '30');
+	const c1_60 = addAlpha(c1, '60');
+	const c1_80 = addAlpha(c1, '80');
+	const c2_20 = addAlpha(c2, '20');
 	const c2_30 = addAlpha(c2, '30');
+	const c2_40 = addAlpha(c2, '40');
+	const c2_50 = addAlpha(c2, '50');
 	const c2_60 = addAlpha(c2, '60');
+	const c2_80 = addAlpha(c2, '80');
+	const c3_30 = addAlpha(c3, '30');
+	const c3_80 = addAlpha(c3, '80');
+	const c4_80 = addAlpha(c4, '80');
+	const c5_20 = addAlpha(c5, '20');
+	const c5_30 = addAlpha(c5, '30');
+	const c5_40 = addAlpha(c5, '40');
+	const c5_80 = addAlpha(c5, '80');
+	const c6_30 = addAlpha(c6, '30');
+	const c6_80 = addAlpha(c6, '80');
+	const c7_30 = addAlpha(c7, '30');
+	const c7_80 = addAlpha(c7, '80');
 
-	const theme = {
+	const theme: VSCodeTheme = {
 		$schema: 'vscode://schemas/color-theme',
 		name: 'Custom Palette Theme',
 		type: darkBase ? 'dark' : 'light',
@@ -86,7 +317,7 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 			'icon.foreground': c1,
 
 			'widget.border': c1_40,
-			'selection.background': addAlpha(c2, '50'),
+			'selection.background': c2_50,
 			'sash.hoverBorder': c2,
 
 			'activityBar.background': bgVeryDark,
@@ -108,7 +339,7 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 			'titleBar.activeBackground': bgVeryDark,
 			'titleBar.activeForeground': foreground,
 			'titleBar.inactiveBackground': bgInactive,
-			'titleBar.inactiveForeground': addAlpha(foreground, '99'),
+			'titleBar.inactiveForeground': fg99,
 
 			'tab.activeBackground': background,
 			'tab.activeForeground': foreground,
@@ -171,7 +402,7 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 
 			'list.activeSelectionBackground': c2_40,
 			'list.activeSelectionForeground': foreground,
-			'list.inactiveSelectionBackground': addAlpha(c1, '30'),
+			'list.inactiveSelectionBackground': c1_30,
 			'list.hoverBackground': c1_20,
 			'list.focusBackground': c2_30,
 
@@ -192,37 +423,37 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 			'breadcrumb.background': background,
 
 			'scrollbarSlider.background': c1_40,
-			'scrollbarSlider.hoverBackground': addAlpha(c1, '60'),
+			'scrollbarSlider.hoverBackground': c1_60,
 			'scrollbarSlider.activeBackground': c2_60,
 
 			'editorLineNumber.foreground': fg50,
 			'editorLineNumber.activeForeground': c2,
 			'editorCursor.foreground': c2,
 			'editor.selectionBackground': c2_40,
-			'editor.inactiveSelectionBackground': addAlpha(c1, '30'),
-			'editor.findMatchBackground': addAlpha(c5, '40'),
-			'editor.findMatchHighlightBackground': addAlpha(c5, '20'),
-			'editorBracketMatch.background': addAlpha(c2, '20'),
+			'editor.inactiveSelectionBackground': c1_30,
+			'editor.findMatchBackground': c5_40,
+			'editor.findMatchHighlightBackground': c5_20,
+			'editorBracketMatch.background': c2_20,
 			'editorBracketMatch.border': c2,
-			'editorBracketHighlight.foreground1': addAlpha(c2, '80'),
-			'editorBracketHighlight.foreground2': addAlpha(c3, '80'),
-			'editorBracketHighlight.foreground3': addAlpha(c5, '80'),
-			'editorBracketHighlight.foreground4': addAlpha(c6, '80'),
-			'editorBracketHighlight.foreground5': addAlpha(c7, '80'),
-			'editorBracketHighlight.foreground6': addAlpha(c1, '80'),
+			'editorBracketHighlight.foreground1': c2_80,
+			'editorBracketHighlight.foreground2': c3_80,
+			'editorBracketHighlight.foreground3': c5_80,
+			'editorBracketHighlight.foreground4': c6_80,
+			'editorBracketHighlight.foreground5': c7_80,
+			'editorBracketHighlight.foreground6': c1_80,
 			'editorBracketPairGuide.activeBackground1': c2,
 			'editorBracketPairGuide.activeBackground2': c3,
 			'editorBracketPairGuide.activeBackground3': c5,
 			'editorBracketPairGuide.activeBackground4': c6,
 			'editorBracketPairGuide.activeBackground5': c7,
 			'editorBracketPairGuide.activeBackground6': c1,
-			'editorBracketPairGuide.background1': addAlpha(c2, '30'),
-			'editorBracketPairGuide.background2': addAlpha(c3, '30'),
-			'editorBracketPairGuide.background3': addAlpha(c5, '30'),
-			'editorBracketPairGuide.background4': addAlpha(c6, '30'),
-			'editorBracketPairGuide.background5': addAlpha(c7, '30'),
-			'editorBracketPairGuide.background6': addAlpha(c1, '30'),
-			'editorWhitespace.foreground': addAlpha(foreground, '30'),
+			'editorBracketPairGuide.background1': c2_30,
+			'editorBracketPairGuide.background2': c3_30,
+			'editorBracketPairGuide.background3': c5_30,
+			'editorBracketPairGuide.background4': c6_30,
+			'editorBracketPairGuide.background5': c7_30,
+			'editorBracketPairGuide.background6': c1_30,
+			'editorWhitespace.foreground': fg30,
 			'editorWidget.background': bgLight,
 			'editorWidget.foreground': foreground,
 			'editorWidget.border': c1_40,
@@ -251,7 +482,7 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 			'gitDecoration.modifiedResourceForeground': c5,
 			'gitDecoration.deletedResourceForeground': c4,
 			'gitDecoration.untrackedResourceForeground': c7,
-			'gitDecoration.ignoredResourceForeground': addAlpha(foreground, '60'),
+			'gitDecoration.ignoredResourceForeground': fg60,
 
 			'peekView.border': c2,
 			'peekViewEditor.background': bgLight,
@@ -427,11 +658,10 @@ export function generateVSCodeTheme(colors: string[], useStrictMode = false, har
 			},
 			{
 				scope: ['invalid.deprecated'],
-				settings: { foreground: addAlpha(c4, '80'), fontStyle: 'italic' }
+				settings: { foreground: c4_80, fontStyle: 'italic' }
 			}
 		]
 	};
 
-	const themeJson = JSON.stringify(theme, null, 2);
-	return themeJson.replace(/#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?/g, (match) => match.toUpperCase());
+	return theme;
 }

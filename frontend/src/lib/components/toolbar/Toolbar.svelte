@@ -13,7 +13,7 @@
 	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
 	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
 	import SavedWorkspacesPopover from './popovers/SavedWorkspacesPopover.svelte';
-	import ThemeExportPopover from './popovers/ThemeExportPopover.svelte';
+	import ThemeExportPopover from '$lib/theme/components/ThemeExportPopover.svelte';
 	import Download from './Download.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';

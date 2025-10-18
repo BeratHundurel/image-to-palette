@@ -4,7 +4,6 @@
 	import toast from 'svelte-french-toast';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
-	import { generateVSCodeTheme } from '$lib/vscodeTheme';
 
 	const copy_options = [
 		{ label: 'JSON', value: 'json' },
@@ -12,8 +11,7 @@
 		{ label: 'SCSS Variables', value: 'scss_variables' },
 		{ label: 'Less Variables', value: 'less_variables' },
 		{ label: 'Tailwind Config', value: 'tailwind_config' },
-		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' },
-		{ label: 'VS Code Theme', value: 'vscode_theme' }
+		{ label: 'Bootstrap Variables', value: 'bootstrap_variables' }
 	];
 
 	function handleCopyFormatChange(format: string) {
@@ -48,9 +46,6 @@
 				break;
 			case 'bootstrap_variables':
 				output = generateBootstrapVariables(namedPalette);
-				break;
-			case 'vscode_theme':
-				output = generateVSCodeTheme(hexValues);
 				break;
 		}
 		navigator.clipboard.writeText(output);

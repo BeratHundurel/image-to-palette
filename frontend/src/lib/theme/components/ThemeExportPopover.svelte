@@ -1,239 +1,266 @@
 <script lang="ts">
 	import { popoverStore } from '$lib/stores/popovers.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
-	import { generateVSCodeTheme } from '$lib/vscodeTheme';
+	import { generateVSCodeTheme, type VSCodeTheme } from '$lib/theme/vscode';
+	import { generateZedTheme, type ZedTheme } from '$lib/theme/zed';
 	import type { HarmonyScheme } from '$lib/colorUtils';
 	import toast from 'svelte-french-toast';
 	import { cn } from '$lib/utils';
+	import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+	import { traverseThemeForColors } from '$lib/theme/themeUtils';
 
 	type ThemeMode = 'harmony' | 'strict';
-
-	interface ThemeColorWithUsage {
-		label: string;
-		color: string;
-		usages: string[];
-	}
+	type EditorType = 'vscode' | 'zed';
 
 	const STORAGE_KEY = 'themeExportPreferences';
+	const HEX_UPPERCASE_REGEX = /#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?/g;
 
-	function loadPreferences() {
-		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (stored) {
-				const prefs = JSON.parse(stored);
-				return {
-					mode: (prefs.mode as ThemeMode) || 'harmony',
-					scheme: (prefs.scheme as HarmonyScheme) || 'triadic'
-				};
-			}
-		} catch (error) {
-			console.error('Failed to load theme export preferences:', error);
-		}
-		return { mode: 'harmony' as ThemeMode, scheme: 'triadic' as HarmonyScheme };
-	}
-
-	function savePreferences(mode: ThemeMode, scheme: HarmonyScheme) {
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify({ mode, scheme }));
-		} catch (error) {
-			console.error('Failed to save theme export preferences:', error);
-		}
+	interface ThemeColorWithUsage {
+		baseColor: string;
+		label: string;
+		variants: Array<{
+			color: string;
+			usages: string[];
+		}>;
+		totalUsages: number;
 	}
 
 	const prefs = loadPreferences();
-	let themeMode = $state<ThemeMode>(prefs.mode);
-	let harmonyScheme = $state<HarmonyScheme>(prefs.scheme);
-	let generatedTheme = $state<string>('');
+
+	let themeMode = $state<ThemeMode>(prefs.themeMode);
+	let harmonyScheme = $state<HarmonyScheme>(prefs.harmonyScheme);
+	let editorType = $state<EditorType>(prefs.editorType);
+	let generatedTheme = $state<VSCodeTheme | ZedTheme | null>(null);
 	let isGenerating = $state(false);
-	let showLoading = $state(false);
-	let loadingTimer: number | undefined;
 	let themeColorsWithUsage = $state<ThemeColorWithUsage[]>([]);
-	let expandedColorIndices = $state<number[]>([]);
-	let changedColorIndices = $state<Set<number>>(new Set());
-	let hasGeneratedTheme = $state(false);
+
+	let expandedColorIndices = new SvelteSet<number>();
+	let changedColorIndices = new SvelteSet<number>();
+
 	let isOpen = $derived(popoverStore.isOpen('themeExport'));
 
 	$effect(() => {
-		if (isOpen && !hasGeneratedTheme) {
-			hasGeneratedTheme = true;
+		if (isOpen && generatedTheme === null) {
 			generateThemeColors();
-		} else if (!isOpen) {
-			hasGeneratedTheme = false;
 		}
 	});
 
-	function generateThemeColors() {
-		if (!appStore.state.colors || appStore.state.colors.length === 0) return;
+	$effect(() => {
+		if (!isOpen) {
+			isGenerating = false;
+			expandedColorIndices.clear();
+			changedColorIndices.clear();
+		}
+	});
 
-		expandedColorIndices = [];
-		isGenerating = true;
-
-		// Store previous colors for comparison
-		const previousColors = themeColorsWithUsage.map((item) => item.color);
-
-		if (loadingTimer) clearTimeout(loadingTimer);
-		loadingTimer = window.setTimeout(() => {
-			if (isGenerating) {
-				showLoading = true;
+	function loadPreferences() {
+		if (typeof window === 'undefined') return { themeMode: 'harmony', harmonyScheme: 'triadic', editorType: 'vscode' };
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored) {
+				return JSON.parse(stored);
 			}
-		}, 150);
-
-		queueMicrotask(() => {
-			try {
-				const colorsToUse = appStore.state.colors.map((c) => c.hex);
-				const useStrictMode = themeMode === 'strict';
-
-				generatedTheme = generateVSCodeTheme(colorsToUse, useStrictMode, harmonyScheme);
-
-				extractThemeColorsWithUsage();
-
-				highlightChangedColors(previousColors);
-			} catch (error) {
-				toast.error('Failed to generate theme: ' + (error instanceof Error ? error.message : 'Unknown error'));
-			} finally {
-				isGenerating = false;
-				showLoading = false;
-				if (loadingTimer) clearTimeout(loadingTimer);
-			}
-		});
+		} catch {
+			toast.error('Failed to load theme preferences.');
+		}
+		return { themeMode: 'harmony', harmonyScheme: 'triadic', editorType: 'vscode' };
 	}
 
-	function extractThemeColorsWithUsage() {
+	function savePreferences(themeMode: ThemeMode, harmonyScheme: HarmonyScheme, editorType: EditorType) {
+		if (typeof window === 'undefined') return;
 		try {
-			const theme = JSON.parse(generatedTheme);
-			const colorToUsages = new Map<string, string[]>();
-
-			// Extract from theme.colors (UI colors)
-			const colors = theme.colors || {};
-			for (const [key, value] of Object.entries(colors)) {
-				if (typeof value !== 'string') continue;
-
-				const color = value.substring(0, 7);
-				if (!colorToUsages.has(color)) {
-					colorToUsages.set(color, []);
-				}
-				colorToUsages.get(color)!.push(key);
-			}
-
-			// Extract from tokenColors (syntax highlighting)
-			const tokenColors = theme.tokenColors || [];
-			for (const token of tokenColors) {
-				if (!token.settings?.foreground) continue;
-
-				const scopes = Array.isArray(token.scope) ? token.scope : [token.scope];
-				const color = token.settings.foreground.substring(0, 7);
-
-				if (!colorToUsages.has(color)) {
-					colorToUsages.set(color, []);
-				}
-
-				for (const scope of scopes) {
-					if (scope) colorToUsages.get(color)!.push(scope);
-				}
-			}
-
-			const colorEntries = Array.from(colorToUsages.entries())
-				.sort((a, b) => b[1].length - a[1].length)
-				.slice(0, 20);
-
-			themeColorsWithUsage = colorEntries.map(([color, usages]) => {
-				const label = getLabelForColor(usages[0]);
-				return { label, color, usages };
-			});
-		} catch (error) {
-			console.error('Failed to extract theme colors:', error);
+			localStorage.setItem(STORAGE_KEY, JSON.stringify({ themeMode, harmonyScheme, editorType }));
+		} catch {
+			toast.error('Failed to save theme preferences.');
 		}
 	}
 
-	function highlightChangedColors(previousColors: string[]) {
-		if (previousColors.length === 0) {
+	function generateThemeColors() {
+		if (isGenerating || !appStore.state.colors || appStore.state.colors.length === 0) {
 			return;
 		}
+		isGenerating = true;
 
-		const currentColors = themeColorsWithUsage.map((item) => item.color);
-		const changedIndices = new Set<number>();
+		try {
+			const useStrictMode = themeMode === 'strict';
+			const colorHexes = appStore.state.colors.map((c) => c.hex);
 
-		currentColors.forEach((color, index) => {
-			if (!previousColors.includes(color)) {
-				changedIndices.add(index);
+			if (editorType === 'vscode') {
+				generatedTheme = generateVSCodeTheme(colorHexes, useStrictMode, harmonyScheme);
+			} else {
+				generatedTheme = generateZedTheme(colorHexes, useStrictMode, harmonyScheme);
 			}
-		});
 
-		previousColors.forEach((prevColor) => {
-			if (!currentColors.includes(prevColor)) {
-				const newIndex = currentColors.findIndex((color) => color === prevColor);
-				if (newIndex === -1) {
-					const prevIndex = previousColors.indexOf(prevColor);
-					if (prevIndex < currentColors.length && currentColors[prevIndex] !== prevColor) {
-						changedIndices.add(prevIndex);
-					}
-				}
-			}
-		});
-
-		changedColorIndices = changedIndices;
-
-		setTimeout(() => {
-			changedColorIndices = new Set();
-		}, 3000);
+			themeColorsWithUsage = extractThemeColorsWithUsage();
+		} catch {
+			toast.error('Failed to generate theme. Please try with more colors.');
+			generatedTheme = null;
+			themeColorsWithUsage = [];
+		} finally {
+			isGenerating = false;
+		}
 	}
 
-	function getLabelForColor(firstUsage: string): string {
-		if (firstUsage.includes('background')) return 'Background';
-		if (firstUsage.includes('foreground')) return 'Foreground';
-		if (firstUsage.includes('cursor') || firstUsage.includes('focusBorder')) return 'Primary Accent';
-		if (firstUsage.includes('activeBorder') || firstUsage.includes('selection')) return 'Selection';
-		if (firstUsage.includes('Green')) return 'Success';
-		if (firstUsage.includes('Red')) return 'Error';
-		if (firstUsage.includes('Yellow')) return 'Warning';
-		if (firstUsage.includes('Blue')) return 'Info';
-		if (firstUsage.includes('sideBar')) return 'Sidebar';
-		if (firstUsage.includes('activityBar')) return 'Activity Bar';
-		if (firstUsage.includes('statusBar')) return 'Status Bar';
-		if (firstUsage.includes('tab')) return 'Tabs';
-		if (firstUsage.includes('panel')) return 'Panel';
-		if (firstUsage.includes('titleBar')) return 'Title Bar';
-		if (firstUsage.includes('input')) return 'Inputs';
-		if (firstUsage.includes('button')) return 'Buttons';
-		if (firstUsage.includes('badge')) return 'Badges';
-		if (firstUsage.includes('list')) return 'Lists';
-		return 'UI Element';
+	function extractThemeColorsWithUsage(): ThemeColorWithUsage[] {
+		const colorMap = new SvelteMap<string, Map<string, Set<string>>>();
+
+		if (!generatedTheme) return [];
+
+		try {
+			const onColorFound = (color: string, path: string) => {
+				const normalizedColor = color.toUpperCase();
+				const baseColor = normalizedColor.substring(0, 7);
+
+				if (!colorMap.has(baseColor)) {
+					colorMap.set(baseColor, new Map());
+				}
+				if (!colorMap.get(baseColor)!.has(normalizedColor)) {
+					colorMap.get(baseColor)!.set(normalizedColor, new Set());
+				}
+				colorMap.get(baseColor)!.get(normalizedColor)!.add(path);
+			};
+
+			if ('colors' in generatedTheme && 'tokenColors' in generatedTheme) {
+				// VS Code theme
+				traverseThemeForColors(generatedTheme.colors, onColorFound, 'colors');
+				generatedTheme.tokenColors.forEach((token, index) => {
+					if (token.settings) {
+						traverseThemeForColors(token.settings, onColorFound, `tokenColors[${index}].settings`);
+					}
+				});
+			} else if ('themes' in generatedTheme) {
+				// Zed theme
+				generatedTheme.themes.forEach((themeVariant, themeIndex) => {
+					traverseThemeForColors(themeVariant.style, onColorFound, `themes[${themeIndex}].style`);
+				});
+			}
+		} catch {
+			toast.error('Failed to extract theme colors.');
+		}
+
+		const result: ThemeColorWithUsage[] = [];
+		colorMap.forEach((variants, baseColor) => {
+			const variantArray = Array.from(variants.entries())
+				.map(([color, usages]) => ({
+					color,
+					usages: Array.from(usages).sort()
+				}))
+				.sort((a, b) => b.usages.length - a.usages.length);
+
+			const totalUsages = variantArray.reduce((sum, v) => sum + v.usages.length, 0);
+
+			result.push({
+				baseColor,
+				label: baseColor,
+				variants: variantArray,
+				totalUsages
+			});
+		});
+
+		return result.sort((a, b) => b.totalUsages - a.totalUsages);
+	}
+
+	function highlightChangedColors() {
+		if (!generatedTheme) return;
+
+		const oldColors = extractColorsFromTheme(generatedTheme);
+		generateThemeColors();
+
+		const newColors = extractColorsFromTheme(generatedTheme);
+		changedColorIndices.clear();
+
+		for (let i = 0; i < themeColorsWithUsage.length; i++) {
+			const baseColor = themeColorsWithUsage[i].baseColor;
+			const oldUsages = oldColors.get(baseColor);
+			const newUsages = newColors.get(baseColor);
+
+			const hasColorChange = !oldUsages || !newUsages || oldUsages.size !== newUsages.size;
+
+			if (hasColorChange) {
+				changedColorIndices.add(i);
+			}
+		}
+
+		setTimeout(() => changedColorIndices.clear(), 2000);
+	}
+
+	function extractColorsFromTheme(theme: VSCodeTheme | ZedTheme): Map<string, Set<string>> {
+		const colorMap = new SvelteMap<string, Set<string>>();
+		try {
+			const onColorFound = (color: string, path: string) => {
+				console.log(color);
+				const normalizedColor = color.toUpperCase();
+				if (!colorMap.has(normalizedColor)) {
+					colorMap.set(normalizedColor, new Set());
+				}
+				colorMap.get(normalizedColor)!.add(path);
+			};
+
+			if ('colors' in theme && 'tokenColors' in theme) {
+				// VS Code theme
+				traverseThemeForColors(theme.colors, onColorFound, 'colors');
+				theme.tokenColors.forEach((token, index: number) => {
+					if (token.settings) {
+						traverseThemeForColors(token.settings, onColorFound, `tokenColors[${index}].settings`);
+					}
+				});
+			} else if ('themes' in theme) {
+				// Zed theme
+				theme.themes.forEach((themeVariant, themeIndex) => {
+					traverseThemeForColors(themeVariant.style, onColorFound, `themes[${themeIndex}].style`);
+				});
+			}
+		} catch {
+			toast.error('Failed to extract colors from theme.');
+		}
+		return colorMap;
 	}
 
 	async function exportTheme() {
+		if (!generatedTheme) return;
+
 		try {
-			await navigator.clipboard.writeText(generatedTheme);
+			const themeJson = JSON.stringify(generatedTheme, null, 2);
+			const themeJsonUppercase = themeJson.replace(HEX_UPPERCASE_REGEX, (match) => match.toUpperCase());
+			await navigator.clipboard.writeText(themeJsonUppercase);
 			toast.success('Theme JSON copied to clipboard!');
 			popoverStore.close('themeExport');
-		} catch (error) {
+		} catch {
 			toast.error('Failed to copy theme to clipboard');
 		}
 	}
 
 	function handleModeChange(mode: ThemeMode) {
-		if (isGenerating) return;
+		if (themeMode === mode) return;
 		themeMode = mode;
-		savePreferences(themeMode, harmonyScheme);
-		generateThemeColors();
+		savePreferences(themeMode, harmonyScheme, editorType);
+		highlightChangedColors();
 	}
 
 	function handleHarmonySchemeChange(scheme: HarmonyScheme) {
-		if (isGenerating) return;
+		if (harmonyScheme === scheme) return;
 		harmonyScheme = scheme;
-		savePreferences(themeMode, harmonyScheme);
-		generateThemeColors();
+		savePreferences(themeMode, harmonyScheme, editorType);
+		highlightChangedColors();
+	}
+
+	function handleEditorTypeChange(type: EditorType) {
+		if (editorType === type) return;
+		editorType = type;
+		savePreferences(themeMode, harmonyScheme, editorType);
+		highlightChangedColors();
 	}
 
 	function toggleColorUsage(index: number) {
-		if (expandedColorIndices.includes(index)) {
-			expandedColorIndices = expandedColorIndices.filter((i) => i !== index);
+		if (expandedColorIndices.has(index)) {
+			expandedColorIndices.delete(index);
 		} else {
-			expandedColorIndices = [...expandedColorIndices, index];
+			expandedColorIndices.add(index);
 		}
 	}
 
 	function isExpanded(index: number): boolean {
-		return expandedColorIndices.includes(index);
+		return expandedColorIndices.has(index);
 	}
 </script>
 
@@ -252,7 +279,9 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/50 px-6 py-5">
 				<div>
-					<h2 id="theme-inspector-title" class="text-brand text-2xl font-semibold">VS Code Theme Inspector</h2>
+					<h2 id="theme-inspector-title" class="text-brand text-2xl font-semibold">
+						{editorType === 'vscode' ? 'VS Code' : 'Zed'} Theme Inspector
+					</h2>
 					<p class="mt-1 text-sm text-zinc-400">Review and customize the colors before exporting</p>
 				</div>
 				<button
@@ -280,7 +309,7 @@
 
 			<!-- Content -->
 			<div class="custom-scrollbar flex-1 overflow-y-auto px-6 py-6">
-				{#if showLoading}
+				{#if isGenerating}
 					<div class="flex items-center justify-center py-16">
 						<div class="flex flex-col items-center gap-4">
 							<div class="border-t-brand h-12 w-12 animate-spin rounded-full border-4 border-zinc-700"></div>
@@ -288,6 +317,65 @@
 						</div>
 					</div>
 				{:else}
+					<!-- Editor Type Selection -->
+					<div class="mb-8">
+						<div class="mb-4 flex items-center gap-2">
+							<h3 class="text-brand text-sm font-semibold tracking-wide uppercase">Editor Type</h3>
+							<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
+						</div>
+						<div class="grid grid-cols-2 gap-4">
+							<button
+								type="button"
+								onclick={() => handleEditorTypeChange('vscode')}
+								class="group relative overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-300 {editorType ===
+								'vscode'
+									? 'border-brand bg-brand/10 shadow-brand/20 shadow-lg'
+									: 'border-zinc-600 hover:border-zinc-500 hover:bg-zinc-800/50'}"
+							>
+								<div class="flex items-center gap-2">
+									<div
+										class="flex h-5 w-5 items-center justify-center rounded-full border transition-all {editorType ===
+										'vscode'
+											? 'border-brand bg-brand/20'
+											: 'border-zinc-500'}"
+									>
+										{#if editorType === 'vscode'}
+											<div class="bg-brand h-2.5 w-2.5 rounded-full"></div>
+										{/if}
+									</div>
+									<span class="text-sm font-semibold {editorType === 'vscode' ? 'text-brand' : 'text-zinc-200'}"
+										>VS Code</span
+									>
+								</div>
+								<p class="mt-1.5 ml-7 text-xs text-zinc-400">Generate theme for Visual Studio Code editor</p>
+							</button>
+
+							<button
+								type="button"
+								onclick={() => handleEditorTypeChange('zed')}
+								class="group relative overflow-hidden rounded-lg border px-4 py-3 text-left transition-all duration-300 {editorType ===
+								'zed'
+									? 'border-brand bg-brand/10 shadow-brand/20 shadow-lg'
+									: 'border-zinc-600 hover:border-zinc-500 hover:bg-zinc-800/50'}"
+							>
+								<div class="flex items-center gap-2">
+									<div
+										class="flex h-5 w-5 items-center justify-center rounded-full border transition-all {editorType ===
+										'zed'
+											? 'border-brand bg-brand/20'
+											: 'border-zinc-500'}"
+									>
+										{#if editorType === 'zed'}
+											<div class="bg-brand h-2.5 w-2.5 rounded-full"></div>
+										{/if}
+									</div>
+									<span class="text-sm font-semibold {editorType === 'zed' ? 'text-brand' : 'text-zinc-200'}">Zed</span>
+								</div>
+								<p class="mt-1.5 ml-7 text-xs text-zinc-400">Generate theme for Zed editor</p>
+							</button>
+						</div>
+					</div>
+
 					<!-- Mode Selection -->
 					<div class="mb-8">
 						<div class="mb-4 flex items-center gap-2">
@@ -439,10 +527,12 @@
 								Theme Colors ({themeColorsWithUsage.length})
 							</h3>
 							<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
-							<span class="text-xs text-zinc-400">Colors used in VS Code theme JSON</span>
+							<span class="text-xs text-zinc-400"
+								>Colors used in {editorType === 'vscode' ? 'VS Code' : 'Zed'} theme JSON</span
+							>
 						</div>
 						<div class="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
-							{#each themeColorsWithUsage as item, index}
+							{#each themeColorsWithUsage as item, index (index)}
 								<div
 									class={cn(
 										'hover:border-brand/50 flex flex-col overflow-hidden rounded-lg border-2 border-zinc-700 bg-zinc-800/50 transition-all duration-500',
@@ -457,17 +547,17 @@
 									>
 										<div
 											class="h-8 w-8 flex-shrink-0 rounded border border-zinc-600 shadow-sm"
-											style="background-color: {item.color};"
+											style="background-color: {item.baseColor};"
 										></div>
 										<div class="min-w-0 flex-1">
-											<div class="text-xs font-semibold text-zinc-200">
-												{item.label}
+											<div class="font-mono text-xs font-semibold text-zinc-200">
+												{item.baseColor}
 											</div>
-											<div class="font-mono text-xs text-zinc-400">
-												{item.color}
+											<div class="mt-0.5 text-xs text-zinc-500">
+												{item.variants.length} variant{item.variants.length !== 1 ? 's' : ''}
 											</div>
-											<div class="mt-1 text-xs text-zinc-500">
-												{item.usages.length} usage{item.usages.length !== 1 ? 's' : ''}
+											<div class="text-xs text-zinc-500">
+												{item.totalUsages} usage{item.totalUsages !== 1 ? 's' : ''}
 											</div>
 										</div>
 										<svg
@@ -487,11 +577,30 @@
 									</button>
 									{#if isExpanded(index)}
 										<div class="border-t border-zinc-700 bg-zinc-900/50 p-2">
-											<div class="mb-1.5 text-xs font-medium text-zinc-400">Properties:</div>
-											<div class="custom-scrollbar max-h-32 space-y-1 overflow-y-auto">
-												{#each item.usages as usage}
-													<div class="rounded bg-zinc-800/50 px-1.5 py-0.5 font-mono text-xs text-zinc-300">
-														{usage}
+											<div class="space-y-2">
+												{#each item.variants as variant, variantIndex (variantIndex)}
+													<div class="rounded-lg border border-zinc-700 bg-zinc-800/50 p-2">
+														<div class="mb-1.5 flex items-center gap-2">
+															<div
+																class="h-6 w-6 shrink-0 rounded border border-zinc-600"
+																style="background-color: {variant.color}"
+															></div>
+															<div class="min-w-0 flex-1">
+																<div class="font-mono text-xs font-medium text-zinc-300">
+																	{variant.color}
+																</div>
+																<div class="text-xs text-zinc-500">
+																	{variant.usages.length} usage{variant.usages.length !== 1 ? 's' : ''}
+																</div>
+															</div>
+														</div>
+														<div class="custom-scrollbar max-h-24 space-y-1 overflow-y-auto pl-8">
+															{#each variant.usages as usage, usageIndex (usageIndex)}
+																<div class="rounded bg-zinc-900/50 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400">
+																	{usage}
+																</div>
+															{/each}
+														</div>
 													</div>
 												{/each}
 											</div>
@@ -508,9 +617,15 @@
 							<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 						</div>
 						<div class="rounded-lg border border-zinc-700 bg-zinc-950/50">
-							<pre class="custom-scrollbar max-h-72 overflow-auto p-4 font-mono text-xs text-zinc-300"><code
-									>{generatedTheme || 'Generating...'}</code
-								></pre>
+							<pre class="custom-scrollbar max-h-72 overflow-auto p-4 font-mono text-xs text-zinc-300">
+								<code
+									>{generatedTheme
+										? JSON.stringify(generatedTheme, null, 2).replace(/#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?/g, (match) =>
+												match.toUpperCase()
+											)
+										: ''}</code
+								>
+							</pre>
 						</div>
 					</div>
 				{/if}
@@ -566,7 +681,7 @@
 					<button
 						type="button"
 						onclick={exportTheme}
-						disabled={showLoading || !generatedTheme}
+						disabled={isGenerating || !generatedTheme}
 						class="bg-brand shadow-brand/20 hover:shadow-brand/40 rounded-lg px-5 py-2.5 text-sm font-semibold text-zinc-900 transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
 					>
 						Copy Theme JSON
