@@ -7,11 +7,13 @@
 	import SavedPalettes from './SavedPalettes.svelte';
 	import SavedWorkspaces from './SavedWorkspaces.svelte';
 	import ApplicationSettings from './ApplicationSettings.svelte';
+	import ThemeExport from './ThemeExport.svelte';
 	import PaletteOptionsPopover from './popovers/PaletteOptionsPopover.svelte';
 	import ApplicationSettingsPopover from './popovers/ApplicationSettingsPopover.svelte';
 	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
 	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
 	import SavedWorkspacesPopover from './popovers/SavedWorkspacesPopover.svelte';
+	import ThemeExportPopover from './popovers/ThemeExportPopover.svelte';
 	import Download from './Download.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
@@ -37,7 +39,7 @@
 	}
 
 	$effect(() => {
-		if (moving) {
+		if (moving && popoverStore.state.current) {
 			popoverStore.close();
 		}
 	});
@@ -137,6 +139,7 @@
 					</div>
 					<div class="flex justify-start gap-2">
 						<Download />
+						<ThemeExport />
 					</div>
 				</li>
 			</ul>
@@ -160,6 +163,10 @@
 
 		{#if popoverStore.state.current === 'workspaces'}
 			<SavedWorkspacesPopover />
+		{/if}
+
+		{#if popoverStore.state.current === 'themeExport'}
+			<ThemeExportPopover />
 		{/if}
 	</div>
 </section>

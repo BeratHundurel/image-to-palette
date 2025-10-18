@@ -1,4 +1,4 @@
-export type PopoverName = 'palette' | 'saved' | 'copy' | 'application' | 'workspaces';
+export type PopoverName = 'palette' | 'saved' | 'copy' | 'application' | 'workspaces' | 'themeExport';
 export type Direction = 'left' | 'right';
 
 interface PopoverState {
