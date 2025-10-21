@@ -524,7 +524,7 @@ export function generateVSCodeTheme(
 				settings: { foreground: c6, fontStyle: 'bold' }
 			},
 			{
-				scope: ['storage', 'storage.type', 'storage.modifier'],
+				scope: ['storage', 'storage.type', 'storage.modifier', 'entity.name.tag', 'meta.tag'],
 				settings: { foreground: c6 }
 			},
 			{
@@ -572,17 +572,6 @@ export function generateVSCodeTheme(
 			},
 			{
 				scope: [
-					'variable.parameter',
-					'meta.parameter',
-					'entity.other.attribute-name',
-					'entity.name.module',
-					'support.module',
-					'support.node'
-				],
-				settings: { foreground: c7 }
-			},
-			{
-				scope: [
 					'variable.other.property',
 					'variable.other.object.property',
 					'meta.object-literal.key',
@@ -594,12 +583,20 @@ export function generateVSCodeTheme(
 				settings: { foreground: c1 }
 			},
 			{
-				scope: ['entity.name.function', 'meta.function-call', 'support.function', 'meta.method-call', 'meta.method'],
+				scope: [
+					'entity.name.function',
+					'meta.function-call',
+					'meta.method-call',
+					'meta.method',
+					'meta.parameter',
+					'variable.parameter',
+					'entity.other.attribute-name',
+					'entity.name.module',
+					'support.module',
+					'support.function',
+					'support.node'
+				],
 				settings: { foreground: c2 }
-			},
-			{
-				scope: ['entity.name.tag', 'meta.tag'],
-				settings: { foreground: darkBase ? lighten(c4, 0.05) : darken(c4, 0.05) }
 			},
 			{
 				scope: [

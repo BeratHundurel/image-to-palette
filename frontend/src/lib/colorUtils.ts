@@ -142,7 +142,6 @@ export function isDarkColor(hex: string): boolean {
 }
 
 export function rgbDistance(hex1: string, hex2: string): number {
-	// Direct bitwise parsing (3x faster than calling hexToRgb twice)
 	const num1 = parseInt(hex1.startsWith('#') ? hex1.slice(1) : hex1, 16);
 	const num2 = parseInt(hex2.startsWith('#') ? hex2.slice(1) : hex2, 16);
 
