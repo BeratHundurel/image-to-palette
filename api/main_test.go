@@ -6,6 +6,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -91,7 +92,6 @@ func TestSavePaletteHandler_InvalidRequest(t *testing.T) {
 	router := gin.New()
 	router.POST("/palettes", savePaletteHandler)
 
-	// Test missing name
 	t.Run("MissingName", func(t *testing.T) {
 		palette := map[string]any{
 			"palette": []Color{{Hex: "#FF0000"}},
@@ -106,7 +106,6 @@ func TestSavePaletteHandler_InvalidRequest(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 	})
 
-	// Test missing palette
 	t.Run("MissingPalette", func(t *testing.T) {
 		palette := map[string]any{
 			"name": "test",
@@ -119,6 +118,104 @@ func TestSavePaletteHandler_InvalidRequest(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+}
+
+type mockRoundTripper struct {
+	resp *http.Response
+	err  error
+}
+
+func (m *mockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	if m.err != nil {
+		return nil, m.err
+	}
+	return m.resp, nil
+}
+
+func TestWallhavenHandlers(t *testing.T) {
+	origTransport := http.DefaultTransport
+	defer func() { http.DefaultTransport = origTransport }()
+
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.GET("/wallhaven/search", wallhavenSearchHandler)
+	router.GET("/wallhaven/w/:id", wallhavenGetWallpaperHandler)
+	router.GET("/wallhaven/download", wallhavenDownloadHandler)
+
+	makeResp := func(status int, body []byte, contentType string) *http.Response {
+		return &http.Response{
+			StatusCode: status,
+			Body:       io.NopCloser(bytes.NewReader(body)),
+			Header:     http.Header{"Content-Type": []string{contentType}},
+		}
+	}
+
+	t.Run("SearchSuccess", func(t *testing.T) {
+		fakeBody := []byte(`{"data": [{"id":"abc123"}]}`)
+		http.DefaultTransport = &mockRoundTripper{resp: makeResp(200, fakeBody, "application/json")}
+
+		req := httptest.NewRequest("GET", "/wallhaven/search?q=test", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+		var parsed map[string]any
+		err := json.Unmarshal(w.Body.Bytes(), &parsed)
+		assert.NoError(t, err)
+		assert.Contains(t, parsed, "data")
+	})
+
+	t.Run("GetWallpaperSuccess", func(t *testing.T) {
+		fakeBody := []byte("<html>wallpaper</html>")
+		http.DefaultTransport = &mockRoundTripper{resp: makeResp(200, fakeBody, "text/html")}
+
+		req := httptest.NewRequest("GET", "/wallhaven/w/abc123", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, "text/html", w.Header().Get("Content-Type"))
+		assert.Equal(t, string(fakeBody), w.Body.String())
+	})
+
+	t.Run("DownloadSuccess", func(t *testing.T) {
+		fakePNG := func() []byte {
+			var b bytes.Buffer
+			img := image.NewRGBA(image.Rect(0, 0, 1, 1))
+			img.Set(0, 0, color.RGBA{1, 2, 3, 255})
+			png.Encode(&b, img)
+			return b.Bytes()
+		}()
+
+		http.DefaultTransport = &mockRoundTripper{resp: makeResp(200, fakePNG, "image/png")}
+
+		req := httptest.NewRequest("GET", "/wallhaven/download?url=https://example.com/img.png", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, 200, w.Code)
+		assert.Equal(t, "image/png", w.Header().Get("Content-Type"))
+		assert.Greater(t, w.Body.Len(), 0)
+	})
+
+	t.Run("DownloadInvalidURL", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/wallhaven/download", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("ProxyNetworkError", func(t *testing.T) {
+		http.DefaultTransport = &mockRoundTripper{err: io.ErrUnexpectedEOF}
+
+		req := httptest.NewRequest("GET", "/wallhaven/search?q=err", nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		assert.Equal(t, http.StatusBadGateway, w.Code)
 	})
 }
 

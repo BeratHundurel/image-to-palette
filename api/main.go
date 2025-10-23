@@ -61,6 +61,10 @@ func main() {
 	router.POST("/extract-palette", extractPaletteHandler)
 	router.POST("/apply-palette", applyPaletteHandler)
 
+	router.GET("/wallhaven/search", wallhavenSearchHandler)
+	router.GET("/wallhaven/w/:id", wallhavenGetWallpaperHandler)
+	router.GET("/wallhaven/download", wallhavenDownloadHandler)
+
 	log.Println("Starting server on :8088")
 	router.Run(":8088")
 }
