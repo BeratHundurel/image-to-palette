@@ -7,28 +7,14 @@ import type {
 	WorkspaceData
 } from '$lib/types/palette';
 
-const BASE_URL = 'http://localhost:8088';
-
-async function ensureOk(response: Response) {
-	if (!response.ok) {
-		const text = await response.text();
-		let errorMessage = 'Request failed';
-		try {
-			const json = JSON.parse(text);
-			errorMessage = json.error || json.message || errorMessage;
-		} catch {
-			errorMessage = text || errorMessage;
-		}
-		throw new Error(errorMessage);
-	}
-}
+import { buildURL, ensureOk } from './base';
 
 export async function saveWorkspace(
 	name: string,
 	imageData: string,
 	workspaceState: Omit<SaveWorkspaceRequest, 'name' | 'imageData'>
 ): Promise<SaveWorkspaceResult> {
-	const response = await fetch(`${BASE_URL}/workspaces`, {
+	const response = await fetch(buildURL('/workspaces'), {
 		method: 'POST',
 		headers: getAuthHeaders(),
 		body: JSON.stringify({
@@ -43,7 +29,7 @@ export async function saveWorkspace(
 }
 
 export async function getWorkspaces(): Promise<GetWorkspacesResponse> {
-	const response = await fetch(`${BASE_URL}/workspaces`, {
+	const response = await fetch(buildURL('/workspaces'), {
 		method: 'GET',
 		headers: getAuthHeaders()
 	});
@@ -53,7 +39,7 @@ export async function getWorkspaces(): Promise<GetWorkspacesResponse> {
 }
 
 export async function deleteWorkspace(workspaceId: string): Promise<void> {
-	const response = await fetch(`${BASE_URL}/workspaces/${workspaceId}`, {
+	const response = await fetch(buildURL(`/workspaces/${workspaceId}`), {
 		method: 'DELETE',
 		headers: getAuthHeaders()
 	});
@@ -62,7 +48,7 @@ export async function deleteWorkspace(workspaceId: string): Promise<void> {
 }
 
 export async function shareWorkspace(workspaceId: string): Promise<ShareWorkspaceResult> {
-	const response = await fetch(`${BASE_URL}/workspaces/${workspaceId}/share`, {
+	const response = await fetch(buildURL(`/workspaces/${workspaceId}/share`), {
 		method: 'POST',
 		headers: getAuthHeaders()
 	});
@@ -72,7 +58,7 @@ export async function shareWorkspace(workspaceId: string): Promise<ShareWorkspac
 }
 
 export async function removeWorkspaceShare(workspaceId: string): Promise<void> {
-	const response = await fetch(`${BASE_URL}/workspaces/${workspaceId}/share`, {
+	const response = await fetch(buildURL(`/workspaces/${workspaceId}/share`), {
 		method: 'DELETE',
 		headers: getAuthHeaders()
 	});
@@ -81,7 +67,7 @@ export async function removeWorkspaceShare(workspaceId: string): Promise<void> {
 }
 
 export async function getSharedWorkspace(shareToken: string): Promise<WorkspaceData> {
-	const response = await fetch(`${BASE_URL}/shared?token=${encodeURIComponent(shareToken)}`, {
+	const response = await fetch(buildURL('/shared', { token: shareToken }), {
 		method: 'GET'
 	});
 

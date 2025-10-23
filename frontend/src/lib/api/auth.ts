@@ -1,4 +1,4 @@
-import { API_BASE } from './palette';
+import { buildURL, ensureOk } from './base';
 
 export interface User {
 	id: number;
@@ -63,17 +63,12 @@ export function getAuthHeaders(): Record<string, string> {
 }
 
 async function handleAuthResponse<T>(response: Response): Promise<T> {
-	const data = await response.json();
-
-	if (!response.ok) {
-		throw new Error(data.error || `HTTP ${response.status}`);
-	}
-
-	return data as T;
+	await ensureOk(response);
+	return response.json() as Promise<T>;
 }
 
 export async function register(userData: RegisterRequest): Promise<AuthResponse> {
-	const response = await fetch(`${API_BASE}/auth/register`, {
+	const response = await fetch(buildURL('/auth/register'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(userData)
@@ -81,26 +76,20 @@ export async function register(userData: RegisterRequest): Promise<AuthResponse>
 
 	const data = await handleAuthResponse<AuthResponse>(response);
 
-	if (data.token) {
-		setAuthToken(data.token);
-	}
+	if (data.token) setAuthToken(data.token);
 
 	return data;
 }
 
 export async function login(credentials: LoginRequest): Promise<AuthResponse> {
-	const response = await fetch(`${API_BASE}/auth/login`, {
+	const response = await fetch(buildURL('/auth/login'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(credentials)
 	});
 
 	const data = await handleAuthResponse<AuthResponse>(response);
-
-	if (data.token) {
-		setAuthToken(data.token);
-	}
-
+	if (data.token) setAuthToken(data.token);
 	return data;
 }
 
@@ -109,7 +98,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function getCurrentUser(): Promise<{ user: User }> {
-	const response = await fetch(`${API_BASE}/auth/me`, {
+	const response = await fetch(buildURL('/auth/me'), {
 		method: 'GET',
 		headers: getAuthHeaders()
 	});
@@ -118,7 +107,7 @@ export async function getCurrentUser(): Promise<{ user: User }> {
 }
 
 export async function changePassword(passwordData: ChangePasswordRequest): Promise<{ message: string }> {
-	const response = await fetch(`${API_BASE}/auth/change-password`, {
+	const response = await fetch(buildURL('/auth/change-password'), {
 		method: 'POST',
 		headers: getAuthHeaders(),
 		body: JSON.stringify(passwordData)
@@ -128,16 +117,12 @@ export async function changePassword(passwordData: ChangePasswordRequest): Promi
 }
 
 export async function demoLogin(): Promise<AuthResponse> {
-	const response = await fetch(`${API_BASE}/auth/demo-login`, {
+	const response = await fetch(buildURL('/auth/demo-login'), {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' }
 	});
 
 	const data = await handleAuthResponse<AuthResponse>(response);
-
-	if (data.token) {
-		setAuthToken(data.token);
-	}
-
+	if (data.token) setAuthToken(data.token);
 	return data;
 }

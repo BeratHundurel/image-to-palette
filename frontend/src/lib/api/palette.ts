@@ -7,35 +7,7 @@ import type {
 } from '$lib/types/palette';
 
 import { getAuthHeaders } from './auth';
-
-export const API_BASE: string =
-	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:8088';
-
-function buildURL(path: string, params?: Record<string, string | number | boolean | undefined>): string {
-	const url = new URL(path, API_BASE);
-	if (params) {
-		for (const [k, v] of Object.entries(params)) {
-			if (v !== undefined) url.searchParams.set(k, String(v));
-		}
-	}
-	return url.toString();
-}
-
-async function ensureOk(res: Response): Promise<Response> {
-	if (!res.ok) {
-		let msg = `HTTP ${res.status}`;
-		try {
-			const data = await res.json().catch(() => null);
-			if (data && typeof data === 'object' && 'error' in data && typeof data.error === 'string') {
-				msg = data.error;
-			}
-		} catch {
-			// ignore JSON parse errors
-		}
-		throw new Error(msg);
-	}
-	return res;
-}
+import { buildURL, ensureOk } from './base';
 
 export type ApplyParams = {
 	luminosity: number;
