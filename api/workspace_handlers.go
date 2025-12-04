@@ -38,21 +38,21 @@ type Selection struct {
 }
 
 type WorkspaceData struct {
-	ID                 string  `json:"id"`
-	Name               string  `json:"name"`
-	ImageData          string  `json:"imageData"`
-	Colors             []Color `json:"colors"`
+	ID                 string     `json:"id"`
+	Name               string     `json:"name"`
+	ImageData          string     `json:"imageData"`
+	Colors             []Color    `json:"colors"`
 	Selectors          []Selector `json:"selectors"`
-	DrawSelectionValue string  `json:"drawSelectionValue"`
-	ActiveSelectorId   string  `json:"activeSelectorId"`
-	FilteredColors     []string `json:"filteredColors"`
-	SampleRate         int     `json:"sampleRate"`
-	Luminosity         float64 `json:"luminosity"`
-	Nearest            int     `json:"nearest"`
-	Power              int     `json:"power"`
-	MaxDistance        float64 `json:"maxDistance"`
-	ShareToken         *string `json:"shareToken,omitempty"`
-	CreatedAt          string  `json:"createdAt"`
+	DrawSelectionValue string     `json:"drawSelectionValue"`
+	ActiveSelectorId   string     `json:"activeSelectorId"`
+	FilteredColors     []string   `json:"filteredColors"`
+	SampleRate         int        `json:"sampleRate"`
+	Luminosity         float64    `json:"luminosity"`
+	Nearest            int        `json:"nearest"`
+	Power              int        `json:"power"`
+	MaxDistance        float64    `json:"maxDistance"`
+	ShareToken         *string    `json:"shareToken,omitempty"`
+	CreatedAt          string     `json:"createdAt"`
 }
 
 type SaveWorkspaceRequest struct {
@@ -182,6 +182,7 @@ func getUserWorkspaces(userID uint) ([]WorkspaceData, error) {
 	err := DB.Where("user_id = ?", userID).
 		Order("created_at DESC").
 		Find(&dbWorkspaces).Error
+
 	if err != nil {
 		return nil, err
 	}
