@@ -8,7 +8,6 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } {
 		toast.error(`Invalid hex color: ${hex}`);
 		return { r: 0, g: 0, b: 0 };
 	}
-
 	const cleanHex = hex.startsWith('#') ? hex.slice(1) : hex;
 
 	if (cleanHex.length !== 6 || !/^[a-f\d]{6}$/i.test(cleanHex)) {

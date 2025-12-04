@@ -112,7 +112,6 @@ export interface VSCodeThemeColors {
 	'button.background': string;
 	'button.foreground': string;
 	'button.hoverBackground': string;
-	'button.hoverForeground': string;
 	'button.secondaryBackground': string;
 	'button.secondaryForeground': string;
 	'button.secondaryHoverBackground': string;
@@ -409,7 +408,6 @@ export function generateVSCodeTheme(
 			'button.background': c2,
 			'button.foreground': buttonFg,
 			'button.hoverBackground': darkBase ? lighten(c2, 0.1) : darken(c2, 0.1),
-			'button.hoverForeground': buttonFg,
 			'button.secondaryBackground': bgLight,
 			'button.secondaryForeground': foreground,
 			'button.secondaryHoverBackground': bgLighter,
@@ -588,8 +586,6 @@ export function generateVSCodeTheme(
 					'meta.function-call',
 					'meta.method-call',
 					'meta.method',
-					'meta.parameter',
-					'variable.parameter',
 					'entity.other.attribute-name',
 					'entity.name.module',
 					'support.module',
@@ -597,6 +593,13 @@ export function generateVSCodeTheme(
 					'support.node'
 				],
 				settings: { foreground: c2 }
+			},
+			{
+				scope: [
+					'variable.parameter',
+					'meta.parameter',
+				],
+				settings: { foreground: c7 }
 			},
 			{
 				scope: [
