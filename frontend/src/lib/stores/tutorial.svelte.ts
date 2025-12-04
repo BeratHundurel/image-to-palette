@@ -141,15 +141,6 @@ function createTutorialStore() {
 		store.state.colors = [];
 	}
 
-	function clearAllSelections(store: typeof appStore) {
-		store.state.activeSelectorId = UI.DEFAULT_SELECTOR_ID;
-
-		store.state.selectors.forEach((selector) => {
-			selector.selection = undefined;
-			selector.selected = selector.id === UI.DEFAULT_SELECTOR_ID;
-		});
-	}
-
 	function clearNonGreenSelections(store: typeof appStore) {
 		store.state.selectors.forEach((selector) => {
 			if (selector.id !== UI.DEFAULT_SELECTOR_ID) {
@@ -224,7 +215,7 @@ function createTutorialStore() {
 
 						case 'canvas-interaction':
 							hasSelection = false;
-							clearAllSelections(appStore);
+							appStore.clearAllSelections();
 							appStore.redrawCanvas();
 							break;
 

@@ -151,9 +151,9 @@ export interface ZedThemeStyle {
 	'terminal.ansi.magenta': string;
 	'terminal.ansi.bright_magenta': string;
 	'terminal.ansi.dim_magenta': string;
-	'terminal.ansi.cyan': string;
 	'terminal.ansi.bright_cyan': string;
 	'terminal.ansi.dim_cyan': string;
+	'terminal.ansi.cyan': string;
 	'terminal.ansi.white': string;
 	'terminal.ansi.bright_white': string;
 	'terminal.ansi.dim_white': string;

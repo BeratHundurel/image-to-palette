@@ -18,6 +18,9 @@
 	import { resolve } from '$app/paths';
 	import toast from 'svelte-french-toast';
 	import { tick } from 'svelte';
+	import Search from '$lib/components/search/Search.svelte';
+	import { popoverStore } from '$lib/stores/popovers.svelte';
+	import ThemeExportPopover from '$lib/theme/components/ThemeExportPopover.svelte';
 
 	let showAuthModal = $state(false);
 
@@ -52,7 +55,7 @@
 
 <Toaster />
 
-<div class="relative h-[100svh] bg-black text-zinc-300">
+<div class="relative flex h-[100svh] flex-col bg-black text-zinc-300">
 	<enhanced:img
 		src="../lib/assets/palette.jpg"
 		alt="Palette"
@@ -61,9 +64,12 @@
 
 	<div class="absolute top-0 left-0 z-10 h-full w-full bg-black/60"></div>
 
-	<div class="absolute top-4 right-4 left-4 z-30">
-		<div class="flex flex-row items-center justify-between">
+	<div class="z-40 h-max w-full p-4">
+		<div class="flex flex-row items-center justify-between gap-4">
 			<TutorialButton />
+
+			<Search />
+
 			{#if authStore.state.isAuthenticated}
 				<UserProfile />
 			{:else if !authStore.state.isLoading}
@@ -85,7 +91,7 @@
 		</div>
 	</div>
 
-	<div class="relative z-20 flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden">
+	<div class="relative z-30 flex h-full w-full flex-col items-center justify-center overflow-hidden">
 		<UploadOverlay />
 
 		<Canvas />
@@ -98,5 +104,10 @@
 
 <AuthModal bind:isOpen={showAuthModal} />
 
+{#if popoverStore.state.current === 'themeExport'}
+	<ThemeExportPopover />
+{/if}
+
 <TutorialStart />
+
 <Tutorial />

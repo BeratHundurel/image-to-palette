@@ -1,5 +1,6 @@
 import { browser } from '$app/environment';
 import type { Color, Selector, PaletteData, WorkspaceData } from '$lib/types/palette';
+import type { WallhavenResult } from '$lib/types/wallhaven';
 import * as api from '$lib/api/palette';
 import * as workspaceApi from '$lib/api/workspace';
 import { authStore } from './auth.svelte';
@@ -8,6 +9,7 @@ import toast from 'svelte-french-toast';
 import { tick } from 'svelte';
 import { CANVAS, SELECTION, IMAGE, UI } from '$lib/constants';
 import type { SortMethod } from '$lib/colorUtils';
+import { downloadImage } from '$lib/api/wallhaven';
 
 export type SavedPaletteItem = PaletteData;
 
@@ -21,6 +23,8 @@ interface AppState {
 	canvasScaleX: number;
 	canvasScaleY: number;
 
+	searchQuery: string;
+
 	imageLoaded: boolean;
 	isDragging: boolean;
 	isExtracting: boolean;
@@ -31,6 +35,7 @@ interface AppState {
 	dragScaleY: number;
 
 	colors: Color[];
+	wallhavenResults: WallhavenResult[];
 	selectors: Selector[];
 	drawSelectionValue: string;
 	activeSelectorId: string;
@@ -58,6 +63,8 @@ function createAppStore() {
 		canvasScaleX: 1,
 		canvasScaleY: 1,
 
+		searchQuery: '',
+
 		imageLoaded: false,
 		isDragging: false,
 		isExtracting: false,
@@ -68,6 +75,7 @@ function createAppStore() {
 		dragScaleY: 1,
 
 		colors: [],
+		wallhavenResults: [],
 		selectors: [
 			{ id: UI.DEFAULT_SELECTOR_ID, color: 'oklch(79.2% 0.209 151.711)', selected: true },
 			{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false },
@@ -95,6 +103,7 @@ function createAppStore() {
 		maxHeight = CANVAS.MAX_HEIGHT
 	) {
 		const scale = Math.min(maxWidth / originalWidth, maxHeight / originalHeight, 1);
+
 		const width = originalWidth * scale;
 		const height = originalHeight * scale;
 
@@ -326,6 +335,32 @@ function createAppStore() {
 			}
 		},
 
+		async searchWallhaven(query: string, page = 1) {
+			if (!query || query.trim() === '') {
+				this.state.wallhavenResults = [];
+				return;
+			}
+
+			try {
+				const { searchWallhaven } = await import('$lib/api/wallhaven');
+				const resp = await searchWallhaven({ q: query, page });
+				this.state.wallhavenResults = resp.data || [];
+			} catch {
+				this.state.wallhavenResults = [];
+			}
+		},
+
+		async loadWallhavenImage(imageUrl: string, existingToastId?: string) {
+			try {
+				const blob = await downloadImage(imageUrl);
+				await this.drawBlobToCanvas(blob);
+				await this.extractPalette([blob], existingToastId);
+				this.clearAllSelections();
+			} catch (err) {
+				console.error('Failed to load wallhaven image', err);
+			}
+		},
+
 		triggerFileSelect() {
 			if (state.fileInput) {
 				state.fileInput.value = '';
@@ -340,6 +375,15 @@ function createAppStore() {
 				await appStore.drawToCanvas(files[0]);
 				await appStore.extractPalette([files[0]]);
 			}
+		},
+
+		clearAllSelections() {
+			this.state.activeSelectorId = UI.DEFAULT_SELECTOR_ID;
+
+			this.state.selectors.forEach((selector) => {
+				selector.selection = undefined;
+				selector.selected = selector.id === UI.DEFAULT_SELECTOR_ID;
+			});
 		},
 
 		async extractPaletteFromSelection() {
