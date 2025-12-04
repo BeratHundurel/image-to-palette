@@ -121,7 +121,6 @@
 			};
 
 			if ('colors' in generatedTheme && 'tokenColors' in generatedTheme) {
-				// VS Code theme
 				traverseThemeForColors(generatedTheme.colors, onColorFound, 'colors');
 				generatedTheme.tokenColors.forEach((token, index) => {
 					if (token.settings) {
@@ -129,7 +128,6 @@
 					}
 				});
 			} else if ('themes' in generatedTheme) {
-				// Zed theme
 				generatedTheme.themes.forEach((themeVariant, themeIndex) => {
 					traverseThemeForColors(themeVariant.style, onColorFound, `themes[${themeIndex}].style`);
 				});
@@ -188,7 +186,6 @@
 		const colorMap = new SvelteMap<string, Set<string>>();
 		try {
 			const onColorFound = (color: string, path: string) => {
-				console.log(color);
 				const normalizedColor = color.toUpperCase();
 				if (!colorMap.has(normalizedColor)) {
 					colorMap.set(normalizedColor, new Set());
@@ -266,17 +263,14 @@
 
 {#if popoverStore.isOpen('themeExport')}
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-		<!-- Backdrop -->
 		<div class="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true"></div>
 
-		<!-- Modal -->
 		<div
 			role="dialog"
 			aria-labelledby="theme-inspector-title"
 			aria-modal="true"
-			class="share-modal-content border-brand/50 shadow-brand/20 relative z-10 flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border bg-zinc-900 shadow-2xl"
+			class="share-modal-content border-brand/50 shadow-brand/20 relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-xl border bg-zinc-900 shadow-2xl"
 		>
-			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-zinc-700 bg-zinc-800/50 px-6 py-5">
 				<div>
 					<h2 id="theme-inspector-title" class="text-brand text-2xl font-semibold">
@@ -307,7 +301,6 @@
 				</button>
 			</div>
 
-			<!-- Content -->
 			<div class="custom-scrollbar flex-1 overflow-y-auto px-6 py-6">
 				{#if isGenerating}
 					<div class="flex items-center justify-center py-16">
@@ -376,7 +369,6 @@
 						</div>
 					</div>
 
-					<!-- Mode Selection -->
 					<div class="mb-8">
 						<div class="mb-4 flex items-center gap-2">
 							<h3 class="text-brand text-sm font-semibold tracking-wide uppercase">Theme Mode</h3>
@@ -446,7 +438,6 @@
 						</div>
 					</div>
 
-					<!-- Harmony Scheme Selection (only shown in harmony mode) -->
 					{#if themeMode === 'harmony'}
 						<div class="mb-8">
 							<div class="mb-4 flex items-center gap-2">
@@ -520,7 +511,6 @@
 						</div>
 					{/if}
 
-					<!-- Theme Colors with Usage -->
 					<div class="mb-8">
 						<div class="mb-4 flex items-center gap-2">
 							<h3 class="text-brand text-sm font-semibold tracking-wide uppercase">
@@ -610,7 +600,6 @@
 							{/each}
 						</div>
 					</div>
-					<!-- Theme JSON Preview -->
 					<div>
 						<div class="mb-4 flex items-center gap-2">
 							<h3 class="text-brand text-sm font-semibold tracking-wide uppercase">Theme JSON Preview</h3>
@@ -631,7 +620,6 @@
 				{/if}
 			</div>
 
-			<!-- Footer -->
 			<div class="flex items-center justify-between border-t border-zinc-700 bg-zinc-800/50 px-6 py-5">
 				<div class="flex items-center gap-2 text-sm text-zinc-400">
 					{#if themeMode === 'harmony'}
@@ -691,28 +679,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.custom-scrollbar {
-		scrollbar-width: thin;
-		scrollbar-color: #eeb38f transparent;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar {
-		width: 8px;
-		height: 8px;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-thumb {
-		background: #eeb38f;
-		border-radius: 4px;
-	}
-
-	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-		background: #ffbe9f;
-	}
-</style>

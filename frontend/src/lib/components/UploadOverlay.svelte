@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { appStore } from '$lib/stores/app.svelte';
-	import { preventDefault } from '$lib/utils';
+	import { preventDefault, cn } from '$lib/utils';
 </script>
 
 <section
-	class="absolute inset-0 flex flex-col items-center justify-around transition-opacity duration-300"
-	class:opacity-0={appStore.state.imageLoaded}
-	class:pointer-events-none={appStore.state.imageLoaded}
-	class:opacity-100={!appStore.state.imageLoaded}
-	class:pointer-events-auto={!appStore.state.imageLoaded}
+	class={cn(
+		'flex-col items-center justify-center',
+		appStore.state.imageLoaded ? 'pointer-events-none hidden' : 'pointer-events-auto flex'
+	)}
 	aria-hidden={appStore.state.imageLoaded ? 'true' : 'false'}
 >
 	<button
@@ -18,7 +17,10 @@
 		ondragenter={preventDefault}
 		ondragleave={preventDefault}
 		onclick={appStore.triggerFileSelect}
-		class="group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 transition-all duration-300 hover:border-white hover:bg-white/20"
+		class={cn(
+			'group flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/50 bg-white/10 p-12 transition-all duration-300',
+			'hover:border-white hover:bg-white/20'
+		)}
 		aria-label="Upload an image or drag and drop it here"
 	>
 		<svg

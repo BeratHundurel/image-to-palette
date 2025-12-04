@@ -17,3 +17,26 @@
 .palette-dropdown-base {
 	@apply border-brand/50 absolute top-0 z-50 rounded-md border bg-zinc-900 p-3 text-sm text-zinc-300 shadow-2xl;
 }
+
+.custom-scrollbar {
+	scrollbar-width: thin;
+	scrollbar-color: #eeb38f transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #eeb38f;
+	border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #ffbe9f;
+}

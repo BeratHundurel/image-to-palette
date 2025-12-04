@@ -4,8 +4,8 @@
 
 <button
 	class="toolbar-button-base"
-	aria-label="Application settings"
-	title="Adjust application settings"
+	aria-label="How your saved palettes are applied to current image"
+	title="How your saved palettes are applied to current image"
 	onclick={(e) => popoverStore.toggle('application', e)}
 	type="button"
 >

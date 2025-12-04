@@ -13,7 +13,6 @@
 	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
 	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
 	import SavedWorkspacesPopover from './popovers/SavedWorkspacesPopover.svelte';
-	import ThemeExportPopover from '$lib/theme/components/ThemeExportPopover.svelte';
 	import Download from './Download.svelte';
 	import { appStore } from '$lib/stores/app.svelte';
 	import { popoverStore } from '$lib/stores/popovers.svelte';
@@ -52,7 +51,7 @@
 	tabindex="0"
 	onmousedown={handleMouseDown}
 	style="right: {right}px; top: {top}px;"
-	class={cn('fixed z-50 select-none', moving ? 'z-[51] cursor-move [&_*]:pointer-events-none' : '')}
+	class={cn('fixed select-none', moving ? 'cursor-move [&_*]:pointer-events-none' : '')}
 >
 	<div
 		class={cn(
@@ -168,10 +167,6 @@
 
 		{#if popoverStore.state.current === 'workspaces'}
 			<SavedWorkspacesPopover />
-		{/if}
-
-		{#if popoverStore.state.current === 'themeExport'}
-			<ThemeExportPopover />
 		{/if}
 	</div>
 </section>

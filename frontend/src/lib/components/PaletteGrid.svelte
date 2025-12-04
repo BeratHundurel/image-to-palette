@@ -6,7 +6,7 @@
 	import { sortColorsByMethod, type SortMethod } from '$lib/colorUtils';
 	import { tick } from 'svelte';
 	import toast from 'svelte-french-toast';
-	import { fly, scale } from 'svelte/transition';
+	import { scale } from 'svelte/transition';
 
 	let hoverX = $state(0);
 	let buttonWidth = $state(0);
@@ -67,7 +67,7 @@
 	}
 </script>
 
-<section class="min-h-[160px] w-full max-w-5xl">
+<section class={cn('w-full max-w-5xl', appStore.state.imageLoaded ? 'min-h-[160px]' : 'h-0 w-0')}>
 	{#if appStore.state.colors.length > 0}
 		<div class="mb-4 flex items-center gap-2">
 			<span class="text-sm font-medium text-zinc-300">Sort:</span>
@@ -101,7 +101,7 @@
 		</div>
 	{/if}
 
-	<div class="grid min-h-12 grid-cols-2 gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
+	<div class="grid min-h-14 grid-cols-2 items-center gap-4 transition-all duration-300 sm:grid-cols-4 md:grid-cols-8">
 		{#each appStore.state.colors as color, i (`${color.hex}-${i}`)}
 			<div
 				role="button"
@@ -118,7 +118,7 @@
 	</div>
 
 	{#if appStore.state.imageLoaded}
-		<div transition:fly={{ x: 300, duration: 500 }} class="mt-4 flex flex-row justify-between">
+		<div class="mt-4 flex flex-row justify-between">
 			<button
 				class="border-brand/50 hover:shadow-brand-lg w-36 cursor-pointer rounded-md border bg-zinc-900 py-2 text-sm font-medium text-zinc-300 transition-all duration-300"
 				onclick={returnToUpload}>Back</button

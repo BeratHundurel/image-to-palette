@@ -65,7 +65,7 @@
 	)}
 	style={popoverStore.state.direction === 'right' ? 'left: calc(100% + 0.5rem);' : 'right: calc(100% + 0.5rem);'}
 >
-	<h3 class="text-brand mb-1 text-xs font-medium">Application Settings</h3>
+	<h3 class="text-brand mb-1 text-xs font-medium">How your saved palettes are applied to current image</h3>
 
 	{#each settings as setting (setting.id)}
 		<div class="flex flex-col gap-2">

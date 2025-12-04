@@ -196,9 +196,10 @@
 									</button>
 
 									<button
-										class="flex items-center gap-1 rounded-md p-1.5 transition-all hover:scale-110 hover:bg-blue-500/10 {item.shareToken
-											? 'text-blue-400 hover:text-blue-300'
-											: 'text-zinc-500 hover:text-zinc-400'}"
+										class={cn(
+											'flex items-center gap-1 rounded-md p-1.5 transition-all hover:scale-110 hover:bg-blue-500/10',
+											item.shareToken ? 'text-blue-400 hover:text-blue-300' : 'text-zinc-500 hover:text-zinc-400'
+										)}
 										onclick={() =>
 											item.shareToken
 												? openShareModal(item.id, item.name, item.shareToken!)
@@ -302,11 +303,3 @@
 		</div>
 	</div>
 {/if}
-
-<style>
-	.custom-scrollbar {
-		scrollbar-width: thin;
-		scrollbar-color: #eeb38f transparent;
-		padding: 5px;
-	}
-</style>
