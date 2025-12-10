@@ -26,10 +26,6 @@ func (c colorObservation) Distance(p clusters.Coordinates) float64 {
 	return sum
 }
 
-func rgbToHex(r, g, b uint32) string {
-	return fmt.Sprintf("#%02X%02X%02X", r, g, b)
-}
-
 func hexToRGBA(s string) (color.RGBA, error) {
 	s = strings.TrimSpace(s)
 	if s == "" {

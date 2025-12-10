@@ -58,7 +58,6 @@ func main() {
 	router.DELETE("/workspaces/:id/share", removeWorkspaceShareHandler)
 	router.GET("/shared", getSharedWorkspaceHandler)
 
-	router.POST("/extract-palette", extractPaletteHandler)
 	router.POST("/apply-palette", applyPaletteHandler)
 
 	router.GET("/wallhaven/search", wallhavenSearchHandler)

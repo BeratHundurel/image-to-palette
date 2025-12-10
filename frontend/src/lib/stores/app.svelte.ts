@@ -525,18 +525,12 @@ function createAppStore() {
 			const toastId = existingToastId ?? toast.loading('Extracting palette...');
 
 			try {
-				const result = await api.extractPalette(files, state.sampleRate, state.filteredColors);
-				if (result.data.length > 0) {
-					const extractedColors = result.data.flatMap((p) => p.palette || []);
-
-					if (extractedColors.length > 0) {
-						state.colors = extractedColors;
-						toast.success('Palette extracted', { id: toastId });
-					} else {
-						toast.error('No colors found in selected regions', { id: toastId });
-					}
+				const result = await api.extractPalette(files, 20, state.sampleRate);
+				if (result.palette.length > 0) {
+					state.colors = result.palette;
+					toast.success('Palette extracted', { id: toastId });
 				} else {
-					toast.error('No colors found', { id: toastId });
+					toast.error('No colors found in selected regions', { id: toastId });
 				}
 			} catch (error) {
 				toast.error('Error extracting palette: ' + (error instanceof Error ? error.message : 'Unknown error'), {

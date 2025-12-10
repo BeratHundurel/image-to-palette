@@ -3,7 +3,7 @@ import type { QueryParamValue } from './base';
 import type { WallhavenSearchResponse } from '$lib/types/wallhaven';
 
 export async function searchWallhaven(params: Record<string, QueryParamValue>): Promise<WallhavenSearchResponse> {
-	const url = buildURL('/wallhaven/search', params)
+	const url = buildURL('/wallhaven/search', params);
 	const res = await fetch(url);
 	await ensureOk(res);
 	return res.json() as Promise<WallhavenSearchResponse>;

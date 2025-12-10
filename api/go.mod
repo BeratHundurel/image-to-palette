@@ -8,7 +8,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/muesli/clusters v0.0.0-20200529215643-2700303c1762
-	github.com/muesli/kmeans v0.3.1
 	github.com/stretchr/testify v1.11.1
 	gorm.io/gorm v1.31.0
 )

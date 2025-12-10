@@ -2,3 +2,17 @@
 **/*.env
 **/*.exe
 user_palettes
+
+.zig-cache/
+zig-cache/
+zig-out/
+*.log
+Session*.*vim
+commit_msg
+*.sw?
+/docs
+
+# npm/bun
+node_modules/
+binaries/
+*.tgz

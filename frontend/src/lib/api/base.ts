@@ -1,10 +1,23 @@
 export const API_BASE: string =
 	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) || 'http://localhost:8088';
 
+export const ZIG_API_BASE: string =
+	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_ZIG_API_BASE_URL) || 'http://localhost:8089';
+
 export type QueryParamValue = string | number | boolean | null;
 
 export function buildURL(path: string, params?: Record<string, QueryParamValue>): string {
 	const url = new URL(path, API_BASE);
+	if (params) {
+		for (const [k, v] of Object.entries(params)) {
+			if (v !== null) url.searchParams.set(k, String(v));
+		}
+	}
+	return url.toString();
+}
+
+export function buildZigURL(path: string, params?: Record<string, QueryParamValue>): string {
+	const url = new URL(path, ZIG_API_BASE);
 	if (params) {
 		for (const [k, v] of Object.entries(params)) {
 			if (v !== null) url.searchParams.set(k, String(v));

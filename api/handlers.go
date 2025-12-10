@@ -6,11 +6,8 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"mime/multipart"
 	"net/http"
-	"runtime"
 	"strconv"
-	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,72 +19,6 @@ type Color struct {
 type ExtractResult struct {
 	Palette []Color `json:"palette,omitempty"`
 	Error   string  `json:"error,omitempty"`
-}
-
-func extractPaletteHandler(c *gin.Context) {
-	form, err := c.MultipartForm()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid multipart form: " + err.Error()})
-		return
-	}
-
-	files := form.File["files"]
-	if len(files) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No files provided"})
-		return
-	}
-
-	sampleRateStr := c.PostForm("sampleRate")
-	if sampleRateStr == "" {
-		sampleRateStr = "4"
-	}
-	sampleRate, err := strconv.Atoi(sampleRateStr)
-	if err != nil || sampleRate < 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid sampleRate parameter"})
-		return
-	}
-
-	var filteredColors []string
-	filteredColorsStr := c.PostForm("filteredColors")
-	if filteredColorsStr != "" {
-		if err := json.Unmarshal([]byte(filteredColorsStr), &filteredColors); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filteredColors JSON"})
-			return
-		}
-	}
-
-	maxWorkers := minInt(runtime.GOMAXPROCS(0), len(files))
-	semaphore := make(chan struct{}, maxWorkers)
-
-	results := make([]ExtractResult, len(files))
-	var wg sync.WaitGroup
-
-	for i, fileHeader := range files {
-		wg.Add(1)
-		go func(index int, fh *multipart.FileHeader) {
-			defer wg.Done()
-
-			semaphore <- struct{}{}
-			defer func() { <-semaphore }()
-
-			file, err := fh.Open()
-			if err != nil {
-				results[index] = ExtractResult{Error: "Failed to open file: " + err.Error()}
-				return
-			}
-			defer file.Close()
-
-			palette, err := processImageForPalette(file, 8, sampleRate, filteredColors)
-			if err != nil {
-				results[index] = ExtractResult{Error: err.Error()}
-				return
-			}
-			results[index] = ExtractResult{Palette: palette}
-		}(i, fileHeader)
-	}
-
-	wg.Wait()
-	c.JSON(http.StatusOK, gin.H{"data": results})
 }
 
 func applyPaletteHandler(c *gin.Context) {

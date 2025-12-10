@@ -15,77 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
-
-type testMultipartFile struct {
-	*bytes.Reader
-}
-
-func (f *testMultipartFile) Close() error { return nil }
-
-func TestSamplePixels_FilteredColors(t *testing.T) {
-	img := createTestImage(10, 10)
-	filtered := []string{"#000000"}
-	obs := samplePixels(img, 1, filtered)
-	for _, o := range obs {
-		coords := o.Coordinates()
-		hex := rgbToHex(uint32(coords[0]*255), uint32(coords[1]*255), uint32(coords[2]*255))
-		if hex == "#000000" {
-			t.Errorf("Filtered color found in observations")
-		}
-	}
-}
-
-func TestProcessImageForPalette_KnownImage(t *testing.T) {
-	img := image.NewRGBA(image.Rect(0, 0, 2, 2))
-	img.Set(0, 0, color.RGBA{255, 0, 0, 255})   // Red
-	img.Set(1, 0, color.RGBA{0, 255, 0, 255})   // Green
-	img.Set(0, 1, color.RGBA{0, 0, 255, 255})   // Blue
-	img.Set(1, 1, color.RGBA{255, 255, 0, 255}) // Yellow
-
-	var buf bytes.Buffer
-	png.Encode(&buf, img)
-	reader := bytes.NewReader(buf.Bytes())
-	file := &testMultipartFile{reader}
-
-	palette, err := processImageForPalette(file, 4, 1, nil)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, palette)
-}
-
 // --- API Integration Tests ---
-
-func TestExtractPaletteHandler(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.New()
-	router.POST("/extract-palette", extractPaletteHandler)
-
-	img := createTestImage(10, 10)
-	var buf bytes.Buffer
-	png.Encode(&buf, img)
-
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, _ := writer.CreateFormFile("files", "test.png")
-	part.Write(buf.Bytes())
-	writer.WriteField("sampleRate", "2")
-	writer.Close()
-
-	req := httptest.NewRequest("POST", "/extract-palette", body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
-
-	var resp struct {
-		Data []ExtractResult `json:"data"`
-	}
-	err := json.Unmarshal(w.Body.Bytes(), &resp)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, resp.Data)
-	assert.NotEmpty(t, resp.Data[0].Palette)
-	assert.Empty(t, resp.Data[0].Error)
-}
 
 func TestSavePaletteHandler_InvalidRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)

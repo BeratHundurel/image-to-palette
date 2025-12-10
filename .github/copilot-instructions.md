@@ -93,11 +93,7 @@ go test ./...        # Run tests
 
 **Code Quality Rule**: After making changes to Svelte or TypeScript files, ALWAYS run `npm run format` and `npm run lint` from the `frontend/` directory to ensure code quality and catch potential issues before committing.
 
-### Testing Workflow
-
-1. Start backend: `cd api && go run .`
-2. Start frontend: `cd frontend && npm run dev`
-3. Test image upload → palette extraction → palette application flow
+** Documents Rule**: Dont create .md files for changes or explanations.
 
 ## Critical Integration Points
 
@@ -152,7 +148,7 @@ All API functions in `lib/api/` use consistent error handling with `ensureOk()` 
 
 ### Color Format
 
-Colors are consistently structured as `{ hex: string, count?: number }` throughout the application.
+Colors are consistently structured as `{ hex: string }` throughout the application.
 
 ### Code Comments
 
