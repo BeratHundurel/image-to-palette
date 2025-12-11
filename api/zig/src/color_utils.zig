@@ -33,7 +33,6 @@ fn formatHexWithAlpha(hex: []const u8, alpha: []const u8) []const u8 {
     return result;
 }
 
-/// HSL color space representation (normalized 0.0 to 1.0)
 pub const HSL = struct {
     h: f32,
     s: f32,

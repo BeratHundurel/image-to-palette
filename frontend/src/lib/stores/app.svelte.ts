@@ -475,7 +475,7 @@ function createAppStore() {
 			const toastId = existingToastId ?? toast.loading('Extracting palette...');
 
 			try {
-				const result = await api.extractPalette(file, 20);
+				const result = await api.extractPalette(file);
 				if (result.palette.length > 0) {
 					state.colors = result.palette;
 					toast.success('Palette extracted', { id: toastId });

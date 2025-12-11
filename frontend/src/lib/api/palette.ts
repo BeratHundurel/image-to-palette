@@ -22,18 +22,14 @@ export type ZigPaletteResponse = {
 	palette: Color[];
 };
 
-export async function extractPalette(file: Blob | File, maxColors: number = 20): Promise<ZigPaletteResponse> {
+export async function extractPalette(file: Blob | File): Promise<ZigPaletteResponse> {
 	if (!file) throw new Error('No files provided');
-
-	const formData = new FormData();
-	formData.append('file', file);
-	formData.append('maxColors', String(maxColors));
 
 	let res: Response;
 	try {
 		res = await fetch(buildZigURL('/extract-palette'), {
 			method: 'POST',
-			body: formData
+			body: file
 		});
 	} catch (err) {
 		throw new Error(

@@ -45,20 +45,18 @@ pub const ExtractError = error{
 pub fn extractPaletteFromBytes(
     allocator: std.mem.Allocator,
     image_data: []const u8,
-    max_colors: usize,
 ) ExtractError!PaletteResult {
     var img = zigimg.Image.fromMemory(allocator, image_data) catch {
         return ExtractError.NotAnImage;
     };
     defer img.deinit(allocator);
 
-    return processImage(allocator, &img, max_colors);
+    return processImage(allocator, &img);
 }
 
 fn processImage(
     allocator: std.mem.Allocator,
     img: *zigimg.Image,
-    max_colors: usize,
 ) ExtractError!PaletteResult {
     var color_map = std.ArrayList(ColorAndCount){};
     defer color_map.deinit(allocator);
@@ -91,7 +89,7 @@ fn processImage(
 
     std.mem.sort(ColorAndCount, color_map.items, {}, ColorAndCount.lessThan);
 
-    const num_colors = @min(max_colors, color_map.items.len);
+    const num_colors = @min(20, color_map.items.len);
     const colors = allocator.alloc([]const u8, num_colors) catch return ExtractError.OutOfMemory;
     errdefer {
         for (colors) |c| {
@@ -134,26 +132,10 @@ pub fn generateThemeJson(
     };
 }
 
-pub fn handleExtractPalette(allocator: std.mem.Allocator, request_body: []const u8, content_type: []const u8) ![]const u8 {
-    const boundary = parseBoundary(content_type) orelse return error.InvalidContentType;
+pub fn handleExtractPalette(allocator: std.mem.Allocator, request_body: []const u8) ![]const u8 {
+    if (request_body.len == 0) return error.NoImageProvided;
 
-    var image_data: ?[]const u8 = null;
-    var max_colors: usize = 20;
-
-    var parts_iter = MultipartIterator.init(request_body, boundary);
-    while (parts_iter.next()) |part| {
-        if (std.mem.indexOf(u8, part.headers, "name=\"file\"") != null or
-            std.mem.indexOf(u8, part.headers, "name=\"image\"") != null)
-        {
-            image_data = part.body;
-        } else if (std.mem.indexOf(u8, part.headers, "name=\"maxColors\"") != null) {
-            max_colors = std.fmt.parseInt(usize, std.mem.trim(u8, part.body, " \r\n"), 10) catch 20;
-        }
-    }
-
-    const data = image_data orelse return error.NoImageProvided;
-
-    var result = try extractPaletteFromBytes(allocator, data, max_colors);
+    var result = try extractPaletteFromBytes(allocator, request_body);
     defer result.deinit();
 
     var json_array = std.ArrayList(u8){};
@@ -170,6 +152,16 @@ pub fn handleExtractPalette(allocator: std.mem.Allocator, request_body: []const 
 
     return try json_array.toOwnedSlice(allocator);
 }
+
+const ThemeRequest = struct {
+    colors: []const ColorInput,
+    type: []const u8,
+    name: ?[]const u8 = null,
+};
+
+const ColorInput = struct {
+    hex: []const u8,
+};
 
 pub fn handleGenerateTheme(allocator: std.mem.Allocator, request_body: []const u8) ![]const u8 {
     const parsed = try std.json.parseFromSlice(ThemeRequest, allocator, request_body, .{
@@ -195,82 +187,3 @@ pub fn handleGenerateTheme(allocator: std.mem.Allocator, request_body: []const u
 
     return try generateThemeJson(allocator, colors, theme_type, theme_name);
 }
-
-const ThemeRequest = struct {
-    colors: []const ColorInput,
-    type: []const u8,
-    name: ?[]const u8 = null,
-};
-
-const ColorInput = struct {
-    hex: []const u8,
-};
-
-fn parseBoundary(content_type: []const u8) ?[]const u8 {
-    const boundary_prefix = "boundary=";
-    const idx = std.mem.indexOf(u8, content_type, boundary_prefix) orelse return null;
-    const start = idx + boundary_prefix.len;
-    var end = start;
-    while (end < content_type.len and content_type[end] != ';' and content_type[end] != ' ') {
-        end += 1;
-    }
-    return content_type[start..end];
-}
-
-const MultipartPart = struct {
-    headers: []const u8,
-    body: []const u8,
-};
-
-const MultipartIterator = struct {
-    data: []const u8,
-    boundary: []const u8,
-    pos: usize,
-
-    pub fn init(data: []const u8, boundary: []const u8) MultipartIterator {
-        return .{
-            .data = data,
-            .boundary = boundary,
-            .pos = 0,
-        };
-    }
-
-    pub fn next(self: *MultipartIterator) ?MultipartPart {
-        var full_boundary_buf: [256]u8 = undefined;
-        const full_boundary = std.fmt.bufPrint(&full_boundary_buf, "--{s}", .{self.boundary}) catch return null;
-
-        const boundary_start = std.mem.indexOfPos(u8, self.data, self.pos, full_boundary) orelse return null;
-        const content_start = boundary_start + full_boundary.len;
-
-        if (content_start >= self.data.len) return null;
-
-        if (self.data.len > content_start + 2 and
-            self.data[content_start] == '-' and
-            self.data[content_start + 1] == '-')
-        {
-            return null;
-        }
-
-        const next_boundary = std.mem.indexOfPos(u8, self.data, content_start, full_boundary) orelse self.data.len;
-
-        var part_data = self.data[content_start..next_boundary];
-        if (part_data.len > 0 and part_data[0] == '\r') part_data = part_data[1..];
-        if (part_data.len > 0 and part_data[0] == '\n') part_data = part_data[1..];
-
-        if (part_data.len > 2 and part_data[part_data.len - 2] == '\r' and part_data[part_data.len - 1] == '\n') {
-            part_data = part_data[0 .. part_data.len - 2];
-        }
-
-        const header_end = std.mem.indexOf(u8, part_data, "\r\n\r\n") orelse {
-            self.pos = next_boundary;
-            return null;
-        };
-
-        self.pos = next_boundary;
-
-        return MultipartPart{
-            .headers = part_data[0..header_end],
-            .body = part_data[header_end + 4 ..],
-        };
-    }
-};

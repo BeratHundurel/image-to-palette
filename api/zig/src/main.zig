@@ -19,7 +19,6 @@ fn corsMiddleware(ctx: *tk.Context) anyerror!void {
     ctx.res.headers.add("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept");
     ctx.res.headers.add("Access-Control-Max-Age", "86400");
 
-
     if (ctx.req.method == .OPTIONS) {
         try ctx.res.write();
         return;
@@ -43,12 +42,6 @@ fn health() []const u8 {
 fn extractPalette(ctx: *tk.Context, allocator: std.mem.Allocator) anyerror!void {
     ctx.res.content_type = .JSON;
 
-    const content_type = ctx.req.header("content-type") orelse {
-        ctx.res.status = 400;
-        ctx.res.body = "{\"error\":\"Missing Content-Type header\"}";
-        return;
-    };
-
     const body = ctx.req.body() orelse {
         ctx.res.status = 400;
         ctx.res.body = "{\"error\":\"Missing request body\"}";
@@ -61,7 +54,7 @@ fn extractPalette(ctx: *tk.Context, allocator: std.mem.Allocator) anyerror!void 
         return;
     }
 
-    const result = palette_api.handleExtractPalette(allocator, body, content_type) catch |err| {
+    const result = palette_api.handleExtractPalette(allocator, body) catch |err| {
         ctx.res.status = 400;
         ctx.res.body = switch (err) {
             error.InvalidContentType => "{\"error\":\"Invalid content type, expected multipart/form-data\"}",
@@ -98,8 +91,13 @@ fn generateTheme(ctx: *tk.Context, allocator: std.mem.Allocator) anyerror!void {
 }
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
+    var gpa: std.heap.DebugAllocator(.{}) = .init;
+    defer {
+        const deinit_status = gpa.deinit();
+        if (deinit_status == .leak) {
+            std.log.err("memory leak", .{});
+        }
+    }
     const allocator = gpa.allocator();
 
     std.log.info("Zig Palette API starting on http://localhost:{d}", .{PORT});

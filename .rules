@@ -46,7 +46,7 @@ canvasScaleX/Y: number // Critical for coordinate mapping
 
 ```typescript
 // All API calls go through src/lib/api/*
-await api.extractPalette(files, maxColors);
+await api.extractPalette(file);
 await api.applyPaletteBlob(imageBlob, colors, algorithmParams);
 ```
 
