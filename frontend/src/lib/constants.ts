@@ -19,7 +19,7 @@ export const SELECTION = {
 
 export const IMAGE = {
 	OUTPUT_FORMAT: 'image/png' as const,
-	MAX_FILE_SIZE: 50 * 1024 * 1024, // 50MB
+	MAX_FILE_SIZE: 50 * 1024 * 1024,
 	MAX_DIMENSION: 8192
 } as const;
 

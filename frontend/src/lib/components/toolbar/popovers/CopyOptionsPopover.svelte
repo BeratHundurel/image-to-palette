@@ -24,7 +24,6 @@
 	}
 
 	async function copyPaletteAs(format: string, palette: Color[]) {
-		toast.loading('Preparing...');
 		let output = '';
 		const hexValues = palette.map((c) => c.hex);
 		const namedPalette = await getNamedPalette(hexValues);
