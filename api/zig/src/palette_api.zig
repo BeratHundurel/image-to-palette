@@ -8,16 +8,15 @@ pub const ColorAndCount = struct {
     color: zigimg.color.Colorf32,
     count: usize,
 
-    const similarity_threshold: f32 = 0.05;
-
-    pub fn colorSimilar(c1: zigimg.color.Colorf32, c2: zigimg.color.Colorf32) bool {
-        const dr = c1.r - c2.r;
-        const dg = c1.g - c2.g;
-        const db = c1.b - c2.b;
-        return (dr * dr + dg * dg + db * db) < (similarity_threshold * similarity_threshold * 3);
+    /// Two colors are considered similar if all RGB components differ by less than 10%
+    fn colorSimilar(a: zigimg.color.Colorf32, b: zigimg.color.Colorf32) bool {
+        const threshold = 0.1;
+        return @abs(a.r - b.r) < threshold and
+            @abs(a.g - b.g) < threshold and
+            @abs(a.b - b.b) < threshold;
     }
 
-    pub fn lessThan(_: void, a: ColorAndCount, b: ColorAndCount) bool {
+    fn lessThan(_: void, a: ColorAndCount, b: ColorAndCount) bool {
         return a.count > b.count;
     }
 };
