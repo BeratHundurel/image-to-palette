@@ -1,6 +1,5 @@
 const std = @import("std");
 
-/// Token styling settings for syntax highlighting
 pub const VSCodeTokenSettings = struct {
     foreground: ?[]const u8 = null,
     background: ?[]const u8 = null,
@@ -216,7 +215,6 @@ pub const ThemeType = enum {
     light,
 };
 
-// Complete VSCode theme structure
 pub const VSCodeTheme = struct {
     @"$schema": []const u8,
     name: []const u8,

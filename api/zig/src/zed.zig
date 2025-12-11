@@ -312,95 +312,87 @@ pub fn generateZedTheme(
         .@"editor.debugger_active_line.background" = color_utils.addAlpha(semantic_warning, "12"),
 
         .syntax = ZedSyntax{
-            .variable = .{ .color = foreground, .font_style = null, .font_weight = null },
-            .@"variable.builtin" = .{ .color = semantic_error, .font_style = null, .font_weight = null },
-            .@"variable.parameter" = .{ .color = c7, .font_style = null, .font_weight = null },
-            .@"variable.member" = .{ .color = c1, .font_style = null, .font_weight = null },
-            .@"variable.special" = .{ .color = semantic_error, .font_style = .italic, .font_weight = null },
-            .constant = .{ .color = c5, .font_style = null, .font_weight = null },
-            .@"constant.builtin" = .{ .color = c5, .font_style = null, .font_weight = null },
-            .@"constant.macro" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .module = .{ .color = c5, .font_style = .italic, .font_weight = null },
-            .label = .{ .color = semantic_info, .font_style = null, .font_weight = null },
-            .string = .{ .color = c3, .font_style = null, .font_weight = null },
-            .@"string.documentation" = .{ .color = c7, .font_style = null, .font_weight = null },
-            .@"string.regexp" = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .@"string.escape" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"string.special" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"string.special.path" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"string.special.symbol" = .{ .color = c8, .font_style = null, .font_weight = null },
-            .@"string.special.url" = .{ .color = foreground, .font_style = .italic, .font_weight = null },
+            .attribute = .{ .color = numbers, .font_style = null, .font_weight = null },
+            .boolean = .{ .color = numbers, .font_style = null, .font_weight = null },
             .character = .{ .color = c7, .font_style = null, .font_weight = null },
             .@"character.special" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .boolean = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .number = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .@"number.float" = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .type = .{ .color = c5, .font_style = null, .font_weight = null },
-            .attribute = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .property = .{ .color = c1, .font_style = null, .font_weight = null },
-            .function = .{ .color = c2, .font_style = null, .font_weight = null },
-            .constructor = .{ .color = c8, .font_style = null, .font_weight = null },
-            .operator = .{ .color = accent_bright, .font_style = null, .font_weight = null },
-            .keyword = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.modifier" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.type" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.coroutine" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.function" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.operator" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.import" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.repeat" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.return" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.debug" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.exception" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.conditional" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.conditional.ternary" = .{ .color = c6, .font_style = null, .font_weight = null },
-            .@"keyword.directive" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"keyword.directive.define" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"keyword.export" = .{ .color = accent_bright, .font_style = null, .font_weight = null },
-            .punctuation = .{ .color = fg_muted, .font_style = null, .font_weight = null },
-            .@"punctuation.delimiter" = .{ .color = fg_muted, .font_style = null, .font_weight = null },
-            .@"punctuation.bracket" = .{ .color = fg_muted, .font_style = null, .font_weight = null },
-            .@"punctuation.special" = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"punctuation.special.symbol" = .{ .color = c8, .font_style = null, .font_weight = null },
-            .@"punctuation.list_marker" = .{ .color = c7, .font_style = null, .font_weight = null },
             .comment = .{ .color = fg_muted, .font_style = .italic, .font_weight = null },
             .@"comment.doc" = .{ .color = fg_muted, .font_style = .italic, .font_weight = null },
             .@"comment.documentation" = .{ .color = fg_muted, .font_style = .italic, .font_weight = null },
             .@"comment.error" = .{ .color = semantic_error, .font_style = .italic, .font_weight = null },
-            .@"comment.warning" = .{ .color = semantic_warning, .font_style = .italic, .font_weight = null },
             .@"comment.hint" = .{ .color = semantic_info, .font_style = .italic, .font_weight = null },
-            .@"comment.todo" = .{ .color = c8, .font_style = .italic, .font_weight = null },
             .@"comment.note" = .{ .color = foreground, .font_style = .italic, .font_weight = null },
-            .@"diff.plus" = .{ .color = semantic_success, .font_style = null, .font_weight = null },
-            .@"diff.minus" = .{ .color = semantic_error, .font_style = null, .font_weight = null },
-            .tag = .{ .color = c2, .font_style = null, .font_weight = null },
-            .@"tag.attribute" = .{ .color = c5, .font_style = .italic, .font_weight = null },
-            .@"tag.delimiter" = .{ .color = c7, .font_style = null, .font_weight = null },
-            .parameter = .{ .color = c7, .font_style = null, .font_weight = null },
-            .field = .{ .color = c1, .font_style = null, .font_weight = null },
-            .namespace = .{ .color = c5, .font_style = .italic, .font_weight = null },
-            .float = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .symbol = .{ .color = c4, .font_style = null, .font_weight = null },
-            .@"string.regex" = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .text = .{ .color = foreground, .font_style = null, .font_weight = null },
-            .@"emphasis.strong" = .{ .color = c7, .font_style = null, .font_weight = 700 },
-            .emphasis = .{ .color = c7, .font_style = .italic, .font_weight = null },
-            .embedded = .{ .color = c7, .font_style = null, .font_weight = null },
-            .@"text.literal" = .{ .color = c3, .font_style = null, .font_weight = null },
+            .@"comment.todo" = .{ .color = c8, .font_style = .italic, .font_weight = null },
+            .@"comment.warning" = .{ .color = semantic_warning, .font_style = .italic, .font_weight = null },
             .concept = .{ .color = semantic_info, .font_style = null, .font_weight = null },
+            .constant = .{ .color = c5, .font_style = null, .font_weight = null },
+            .@"constant.builtin" = .{ .color = c5, .font_style = null, .font_weight = null },
+            .@"constant.macro" = .{ .color = c6, .font_style = null, .font_weight = null },
+            .constructor = .{ .color = c8, .font_style = null, .font_weight = null },
+            .@"diff.minus" = .{ .color = semantic_error, .font_style = null, .font_weight = null },
+            .@"diff.plus" = .{ .color = semantic_success, .font_style = null, .font_weight = null },
+            .embedded = .{ .color = c7, .font_style = null, .font_weight = null },
+            .emphasis = .{ .color = c7, .font_style = .italic, .font_weight = null },
+            .@"emphasis.strong" = .{ .color = c7, .font_style = null, .font_weight = 700 },
             .@"enum" = .{ .color = c7, .font_style = null, .font_weight = 700 },
+            .field = .{ .color = c1, .font_style = null, .font_weight = null },
+            .float = .{ .color = numbers, .font_style = null, .font_weight = null },
+            .function = .{ .color = c2, .font_style = null, .font_weight = null },
             .@"function.decorator" = .{ .color = numbers, .font_style = null, .font_weight = null },
-            .@"type.class.definition" = .{ .color = c5, .font_style = null, .font_weight = 700 },
             .hint = .{ .color = fg_muted, .font_style = .italic, .font_weight = null },
+            .keyword = .{ .color = c6, .font_style = null, .font_weight = null },
+            .@"keyword.directive" = .{ .color = c4, .font_style = null, .font_weight = null },
+            .@"keyword.directive.define" = .{ .color = c4, .font_style = null, .font_weight = null },
+            .@"keyword.export" = .{ .color = accent_bright, .font_style = null, .font_weight = null },
+            .label = .{ .color = semantic_info, .font_style = null, .font_weight = null },
             .link_text = .{ .color = c1, .font_style = null, .font_weight = null },
             .link_uri = .{ .color = c2, .font_style = .italic, .font_weight = null },
+            .module = .{ .color = c5, .font_style = .italic, .font_weight = null },
+            .namespace = .{ .color = c5, .font_style = .italic, .font_weight = null },
+            .number = .{ .color = numbers, .font_style = null, .font_weight = null },
+            .@"number.float" = .{ .color = numbers, .font_style = null, .font_weight = null },
+            .operator = .{ .color = accent_bright, .font_style = null, .font_weight = null },
+            .parameter = .{ .color = c7, .font_style = null, .font_weight = null },
             .parent = .{ .color = numbers, .font_style = null, .font_weight = null },
             .predictive = .{ .color = fg_disabled, .font_style = null, .font_weight = null },
             .predoc = .{ .color = semantic_error, .font_style = null, .font_weight = null },
+            .preproc = .{ .color = c6, .font_style = null, .font_weight = null },
             .primary = .{ .color = c7, .font_style = null, .font_weight = null },
-            .@"tag.doctype" = .{ .color = c6, .font_style = null, .font_weight = null },
+            .property = .{ .color = c1, .font_style = null, .font_weight = null },
+            .punctuation = .{ .color = fg_muted, .font_style = null, .font_weight = null },
+            .@"punctuation.bracket" = .{ .color = fg_muted, .font_style = null, .font_weight = null },
+            .@"punctuation.delimiter" = .{ .color = fg_muted, .font_style = null, .font_weight = null },
+            .@"punctuation.list_marker" = .{ .color = c7, .font_style = null, .font_weight = null },
+            .@"punctuation.markup" = .{ .color = semantic_error, .font_style = null, .font_weight = null },
+            .@"punctuation.special" = .{ .color = c4, .font_style = null, .font_weight = null },
+            .@"punctuation.special.symbol" = .{ .color = c8, .font_style = null, .font_weight = null },
+            .selector = .{ .color = c5, .font_style = null, .font_weight = null },
+            .@"selector.pseudo" = .{ .color = semantic_info, .font_style = null, .font_weight = null },
+            .string = .{ .color = c3, .font_style = null, .font_weight = null },
             .@"string.doc" = .{ .color = c7, .font_style = .italic, .font_weight = null },
+            .@"string.documentation" = .{ .color = c7, .font_style = null, .font_weight = null },
+            .@"string.escape" = .{ .color = c4, .font_style = null, .font_weight = null },
+            .@"string.regex" = .{ .color = numbers, .font_style = null, .font_weight = null },
+            .@"string.regexp" = .{ .color = numbers, .font_style = null, .font_weight = null },
+            .@"string.special" = .{ .color = c4, .font_style = null, .font_weight = null },
+            .@"string.special.path" = .{ .color = c4, .font_style = null, .font_weight = null },
+            .@"string.special.symbol" = .{ .color = c8, .font_style = null, .font_weight = null },
+            .@"string.special.url" = .{ .color = foreground, .font_style = .italic, .font_weight = null },
+            .symbol = .{ .color = c4, .font_style = null, .font_weight = null },
+            .tag = .{ .color = c2, .font_style = null, .font_weight = null },
+            .@"tag.attribute" = .{ .color = c5, .font_style = .italic, .font_weight = null },
+            .@"tag.delimiter" = .{ .color = c7, .font_style = null, .font_weight = null },
+            .@"tag.doctype" = .{ .color = c6, .font_style = null, .font_weight = null },
+            .text = .{ .color = foreground, .font_style = null, .font_weight = null },
+            .@"text.literal" = .{ .color = c3, .font_style = null, .font_weight = null },
             .title = .{ .color = foreground, .font_style = null, .font_weight = 800 },
+            .type = .{ .color = c5, .font_style = null, .font_weight = null },
+            .@"type.class.definition" = .{ .color = c5, .font_style = null, .font_weight = 700 },
+            .variable = .{ .color = foreground, .font_style = null, .font_weight = null },
+            .@"variable.builtin" = .{ .color = semantic_error, .font_style = null, .font_weight = null },
+            .@"variable.member" = .{ .color = c1, .font_style = null, .font_weight = null },
+            .@"variable.parameter" = .{ .color = c7, .font_style = null, .font_weight = null },
+            .@"variable.special" = .{ .color = semantic_error, .font_style = .italic, .font_weight = null },
             .variant = .{ .color = semantic_error, .font_style = null, .font_weight = null },
         },
     };
@@ -418,81 +410,4 @@ pub fn generateZedTheme(
         .author = "Palette Themify",
         .themes = themes,
     };
-}
-
-pub fn installThemeToZed(allocator: std.mem.Allocator, theme: ZedTheme, theme_name: []const u8) ![]const u8 {
-    var themes_dir: []const u8 = undefined;
-
-    if (builtin.os.tag == .windows) {
-        const appdata = std.process.getEnvVarOwned(allocator, "APPDATA") catch |err| {
-            std.log.err("Failed to get APPDATA environment variable: {}", .{err});
-            return error.EnvVarNotFound;
-        };
-        defer allocator.free(appdata);
-        themes_dir = try std.fs.path.join(allocator, &.{ appdata, "Zed", "themes" });
-    } else {
-        const home = std.process.getEnvVarOwned(allocator, "HOME") catch |err| {
-            std.log.err("Failed to get HOME environment variable: {}", .{err});
-            return error.EnvVarNotFound;
-        };
-        defer allocator.free(home);
-        themes_dir = try std.fs.path.join(allocator, &.{ home, ".config", "zed", "themes" });
-    }
-    defer allocator.free(themes_dir);
-
-    std.fs.makeDirAbsolute(themes_dir) catch |err| switch (err) {
-        error.PathAlreadyExists => {},
-        else => {
-            std.log.err("Failed to create themes directory: {}", .{err});
-            return err;
-        },
-    };
-
-    const safe_name = try makeSafeFilename(allocator, theme_name);
-    defer allocator.free(safe_name);
-
-    const filename = try std.fmt.allocPrint(allocator, "{s}.json", .{safe_name});
-    defer allocator.free(filename);
-
-    const theme_path = try std.fs.path.join(allocator, &.{ themes_dir, filename });
-
-    const theme_file = try std.fs.createFileAbsolute(theme_path, .{});
-    defer theme_file.close();
-
-    const fmt = std.json.fmt(theme, .{ .whitespace = .indent_4, .emit_null_optional_fields = false });
-    var json_writer = std.Io.Writer.Allocating.init(allocator);
-    defer json_writer.deinit();
-
-    try fmt.format(&json_writer.writer);
-    const json_string = try json_writer.toOwnedSlice();
-    defer allocator.free(json_string);
-
-    var write_buffer: [4096]u8 = undefined;
-    var buffered_writer = theme_file.writer(&write_buffer);
-    try buffered_writer.interface.writeAll(json_string);
-    try buffered_writer.interface.flush();
-
-    return theme_path;
-}
-
-fn makeSafeFilename(allocator: std.mem.Allocator, name: []const u8) ![]const u8 {
-    var result = try allocator.alloc(u8, name.len);
-    var i: usize = 0;
-
-    for (name) |c| {
-        if (std.ascii.isAlphanumeric(c) or c == '-' or c == '_') {
-            result[i] = std.ascii.toLower(c);
-            i += 1;
-        } else if (c == ' ') {
-            result[i] = '-';
-            i += 1;
-        }
-    }
-
-    if (i == 0) {
-        allocator.free(result);
-        return try allocator.dupe(u8, "palette-theme");
-    }
-
-    return allocator.realloc(result, i);
 }

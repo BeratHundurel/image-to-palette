@@ -126,11 +126,11 @@ pub fn generateThemeJson(
     return switch (theme_type) {
         .vscode => {
             const theme = try vscode.generateVSCodeTheme(allocator, colors);
-            return try std.json.Stringify.valueAlloc(allocator, theme, .{ .whitespace = .indent_2 });
+            return try std.json.Stringify.valueAlloc(allocator, theme, .{ .whitespace = .indent_4, .emit_null_optional_fields = false });
         },
         .zed => {
             const theme = try zed.generateZedTheme(allocator, colors, theme_name);
-            return try std.json.Stringify.valueAlloc(allocator, theme, .{ .whitespace = .indent_2 });
+            return try std.json.Stringify.valueAlloc(allocator, theme, .{ .whitespace = .indent_4, .emit_null_optional_fields = false });
         },
     };
 }
