@@ -324,9 +324,7 @@ function createAppStore() {
 			if (!file) return;
 
 			await appStore.drawToCanvas(file);
-			if (input.files && input.files.length > 0) {
-				await appStore.extractPalette([...input.files]);
-			}
+			await appStore.extractPalette(file);
 		},
 
 		async searchWallhaven(query: string, page = 1) {
@@ -348,7 +346,7 @@ function createAppStore() {
 			try {
 				const blob = await downloadImage(imageUrl);
 				await this.drawBlobToCanvas(blob);
-				await this.extractPalette([blob], existingToastId);
+				await this.extractPalette(blob, existingToastId);
 				this.clearAllSelections();
 			} catch (err) {
 				console.error('Failed to load wallhaven image', err);
@@ -367,7 +365,7 @@ function createAppStore() {
 			const files = event.dataTransfer?.files;
 			if (files?.length) {
 				await appStore.drawToCanvas(files[0]);
-				await appStore.extractPalette([files[0]]);
+				await appStore.extractPalette(files[0]);
 			}
 		},
 
@@ -402,8 +400,6 @@ function createAppStore() {
 				state.isExtracting = false;
 				return;
 			}
-
-			const files: Blob[] = [];
 
 			let minX = Infinity,
 				minY = Infinity,
@@ -458,36 +454,28 @@ function createAppStore() {
 					const blob = await new Promise<Blob>((resolve) =>
 						mergedCanvas.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
 					);
-					files.push(blob);
-				}
-			}
 
-			if (files.length > 0) {
-				await appStore.extractPalette(files, toastId);
-			} else {
-				toast.error('No valid selections to extract colors from', { id: toastId });
-				state.isExtracting = false;
+					await appStore.extractPalette(blob, toastId);
+				}
 			}
 		},
 
-		async extractPalette(files: (Blob | File)[], existingToastId?: string) {
-			if (files.length === 0) {
+		async extractPalette(file: Blob | File, existingToastId?: string) {
+			if (!file) {
 				toast.error('No files provided');
 				return;
 			}
 
-			for (const file of files) {
-				if (file.size > IMAGE.MAX_FILE_SIZE) {
-					toast.error(`File too large. Maximum size is ${IMAGE.MAX_FILE_SIZE / 1024 / 1024}MB`);
-					return;
-				}
+			if (file.size > IMAGE.MAX_FILE_SIZE) {
+				toast.error(`File too large. Maximum size is ${IMAGE.MAX_FILE_SIZE / 1024 / 1024}MB`);
+				return;
 			}
 
 			state.isExtracting = true;
 			const toastId = existingToastId ?? toast.loading('Extracting palette...');
 
 			try {
-				const result = await api.extractPalette(files, 20);
+				const result = await api.extractPalette(file, 20);
 				if (result.palette.length > 0) {
 					state.colors = result.palette;
 					toast.success('Palette extracted', { id: toastId });

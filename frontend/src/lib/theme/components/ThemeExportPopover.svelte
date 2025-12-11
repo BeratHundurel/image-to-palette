@@ -7,7 +7,6 @@
 	import { SvelteSet } from 'svelte/reactivity';
 
 	const STORAGE_KEY = 'themeExportPreferences';
-	const HEX_UPPERCASE_REGEX = /#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?/g;
 
 	interface ThemeColorWithUsage {
 		baseColor: string;
@@ -152,8 +151,7 @@
 
 		try {
 			const themeJson = JSON.stringify(generatedTheme, null, 2);
-			const themeJsonUppercase = themeJson.replace(HEX_UPPERCASE_REGEX, (match) => match.toUpperCase());
-			await navigator.clipboard.writeText(themeJsonUppercase);
+			await navigator.clipboard.writeText(themeJson);
 			toast.success('Theme JSON copied to clipboard!');
 			popoverStore.close('themeExport');
 		} catch {
@@ -376,13 +374,7 @@
 						</div>
 						<div class="rounded-lg border border-zinc-700 bg-zinc-950/50">
 							<pre class="custom-scrollbar max-h-72 overflow-auto p-4 font-mono text-xs text-zinc-300">
-								<code
-									>{generatedTheme
-										? JSON.stringify(generatedTheme, null, 2).replace(HEX_UPPERCASE_REGEX, (match) =>
-												match.toUpperCase()
-											)
-										: ''}</code
-								>
+								<code>{generatedTheme ? JSON.stringify(generatedTheme, null, 2) : ''}</code>
 							</pre>
 						</div>
 					</div>

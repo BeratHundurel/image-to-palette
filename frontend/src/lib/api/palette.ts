@@ -22,7 +22,9 @@ export type ZigPaletteResponse = {
 	palette: Color[];
 };
 
-async function extractPaletteFromFile(file: Blob | File, maxColors: number): Promise<ZigPaletteResponse> {
+export async function extractPalette(file: Blob | File, maxColors: number = 20): Promise<ZigPaletteResponse> {
+	if (!file) throw new Error('No files provided');
+
 	const formData = new FormData();
 	formData.append('file', file);
 	formData.append('maxColors', String(maxColors));
@@ -51,25 +53,6 @@ async function extractPaletteFromFile(file: Blob | File, maxColors: number): Pro
 	} catch {
 		throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
 	}
-}
-
-export async function extractPalette(files: (Blob | File)[], maxColors: number = 20): Promise<ZigPaletteResponse> {
-	if (!files?.length) throw new Error('No files provided');
-
-	const allColors: Color[] = [];
-	const seenHex = new Set<string>();
-
-	for (const file of files) {
-		const result = await extractPaletteFromFile(file, maxColors);
-		for (const color of result.palette) {
-			const hex = color.hex.toUpperCase();
-			if (!seenHex.has(hex)) {
-				seenHex.add(hex);
-				allColors.push(color);
-			}
-		}
-	}
-	return { palette: allColors.slice(0, maxColors) };
 }
 
 export async function generateTheme(colors: Color[], type: ThemeType, name?: string): Promise<Record<string, unknown>> {
