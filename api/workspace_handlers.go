@@ -13,10 +13,7 @@ import (
 type WorkspaceStateData struct {
 	Colors             []Color    `json:"colors"`
 	Selectors          []Selector `json:"selectors"`
-	DrawSelectionValue string     `json:"drawSelectionValue"`
 	ActiveSelectorId   string     `json:"activeSelectorId"`
-	FilteredColors     []string   `json:"filteredColors"`
-	SampleRate         int        `json:"sampleRate"`
 	Luminosity         float64    `json:"luminosity"`
 	Nearest            int        `json:"nearest"`
 	Power              int        `json:"power"`
@@ -43,10 +40,7 @@ type WorkspaceData struct {
 	ImageData          string     `json:"imageData"`
 	Colors             []Color    `json:"colors"`
 	Selectors          []Selector `json:"selectors"`
-	DrawSelectionValue string     `json:"drawSelectionValue"`
 	ActiveSelectorId   string     `json:"activeSelectorId"`
-	FilteredColors     []string   `json:"filteredColors"`
-	SampleRate         int        `json:"sampleRate"`
 	Luminosity         float64    `json:"luminosity"`
 	Nearest            int        `json:"nearest"`
 	Power              int        `json:"power"`
@@ -60,10 +54,7 @@ type SaveWorkspaceRequest struct {
 	ImageData          string     `json:"imageData" binding:"required"`
 	Colors             []Color    `json:"colors"`
 	Selectors          []Selector `json:"selectors"`
-	DrawSelectionValue string     `json:"drawSelectionValue"`
 	ActiveSelectorId   string     `json:"activeSelectorId"`
-	FilteredColors     []string   `json:"filteredColors"`
-	SampleRate         int        `json:"sampleRate"`
 	Luminosity         float64    `json:"luminosity"`
 	Nearest            int        `json:"nearest"`
 	Power              int        `json:"power"`
@@ -148,10 +139,7 @@ func saveUserWorkspace(userID uint, req SaveWorkspaceRequest) error {
 	stateData := WorkspaceStateData{
 		Colors:             req.Colors,
 		Selectors:          req.Selectors,
-		DrawSelectionValue: req.DrawSelectionValue,
 		ActiveSelectorId:   req.ActiveSelectorId,
-		FilteredColors:     req.FilteredColors,
-		SampleRate:         req.SampleRate,
 		Luminosity:         req.Luminosity,
 		Nearest:            req.Nearest,
 		Power:              req.Power,
@@ -200,10 +188,7 @@ func getUserWorkspaces(userID uint) ([]WorkspaceData, error) {
 			ImageData:          dbWorkspace.ImageData,
 			Colors:             state.Colors,
 			Selectors:          state.Selectors,
-			DrawSelectionValue: state.DrawSelectionValue,
 			ActiveSelectorId:   state.ActiveSelectorId,
-			FilteredColors:     state.FilteredColors,
-			SampleRate:         state.SampleRate,
 			Luminosity:         state.Luminosity,
 			Nearest:            state.Nearest,
 			Power:              state.Power,
@@ -353,10 +338,7 @@ func getWorkspaceByShareToken(shareToken string) (*WorkspaceData, error) {
 		ImageData:          dbWorkspace.ImageData,
 		Colors:             state.Colors,
 		Selectors:          state.Selectors,
-		DrawSelectionValue: state.DrawSelectionValue,
 		ActiveSelectorId:   state.ActiveSelectorId,
-		FilteredColors:     state.FilteredColors,
-		SampleRate:         state.SampleRate,
 		Luminosity:         state.Luminosity,
 		Nearest:            state.Nearest,
 		Power:              state.Power,

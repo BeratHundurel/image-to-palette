@@ -3,12 +3,10 @@
 	import CopyOptions from './CopyOptions.svelte';
 	import OpenInCoolors from './OpenInCoolors.svelte';
 	import SelectorButton from './SelectorButton.svelte';
-	import PaletteOptions from './PaletteOptions.svelte';
 	import SavedPalettes from './SavedPalettes.svelte';
 	import SavedWorkspaces from './SavedWorkspaces.svelte';
 	import ApplicationSettings from './ApplicationSettings.svelte';
 	import ThemeExport from './ThemeExport.svelte';
-	import PaletteOptionsPopover from './popovers/PaletteOptionsPopover.svelte';
 	import ApplicationSettingsPopover from './popovers/ApplicationSettingsPopover.svelte';
 	import CopyOptionsPopover from './popovers/CopyOptionsPopover.svelte';
 	import SavedPalettesPopover from './popovers/SavedPalettesPopover.svelte';
@@ -125,14 +123,6 @@
 
 				<li class="relative mb-4">
 					<div class="mb-2 flex items-center gap-2">
-						<h3 class="text-brand text-xs font-medium uppercase">Extraction</h3>
-						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
-					</div>
-					<PaletteOptions />
-				</li>
-
-				<li class="relative mb-4">
-					<div class="mb-2 flex items-center gap-2">
 						<h3 class="text-brand text-xs font-medium uppercase">Theme Generation</h3>
 						<div class="from-brand/50 h-px flex-1 bg-gradient-to-r to-transparent"></div>
 					</div>
@@ -148,10 +138,6 @@
 				</li>
 			</ul>
 		</div>
-
-		{#if popoverStore.state.current === 'palette'}
-			<PaletteOptionsPopover />
-		{/if}
 
 		{#if popoverStore.state.current === 'application'}
 			<ApplicationSettingsPopover />

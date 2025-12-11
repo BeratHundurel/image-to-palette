@@ -37,15 +37,12 @@ interface AppState {
 	colors: Color[];
 	wallhavenResults: WallhavenResult[];
 	selectors: Selector[];
-	drawSelectionValue: string;
 	activeSelectorId: string;
 	newFilterColor: string;
-	filteredColors: string[];
 	savedPalettes: PaletteData[];
 	savedWorkspaces: WorkspaceData[];
 	sortMethod: SortMethod;
 
-	sampleRate: number;
 	luminosity: number;
 	nearest: number;
 	power: number;
@@ -81,15 +78,12 @@ function createAppStore() {
 			{ id: 'red', color: 'oklch(64.5% 0.246 16.439)', selected: false },
 			{ id: 'blue', color: 'oklch(71.5% 0.143 215.221)', selected: false }
 		],
-		drawSelectionValue: 'separate',
 		activeSelectorId: UI.DEFAULT_SELECTOR_ID,
 		newFilterColor: '',
-		filteredColors: [],
 		savedPalettes: [],
 		savedWorkspaces: [],
 		sortMethod: 'none',
 
-		sampleRate: 4,
 		luminosity: 1,
 		nearest: 30,
 		power: 4,
@@ -411,84 +405,60 @@ function createAppStore() {
 
 			const files: Blob[] = [];
 
-			if (state.drawSelectionValue === 'merge') {
-				let minX = Infinity,
-					minY = Infinity,
-					maxX = -Infinity,
-					maxY = -Infinity;
-				for (const s of validSelections) {
-					if (!s.selection) continue;
-					const scaledX = Math.round(s.selection.x * state.canvasScaleX);
-					const scaledY = Math.round(s.selection.y * state.canvasScaleY);
-					const scaledW = Math.round(s.selection.w * state.canvasScaleX);
-					const scaledH = Math.round(s.selection.h * state.canvasScaleY);
+			let minX = Infinity,
+				minY = Infinity,
+				maxX = -Infinity,
+				maxY = -Infinity;
 
-					minX = Math.min(minX, scaledX);
-					minY = Math.min(minY, scaledY);
-					maxX = Math.max(maxX, scaledX + scaledW);
-					maxY = Math.max(maxY, scaledY + scaledH);
-				}
+			for (const s of validSelections) {
+				if (!s.selection) continue;
+				const scaledX = Math.round(s.selection.x * state.canvasScaleX);
+				const scaledY = Math.round(s.selection.y * state.canvasScaleY);
+				const scaledW = Math.round(s.selection.w * state.canvasScaleX);
+				const scaledH = Math.round(s.selection.h * state.canvasScaleY);
 
-				if (minX < Infinity && minY < Infinity && maxX > -Infinity && maxY > -Infinity) {
-					const mergedWidth = maxX - minX;
-					const mergedHeight = maxY - minY;
+				minX = Math.min(minX, scaledX);
+				minY = Math.min(minY, scaledY);
+				maxX = Math.max(maxX, scaledX + scaledW);
+				maxY = Math.max(maxY, scaledY + scaledH);
+			}
 
-					const mergedCanvas = document.createElement('canvas');
-					mergedCanvas.width = mergedWidth;
-					mergedCanvas.height = mergedHeight;
-					const mergedCtx = mergedCanvas.getContext('2d');
+			if (minX < Infinity && minY < Infinity && maxX > -Infinity && maxY > -Infinity) {
+				const mergedWidth = maxX - minX;
+				const mergedHeight = maxY - minY;
 
-					if (mergedCtx) {
-						for (const s of validSelections) {
-							if (!s.selection) continue;
-							const scaledX = Math.round(s.selection.x * state.canvasScaleX);
-							const scaledY = Math.round(s.selection.y * state.canvasScaleY);
-							const scaledW = Math.round(s.selection.w * state.canvasScaleX);
-							const scaledH = Math.round(s.selection.h * state.canvasScaleY);
+				const mergedCanvas = document.createElement('canvas');
+				mergedCanvas.width = mergedWidth;
+				mergedCanvas.height = mergedHeight;
+				const mergedCtx = mergedCanvas.getContext('2d');
 
-							if (scaledX >= 0 && scaledY >= 0 && scaledW > 0 && scaledH > 0) {
-								mergedCtx.drawImage(
-									state.image,
-									scaledX,
-									scaledY,
-									scaledW,
-									scaledH,
-									scaledX - minX,
-									scaledY - minY,
-									scaledW,
-									scaledH
-								);
-							}
+				if (mergedCtx) {
+					for (const s of validSelections) {
+						if (!s.selection) continue;
+						const scaledX = Math.round(s.selection.x * state.canvasScaleX);
+						const scaledY = Math.round(s.selection.y * state.canvasScaleY);
+						const scaledW = Math.round(s.selection.w * state.canvasScaleX);
+						const scaledH = Math.round(s.selection.h * state.canvasScaleY);
+
+						if (scaledX >= 0 && scaledY >= 0 && scaledW > 0 && scaledH > 0) {
+							mergedCtx.drawImage(
+								state.image,
+								scaledX,
+								scaledY,
+								scaledW,
+								scaledH,
+								scaledX - minX,
+								scaledY - minY,
+								scaledW,
+								scaledH
+							);
 						}
-
-						const blob = await new Promise<Blob>((resolve) =>
-							mergedCanvas.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
-						);
-						files.push(blob);
 					}
-				}
-			} else {
-				for (const s of validSelections) {
-					if (!s.selection) continue;
 
-					const scaledX = Math.round(s.selection.x * state.canvasScaleX);
-					const scaledY = Math.round(s.selection.y * state.canvasScaleY);
-					const scaledW = Math.round(s.selection.w * state.canvasScaleX);
-					const scaledH = Math.round(s.selection.h * state.canvasScaleY);
-
-					const cropCanvas = document.createElement('canvas');
-					cropCanvas.width = scaledW;
-					cropCanvas.height = scaledH;
-					const cropCtx = cropCanvas.getContext('2d');
-					if (!cropCtx) continue;
-
-					if (scaledX >= 0 && scaledY >= 0 && scaledW > 0 && scaledH > 0) {
-						cropCtx.drawImage(state.image, scaledX, scaledY, scaledW, scaledH, 0, 0, scaledW, scaledH);
-						const blob = await new Promise<Blob>((resolve) =>
-							cropCanvas.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
-						);
-						files.push(blob);
-					}
+					const blob = await new Promise<Blob>((resolve) =>
+						mergedCanvas.toBlob((b) => resolve(b!), IMAGE.OUTPUT_FORMAT)
+					);
+					files.push(blob);
 				}
 			}
 
@@ -513,19 +483,11 @@ function createAppStore() {
 				}
 			}
 
-			if (state.filteredColors.length > 0) {
-				const invalidColors = state.filteredColors.filter((color) => !isValidHexColor(color));
-				if (invalidColors.length > 0) {
-					toast.error(`Invalid hex colors in filter: ${invalidColors.join(', ')}`);
-					return;
-				}
-			}
-
 			state.isExtracting = true;
 			const toastId = existingToastId ?? toast.loading('Extracting palette...');
 
 			try {
-				const result = await api.extractPalette(files, 20, state.sampleRate);
+				const result = await api.extractPalette(files, 20);
 				if (result.palette.length > 0) {
 					state.colors = result.palette;
 					toast.success('Palette extracted', { id: toastId });
@@ -775,10 +737,7 @@ function createAppStore() {
 					await workspaceApi.saveWorkspace(workspaceName, imageDataUrl, {
 						colors: state.colors,
 						selectors: state.selectors,
-						drawSelectionValue: state.drawSelectionValue,
 						activeSelectorId: state.activeSelectorId,
-						filteredColors: state.filteredColors,
-						sampleRate: state.sampleRate,
 						luminosity: state.luminosity,
 						nearest: state.nearest,
 						power: state.power,
@@ -794,10 +753,7 @@ function createAppStore() {
 							imageData: imageDataUrl,
 							colors: state.colors,
 							selectors: state.selectors,
-							drawSelectionValue: state.drawSelectionValue,
 							activeSelectorId: state.activeSelectorId,
-							filteredColors: state.filteredColors,
-							sampleRate: state.sampleRate,
 							luminosity: state.luminosity,
 							nearest: state.nearest,
 							power: state.power,
@@ -849,10 +805,7 @@ function createAppStore() {
 
 					state.colors = workspace.colors || [];
 					state.selectors = workspace.selectors || [];
-					state.drawSelectionValue = workspace.drawSelectionValue || 'separate';
 					state.activeSelectorId = workspace.activeSelectorId || UI.DEFAULT_SELECTOR_ID;
-					state.filteredColors = workspace.filteredColors || [];
-					state.sampleRate = workspace.sampleRate || 4;
 					state.luminosity = workspace.luminosity || 1;
 					state.nearest = workspace.nearest || 30;
 					state.power = workspace.power || 4;
@@ -882,10 +835,7 @@ function createAppStore() {
 						...w,
 						colors: w.colors || [],
 						selectors: w.selectors || [],
-						drawSelectionValue: w.drawSelectionValue || 'separate',
 						activeSelectorId: w.activeSelectorId || UI.DEFAULT_SELECTOR_ID,
-						filteredColors: w.filteredColors || [],
-						sampleRate: w.sampleRate || 4,
 						luminosity: w.luminosity || 1,
 						nearest: w.nearest || 30,
 						power: w.power || 4,
@@ -897,10 +847,7 @@ function createAppStore() {
 						...w,
 						colors: w.colors || [],
 						selectors: w.selectors || [],
-						drawSelectionValue: w.drawSelectionValue || 'separate',
 						activeSelectorId: w.activeSelectorId || UI.DEFAULT_SELECTOR_ID,
-						filteredColors: w.filteredColors || [],
-						sampleRate: w.sampleRate || 4,
 						luminosity: w.luminosity || 1,
 						nearest: w.nearest || 30,
 						power: w.power || 4,
@@ -973,10 +920,7 @@ function createAppStore() {
 										await workspaceApi.saveWorkspace(workspace.name, workspace.imageData, {
 											colors: workspace.colors || [],
 											selectors: workspace.selectors || [],
-											drawSelectionValue: workspace.drawSelectionValue || 'separate',
 											activeSelectorId: workspace.activeSelectorId || UI.DEFAULT_SELECTOR_ID,
-											filteredColors: workspace.filteredColors || [],
-											sampleRate: workspace.sampleRate || 4,
 											luminosity: workspace.luminosity || 1,
 											nearest: workspace.nearest || 30,
 											power: workspace.power || 4,

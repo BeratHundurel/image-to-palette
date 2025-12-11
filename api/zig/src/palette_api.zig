@@ -47,33 +47,26 @@ pub fn extractPaletteFromBytes(
     allocator: std.mem.Allocator,
     image_data: []const u8,
     max_colors: usize,
-    sample_rate: usize,
 ) ExtractError!PaletteResult {
     var img = zigimg.Image.fromMemory(allocator, image_data) catch {
         return ExtractError.NotAnImage;
     };
     defer img.deinit(allocator);
 
-    return processImage(allocator, &img, max_colors, sample_rate);
+    return processImage(allocator, &img, max_colors);
 }
 
 fn processImage(
     allocator: std.mem.Allocator,
     img: *zigimg.Image,
     max_colors: usize,
-    sample_rate: usize,
 ) ExtractError!PaletteResult {
     var color_map = std.ArrayList(ColorAndCount){};
     defer color_map.deinit(allocator);
     color_map.ensureTotalCapacity(allocator, 512) catch return ExtractError.OutOfMemory;
 
-    var pixel_count: usize = 0;
-    const actual_sample_rate = @max(1, sample_rate);
-
     var color_it = img.iterator();
     while (color_it.next()) |color| {
-        pixel_count += 1;
-        if (pixel_count % actual_sample_rate != 0) continue;
         if (color.a < 0.01) continue;
 
         var found = false;
@@ -147,7 +140,6 @@ pub fn handleExtractPalette(allocator: std.mem.Allocator, request_body: []const 
 
     var image_data: ?[]const u8 = null;
     var max_colors: usize = 20;
-    var sample_rate: usize = 4;
 
     var parts_iter = MultipartIterator.init(request_body, boundary);
     while (parts_iter.next()) |part| {
@@ -157,14 +149,12 @@ pub fn handleExtractPalette(allocator: std.mem.Allocator, request_body: []const 
             image_data = part.body;
         } else if (std.mem.indexOf(u8, part.headers, "name=\"maxColors\"") != null) {
             max_colors = std.fmt.parseInt(usize, std.mem.trim(u8, part.body, " \r\n"), 10) catch 20;
-        } else if (std.mem.indexOf(u8, part.headers, "name=\"sampleRate\"") != null) {
-            sample_rate = std.fmt.parseInt(usize, std.mem.trim(u8, part.body, " \r\n"), 10) catch 4;
         }
     }
 
     const data = image_data orelse return error.NoImageProvided;
 
-    var result = try extractPaletteFromBytes(allocator, data, max_colors, sample_rate);
+    var result = try extractPaletteFromBytes(allocator, data, max_colors);
     defer result.deinit();
 
     var json_array = std.ArrayList(u8){};

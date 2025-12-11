@@ -42,10 +42,7 @@ export type WorkspaceData = {
 	imageData: string;
 	colors?: Color[];
 	selectors?: Selector[];
-	drawSelectionValue?: string;
 	activeSelectorId?: string;
-	filteredColors?: string[];
-	sampleRate?: number;
 	luminosity?: number;
 	nearest?: number;
 	power?: number;
@@ -59,10 +56,7 @@ export type SaveWorkspaceRequest = {
 	imageData: string;
 	colors: Color[];
 	selectors: Selector[];
-	drawSelectionValue: string;
 	activeSelectorId: string;
-	filteredColors: string[];
-	sampleRate: number;
 	luminosity: number;
 	nearest: number;
 	power: number;

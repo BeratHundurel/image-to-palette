@@ -22,15 +22,10 @@ export type ZigPaletteResponse = {
 	palette: Color[];
 };
 
-async function extractPaletteFromFile(
-	file: Blob | File,
-	maxColors: number,
-	sampleRate: number
-): Promise<ZigPaletteResponse> {
+async function extractPaletteFromFile(file: Blob | File, maxColors: number): Promise<ZigPaletteResponse> {
 	const formData = new FormData();
 	formData.append('file', file);
 	formData.append('maxColors', String(maxColors));
-	formData.append('sampleRate', String(sampleRate));
 
 	let res: Response;
 	try {
@@ -58,18 +53,14 @@ async function extractPaletteFromFile(
 	}
 }
 
-export async function extractPalette(
-	files: (Blob | File)[],
-	maxColors: number = 20,
-	sampleRate: number = 4
-): Promise<ZigPaletteResponse> {
+export async function extractPalette(files: (Blob | File)[], maxColors: number = 20): Promise<ZigPaletteResponse> {
 	if (!files?.length) throw new Error('No files provided');
 
 	const allColors: Color[] = [];
 	const seenHex = new Set<string>();
 
 	for (const file of files) {
-		const result = await extractPaletteFromFile(file, maxColors, sampleRate);
+		const result = await extractPaletteFromFile(file, maxColors);
 		for (const color of result.palette) {
 			const hex = color.hex.toUpperCase();
 			if (!seenHex.has(hex)) {
@@ -78,10 +69,6 @@ export async function extractPalette(
 			}
 		}
 	}
-
-	console.log(allColors);
-	console.log(seenHex);
-
 	return { palette: allColors.slice(0, maxColors) };
 }
 
